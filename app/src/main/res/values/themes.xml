@@ -1,0 +1,6 @@
+<resources>
+    <!-- Base application theme. -->
+    <style name="Theme.TTS" parent="android:Theme.Material.Light">
+
+    </style>
+</resources>
