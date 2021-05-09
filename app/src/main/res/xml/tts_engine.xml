@@ -11,4 +11,4 @@
      limitations under the License.
 -->
 <tts-engine xmlns:android="http://schemas.android.com/apk/res/android"
-    android:settingsActivity="me.ag2s.tts.SettingsActivity" />
+    android:settingsActivity="me.ag2s.tts.MainActivity" />

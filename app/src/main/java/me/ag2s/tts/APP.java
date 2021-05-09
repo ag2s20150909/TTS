@@ -4,6 +4,10 @@ import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
 
+import com.franmontiel.persistentcookiejar.PersistentCookieJar;
+import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
+import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
+
 import okhttp3.OkHttpClient;
 
 
@@ -32,10 +36,7 @@ public class APP extends Application {
     public static OkHttpClient getBootClient() {
         if (bootClient == null) {
             bootClient = new OkHttpClient.Builder()
-                    //.eventListenerFactory(NetworkListener.get())
-                    //.callTimeout(6, TimeUnit.SECONDS)
-                    //.cookieJar(getCookieJar())
-                    //.addNetworkInterceptor(new LoggingInterceptor())
+
                     .build();
         }
         return bootClient;
@@ -44,5 +45,12 @@ public class APP extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        mContext=this;
+    }
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        mContext=this;
     }
 }

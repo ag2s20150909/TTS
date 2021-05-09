@@ -19,7 +19,6 @@ public class GetSampleText extends Activity {
         String language = i.getExtras().getString("language");
         String country = i.getExtras().getString("country");
         String variant = i.getExtras().getString("variant");
-        Log.i("HYY", " language=" + language + " country=" + country + " variant=" + variant);
 
         if (language != null) {
             if (language.equals("en")) {

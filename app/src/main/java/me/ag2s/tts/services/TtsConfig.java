@@ -1,11 +1,9 @@
-package me.ag2s.tts.utils;
+package me.ag2s.tts.services;
 
 
 import android.util.Log;
 
 import org.jetbrains.annotations.NotNull;
-
-import me.ag2s.tts.services.TTSService;
 
 public class TtsConfig {
     private final boolean sentenceBoundaryEnabled;

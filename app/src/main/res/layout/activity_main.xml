@@ -1,23 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <Button
-        android:id="@+id/button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="setTTS"
-        android:text="@string/set_tts"
-        style="?android:attr/buttonBarButtonStyle" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="wrap_content"
+
+        <Button
+            android:id="@+id/button"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="setTTS"
+            android:text="@string/set_tts" />
+
+        <Button
+            android:id="@+id/button2"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="killBATTERY"
+            android:text="@string/kill_battery" />
+
+        <Switch
+            android:text="@string/use_custom_language"
+            android:id="@+id/switch_use_custom_language"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+
+    <GridView
+        android:id="@+id/gv"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="killBATTERY"
-        android:text="@string/kill_battery"
-        style="?android:attr/buttonBarButtonStyle" />
+        android:numColumns="2" />
 
 
 </LinearLayout>

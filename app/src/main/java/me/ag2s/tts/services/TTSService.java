@@ -1,6 +1,8 @@
 package me.ag2s.tts.services;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.media.AudioFormat;
 import android.speech.tts.SynthesisCallback;
 import android.speech.tts.SynthesisRequest;
@@ -26,7 +28,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import me.ag2s.tts.APP;
-import me.ag2s.tts.utils.TtsConfig;
+import me.ag2s.tts.utils.CommonTool;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -37,10 +39,15 @@ import okio.ByteString;
 public class TTSService extends TextToSpeechService {
 
     private static final String TAG = TTSService.class.getSimpleName();
+
+    public static final String USE_CUSTOM_LANGUAGE = "use_custom_language";
+    public static final String CUSTOM_LANGUAGE = "custom_language";
+
+    public SharedPreferences sharedPreferences;
     private OkHttpClient client;
     private WebSocket webSocket;
     private boolean isSynthesizing;
-    private static List<TtsLanguage> languages;
+    private static List<TtsActor> languages;
     private List<Voice> voices;
     public final static String[] supportedLanguages = {"deu-DEU", "eng-AUS", "eng-CAN", "eng-GBR", "eng-IND", "eng-USA", "spa-ESP", "spa-MEX", "fra-CAN", "fra-FRA", "hin-IND", "ita-ITA", "jpn-JPN", "kor-KOR", "nld-NLD", "pol-POL", "por-BRA", "rus-RUS", "tur-TUR", "zho-CHN", "zho-HKG", "zho-TWN"};
 
@@ -65,13 +72,15 @@ public class TTSService extends TextToSpeechService {
      * @return
      */
     public WebSocket getOrCreateWs(SynthesisCallback callback) {
-
         String url = "https://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EAFF4E9FB37E23D68491D6F4";
         Request request = new Request.Builder()
                 .url(url)
                 .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.56")
                 .addHeader("Origin", "chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold")
-                .addHeader("Sec-WebSocket-Key", "vZ8qxy8q/+2qpzpnhFmgQA==")
+                //.addHeader("Sec-WebSocket-Key", "vZ8qxy8q/+2qpzpnhFmgQA==")
+                .addHeader("Sec-WebSocket-Version", "13")
+                //.addHeader("Sec-WebSocket-Extensions","permessage-deflate; client_max_window_bits")
+                .addHeader("Sec-WebSocket-Accept", sharedPreferences.getString("Sec-WebSocket-Accept", "n6OeLXUK+jnjNCyRI3wmP10OFDc="))
                 .build();
         this.webSocket = client.newWebSocket(request, new WebSocketListener() {
 
@@ -79,7 +88,7 @@ public class TTSService extends TextToSpeechService {
             @Override
             public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
                 super.onClosed(webSocket, code, reason);
-                Log.d(TAG, "onClosed" + reason);
+                Log.v(TAG, "onClosed" + reason);
             }
 
             @Override
@@ -90,7 +99,7 @@ public class TTSService extends TextToSpeechService {
             @Override
             public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @Nullable Response response) {
                 super.onFailure(webSocket, t, response);
-                Log.d(TAG, "onFailure", t);
+                Log.v(TAG, "onFailure", t);
             }
 
             @Override
@@ -106,8 +115,6 @@ public class TTSService extends TextToSpeechService {
                 }
                 //生成结束
                 if (endIndex != -1) {
-                    //
-                    //startPlay(mData.readByteString());
                     isSynthesizing = false;
                     callback.done();
                 }
@@ -116,14 +123,15 @@ public class TTSService extends TextToSpeechService {
             @Override
             public void onMessage(@NotNull WebSocket webSocket, @NotNull ByteString bytes) {
                 super.onMessage(webSocket, bytes);
+                //音频数据流标志头
                 String audioTag = "Path:audio\r\n";
                 int audioIndex = bytes.lastIndexOf(audioTag.getBytes(StandardCharsets.UTF_8));
                 if (audioIndex != -1) {
                     try {
-
+                        //PCM数据
                         ByteString data = bytes.substring(audioIndex + audioTag.length());
-
                         int length = data.toByteArray().length;
+                        //最大BufferSize
                         final int maxBufferSize = callback.getMaxBufferSize();
                         int offset = 0;
                         while (offset < data.toByteArray().length) {
@@ -135,8 +143,9 @@ public class TTSService extends TextToSpeechService {
                         }
 
                     } catch (Exception e) {
-                        Log.d(TAG, "onMessage 111", e);
-                        //e.printStackTrace();
+                        Log.d(TAG, "onMessage Error:", e);
+
+                        //如果出错返回错误
                         callback.error();
                         isSynthesizing = false;
                     }
@@ -144,15 +153,27 @@ public class TTSService extends TextToSpeechService {
                 }
             }
 
+
             @Override
             public void onOpen(@NotNull WebSocket webSocket, @NotNull Response response) {
                 super.onOpen(webSocket, response);
-                Log.d(TAG, response.headers().toString());
+                //更新 Sec-WebSocket-Accept
+                String SecWebSocketAccept = response.header("Sec-WebSocket-Accept");
+                if (SecWebSocketAccept != null && !SecWebSocketAccept.isEmpty()) {
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    Log.d(TAG, "SSS:" + SecWebSocketAccept);
+                    editor.putString("Sec-WebSocket-Accept", SecWebSocketAccept);
+                    editor.apply();
+                }
+                Log.d(TAG, "onOpen" + response.headers().toString());
             }
         });
+
+
         return webSocket;
     }
 
+    //发送合成语音配置
     private void sendConfig(TtsConfig ttsConfig) {
         String msg = "X-Timestamp:+" + getTime() + "\r\n" +
                 "Content-Type:application/json; charset=utf-8\r\n" +
@@ -190,7 +211,15 @@ public class TTSService extends TextToSpeechService {
         String name = "zh-CN-XiaoxiaoNeural";
         name = request.getVoiceName();
         String time = getTime();
-        Log.d(TAG, "SSS:" + request.toString());
+        if (sharedPreferences.getBoolean(USE_CUSTOM_LANGUAGE, false) && request.getLanguage().equals("zho")) {
+            name = sharedPreferences.getString(CUSTOM_LANGUAGE, "zh-CN-XiaoxiaoNeural");
+        }
+
+        RequestId = CommonTool.getMD5String(text + time);
+
+
+        Log.d(TAG, "SSS:" + request.getVoiceName());
+        Log.d(TAG, "SSS:" + CommonTool.getMD5String(time));
 
         String sb = "X-RequestId:" + RequestId + "\r\n" +
                 "Content-Type:application/ssml+xml\r\n" +
@@ -201,12 +230,13 @@ public class TTSService extends TextToSpeechService {
                 "<prosody pitch='+" + (pitch - 100) + "Hz' " +
                 "rate ='+" + (rate - 100) + "%' " +
                 "volume='+" + 0 + "%'>" +
-                "<express-as>" + text + "</express-as>" +
+                "<express-as role='OlderAdultMale' style='lyrical' styledegree='2' >" + text + "</express-as>" +
                 "</prosody></voice></speak>" +
                 "";
         Log.d(TAG, "SSS:" + sb);
         webSocket.send(sb);
     }
+
 
     @Override
     public void onCreate() {
@@ -215,7 +245,7 @@ public class TTSService extends TextToSpeechService {
                 .cookieJar(new PersistentCookieJar(new SetCookieCache(),
                         new SharedPrefsCookiePersistor(getApplicationContext())))
                 .build();
-        //getLanguages();
+        sharedPreferences = getApplicationContext().getSharedPreferences("TTS", Context.MODE_PRIVATE);
 
 
     }
@@ -271,6 +301,7 @@ public class TTSService extends TextToSpeechService {
     }
 
     public List<String> getVoiceNames(String lang, String country, String variant) {
+
         boolean found = false;
         List<String> vos = new ArrayList<>();
         for (int i = 0; i < supportVoiceLocales.length; i++) {
@@ -304,7 +335,7 @@ public class TTSService extends TextToSpeechService {
                 return TextToSpeech.SUCCESS;
             }
         }
-        return TextToSpeech.ERROR;
+        return TextToSpeech.SUCCESS;
     }
 
     @Override
@@ -317,6 +348,8 @@ public class TTSService extends TextToSpeechService {
         if (names.size() > 0) {
             name = names.get(0);
         }
+        //name="zh-cn-XiaoyouNeural";
+
         return name;
     }
 

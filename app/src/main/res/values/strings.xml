@@ -17,6 +17,7 @@
     <string name="tts_sample_ko">이것 은 음성 합성 예시 이다.</string>
     <string name="set_tts">TTS设置</string>
     <string name="kill_battery">电池优化</string>
+    <string name="use_custom_language">使用自定义语音</string>
 
 
 </resources>
