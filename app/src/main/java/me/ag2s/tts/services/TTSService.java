@@ -18,6 +18,7 @@ import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersisto
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,6 +30,9 @@ import java.util.Set;
 
 import me.ag2s.tts.APP;
 import me.ag2s.tts.utils.CommonTool;
+import me.ag2s.tts.utils.LoggingInterceptor;
+import me.ag2s.tts.utils.OkHttpDns;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -62,6 +66,96 @@ public class TTSService extends TextToSpeechService {
      * audio at 16khz 16bits per sample PCM audio.
      */
     private static final int SAMPLING_RATE_HZ = 16000;
+    SynthesisCallback callback;
+    private final WebSocketListener webSocketListener = new WebSocketListener() {
+        @Override
+        public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
+            super.onClosed(webSocket, code, reason);
+            Log.v(TAG, "onClosed" + reason);
+            TTSService.this.webSocket = null;
+        }
+
+        @Override
+        public void onClosing(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
+            super.onClosing(webSocket, code, reason);
+
+        }
+
+        @Override
+        public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @Nullable Response response) {
+            super.onFailure(webSocket, t, response);
+            Log.v(TAG, "onFailure", t);
+            TTSService.this.webSocket = null;
+        }
+
+        @Override
+        public void onMessage(@NotNull WebSocket webSocket, @NotNull String text) {
+            super.onMessage(webSocket, text);
+            String endTag = "turn.end";
+            String startTag = "turn.start";
+            int endIndex = text.lastIndexOf(endTag);
+            int startIndex = text.lastIndexOf(startTag);
+            //生成开始
+            if (startIndex != -1) {
+                isSynthesizing = true;
+            }
+            //生成结束
+            if (endIndex != -1) {
+                isSynthesizing = false;
+                if (callback != null) {
+                    callback.done();
+                }
+
+            }
+        }
+
+        @Override
+        public void onMessage(@NotNull WebSocket webSocket, @NotNull ByteString bytes) {
+            super.onMessage(webSocket, bytes);
+            //音频数据流标志头
+            String audioTag = "Path:audio\r\n";
+            int audioIndex = bytes.lastIndexOf(audioTag.getBytes(StandardCharsets.UTF_8));
+            if (audioIndex != -1 && callback != null) {
+                try {
+                    //PCM数据
+                    ByteString data = bytes.substring(audioIndex + audioTag.length());
+                    int length = data.toByteArray().length;
+                    //最大BufferSize
+                    final int maxBufferSize = callback.getMaxBufferSize();
+                    int offset = 0;
+                    while (offset < data.toByteArray().length) {
+                        int bytesToWrite = Math.min(maxBufferSize, length - offset);
+//                            Log.d(TAG, "maxBufferSize" + maxBufferSize +
+//                                    "data.length - offset" + (length - offset));
+                        callback.audioAvailable(data.toByteArray(), offset, bytesToWrite);
+                        offset += bytesToWrite;
+                    }
+
+                } catch (Exception e) {
+                    Log.d(TAG, "onMessage Error:", e);
+
+                    //如果出错返回错误
+                    callback.error();
+                    isSynthesizing = false;
+                }
+
+            }
+        }
+
+        @Override
+        public void onOpen(@NotNull WebSocket webSocket, @NotNull Response response) {
+            super.onOpen(webSocket, response);
+            //更新 Sec-WebSocket-Accept
+            String SecWebSocketAccept = response.header("Sec-WebSocket-Accept");
+            if (SecWebSocketAccept != null && !SecWebSocketAccept.isEmpty()) {
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                Log.d(TAG, "SSS:" + SecWebSocketAccept);
+                editor.putString("Sec-WebSocket-Accept", SecWebSocketAccept);
+                editor.apply();
+            }
+            Log.d(TAG, "onOpen" + response.headers().toString());
+        }
+    };
 
     public TTSService() {
     }
@@ -72,104 +166,20 @@ public class TTSService extends TextToSpeechService {
      * @return
      */
     public WebSocket getOrCreateWs(SynthesisCallback callback) {
+        if (this.webSocket != null) {
+            return this.webSocket;
+        }
         String url = "https://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EAFF4E9FB37E23D68491D6F4";
         Request request = new Request.Builder()
                 .url(url)
                 .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.56")
                 .addHeader("Origin", "chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold")
                 //.addHeader("Sec-WebSocket-Key", "vZ8qxy8q/+2qpzpnhFmgQA==")
-                .addHeader("Sec-WebSocket-Version", "13")
+                //.addHeader("Sec-WebSocket-Version", "13")
                 //.addHeader("Sec-WebSocket-Extensions","permessage-deflate; client_max_window_bits")
-                .addHeader("Sec-WebSocket-Accept", sharedPreferences.getString("Sec-WebSocket-Accept", "n6OeLXUK+jnjNCyRI3wmP10OFDc="))
+                //.addHeader("Sec-WebSocket-Accept", sharedPreferences.getString("Sec-WebSocket-Accept", "n6OeLXUK+jnjNCyRI3wmP10OFDc="))
                 .build();
-        this.webSocket = client.newWebSocket(request, new WebSocketListener() {
-
-
-            @Override
-            public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
-                super.onClosed(webSocket, code, reason);
-                Log.v(TAG, "onClosed" + reason);
-            }
-
-            @Override
-            public void onClosing(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
-                super.onClosing(webSocket, code, reason);
-            }
-
-            @Override
-            public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @Nullable Response response) {
-                super.onFailure(webSocket, t, response);
-                Log.v(TAG, "onFailure", t);
-            }
-
-            @Override
-            public void onMessage(@NotNull WebSocket webSocket, @NotNull String text) {
-                super.onMessage(webSocket, text);
-                String endTag = "turn.end";
-                String startTag = "turn.start";
-                int endIndex = text.lastIndexOf(endTag);
-                int startIndex = text.lastIndexOf(startTag);
-                //生成开始
-                if (startIndex != -1) {
-                    isSynthesizing = true;
-                }
-                //生成结束
-                if (endIndex != -1) {
-                    isSynthesizing = false;
-                    callback.done();
-                }
-            }
-
-            @Override
-            public void onMessage(@NotNull WebSocket webSocket, @NotNull ByteString bytes) {
-                super.onMessage(webSocket, bytes);
-                //音频数据流标志头
-                String audioTag = "Path:audio\r\n";
-                int audioIndex = bytes.lastIndexOf(audioTag.getBytes(StandardCharsets.UTF_8));
-                if (audioIndex != -1) {
-                    try {
-                        //PCM数据
-                        ByteString data = bytes.substring(audioIndex + audioTag.length());
-                        int length = data.toByteArray().length;
-                        //最大BufferSize
-                        final int maxBufferSize = callback.getMaxBufferSize();
-                        int offset = 0;
-                        while (offset < data.toByteArray().length) {
-                            int bytesToWrite = Math.min(maxBufferSize, length - offset);
-                            Log.d(TAG, "maxBufferSize" + maxBufferSize +
-                                    "data.length - offset" + (length - offset));
-                            callback.audioAvailable(data.toByteArray(), offset, bytesToWrite);
-                            offset += bytesToWrite;
-                        }
-
-                    } catch (Exception e) {
-                        Log.d(TAG, "onMessage Error:", e);
-
-                        //如果出错返回错误
-                        callback.error();
-                        isSynthesizing = false;
-                    }
-
-                }
-            }
-
-
-            @Override
-            public void onOpen(@NotNull WebSocket webSocket, @NotNull Response response) {
-                super.onOpen(webSocket, response);
-                //更新 Sec-WebSocket-Accept
-                String SecWebSocketAccept = response.header("Sec-WebSocket-Accept");
-                if (SecWebSocketAccept != null && !SecWebSocketAccept.isEmpty()) {
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    Log.d(TAG, "SSS:" + SecWebSocketAccept);
-                    editor.putString("Sec-WebSocket-Accept", SecWebSocketAccept);
-                    editor.apply();
-                }
-                Log.d(TAG, "onOpen" + response.headers().toString());
-            }
-        });
-
-
+        this.webSocket = client.newWebSocket(request, webSocketListener);
         return webSocket;
     }
 
@@ -206,16 +216,13 @@ public class TTSService extends TextToSpeechService {
         int pitch = request.getPitch();
         int rate = request.getSpeechRate();
 
-
-        String RequestId = "868727dfbb97961edd36361dd7e4044c";
-        String name = "zh-CN-XiaoxiaoNeural";
-        name = request.getVoiceName();
+        String name = request.getVoiceName();
         String time = getTime();
         if (sharedPreferences.getBoolean(USE_CUSTOM_LANGUAGE, false) && request.getLanguage().equals("zho")) {
             name = sharedPreferences.getString(CUSTOM_LANGUAGE, "zh-CN-XiaoxiaoNeural");
         }
 
-        RequestId = CommonTool.getMD5String(text + time);
+        String RequestId = CommonTool.getMD5String(text + time);
 
 
         Log.d(TAG, "SSS:" + request.getVoiceName());
@@ -237,6 +244,35 @@ public class TTSService extends TextToSpeechService {
         webSocket.send(sb);
     }
 
+    public OkHttpDns getDNS() {
+        ArrayList<String> whitelist = new ArrayList<>();
+
+        return new OkHttpDns.Builder().client(
+                APP.getBootClient()
+                        .newBuilder()
+                        .cache(getCache("doh", 1024 * 1024 * 100))
+                        //.addNetworkInterceptor(new CacheInterceptor())
+                        .build()
+        )
+
+                .url(HttpUrl.get("https://doh.360.cn/dns-query"))//30ms
+                .wurl(HttpUrl.get("https://1.1.1.1/dns-query"))
+                .whitelist(whitelist)
+                .includeIPv6(true)
+                .build();
+    }
+
+    public okhttp3.Cache getCache(String name, int maxSize) {
+        File file = new File(getExternalCacheDir(), name);
+        if (!file.exists()) {
+            boolean mkdirs = file.mkdirs();
+            if (!mkdirs) {
+                Log.e(TAG, file.getAbsolutePath() + " mkdirs was not successful.");
+            }
+        }
+        return new okhttp3.Cache(file, maxSize);
+    }
+
 
     @Override
     public void onCreate() {
@@ -244,6 +280,8 @@ public class TTSService extends TextToSpeechService {
         client = APP.getBootClient().newBuilder()
                 .cookieJar(new PersistentCookieJar(new SetCookieCache(),
                         new SharedPrefsCookiePersistor(getApplicationContext())))
+                .addNetworkInterceptor(new LoggingInterceptor())
+                .dns(getDNS())
                 .build();
         sharedPreferences = getApplicationContext().getSharedPreferences("TTS", Context.MODE_PRIVATE);
 
@@ -307,8 +345,8 @@ public class TTSService extends TextToSpeechService {
         for (int i = 0; i < supportVoiceLocales.length; i++) {
             String[] temp = supportVoiceLocales[i].split("_");
             Locale locale = new Locale(temp[0], temp[1], supportVoiceVariants[i]);
-            Log.d(TAG, "getVoiceNames11" + locale.getISO3Language() + "-" + locale.getISO3Country() + "-" + locale.getVariant() + "-");
-            Log.d(TAG, "getVoiceNames22" + lang + "-" + country + "-" + variant + "-");
+            // Log.d(TAG, "getVoiceNames11" + locale.getISO3Language() + "-" + locale.getISO3Country() + "-" + locale.getVariant() + "-");
+            //Log.d(TAG, "getVoiceNames22" + lang + "-" + country + "-" + variant + "-");
 
             if (locale.getISO3Language().equals(lang) && locale.getISO3Country().equals(country) && locale.getVariant().equals(variant)) {
                 vos.add(0, supportVoiceNames[i]);
@@ -324,7 +362,7 @@ public class TTSService extends TextToSpeechService {
                 vos.add(supportVoiceNames[i]);
             }
         }
-        Log.d(TAG, "getVoiceNames" + lang + "-" + country + "-" + variant + "-" + vos.toString());
+        //Log.d(TAG, "getVoiceNames" + lang + "-" + country + "-" + variant + "-" + vos.toString());
         return vos;
     }
 
@@ -409,9 +447,10 @@ public class TTSService extends TextToSpeechService {
         // We denote that we are ready to start sending audio across to the
         // framework. We use a fixed sampling rate (16khz), and send data across
         // in 16bit PCM mono.
-        callback.start(SAMPLING_RATE_HZ,
+        this.callback = callback;
+        this.callback.start(SAMPLING_RATE_HZ,
                 AudioFormat.ENCODING_PCM_16BIT, 1 /* Number of channels. */);
-        sendText(request, callback);
+        sendText(request, this.callback);
         isSynthesizing = true;
         while (isSynthesizing) {
             try {

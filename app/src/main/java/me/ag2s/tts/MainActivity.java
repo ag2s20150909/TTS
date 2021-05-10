@@ -37,13 +37,13 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         gv = findViewById(R.id.gv);
         aSwitch = findViewById(R.id.switch_use_custom_language);
-        boolean isFChecked=sharedPreferences.getBoolean(TTSService.USE_CUSTOM_LANGUAGE, false);
+        boolean isFChecked = sharedPreferences.getBoolean(TTSService.USE_CUSTOM_LANGUAGE, false);
         aSwitch.setChecked(isFChecked);
-        gv.setVisibility(isFChecked?View.VISIBLE:View.INVISIBLE);
+        gv.setVisibility(isFChecked ? View.VISIBLE : View.INVISIBLE);
         aSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putBoolean(TTSService.USE_CUSTOM_LANGUAGE, isChecked);
-            gv.setVisibility(isChecked?View.VISIBLE:View.INVISIBLE);
+            gv.setVisibility(isChecked ? View.VISIBLE : View.INVISIBLE);
             editor.apply();
         });
         textToSpeech = new TextToSpeech(MainActivity.this, new TextToSpeech.OnInitListener() {
@@ -57,7 +57,6 @@ public class MainActivity extends Activity {
                     Toast.makeText(MainActivity.this, "-------------result = " + result, Toast.LENGTH_LONG).show();
                     if (result == TextToSpeech.LANG_MISSING_DATA
                             || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                        System.out.println("-------------not use");
                     } else {
                         textToSpeech.speak("初始化成功。", TextToSpeech.QUEUE_FLUSH, null, null);
                     }
