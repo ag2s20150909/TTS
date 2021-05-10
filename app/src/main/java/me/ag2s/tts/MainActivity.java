@@ -1,5 +1,6 @@
 package me.ag2s.tts;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -10,26 +11,39 @@ import android.provider.Settings;
 import android.speech.tts.TextToSpeech;
 import android.view.View;
 import android.widget.GridView;
+import android.widget.SeekBar;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.List;
 import java.util.Locale;
 
 import me.ag2s.tts.adapters.TtsActorAdapter;
+import me.ag2s.tts.adapters.TtsStyleAdapter;
 import me.ag2s.tts.services.TTSService;
 import me.ag2s.tts.services.TtsActor;
 import me.ag2s.tts.services.TtsActorManger;
+import me.ag2s.tts.services.TtsStyle;
+import me.ag2s.tts.services.TtsStyleManger;
 
 
 public class MainActivity extends Activity {
     private static final String TAG = "CheckVoiceData";
     private Switch aSwitch;
+    private RecyclerView rv_styles;
+    SeekBar seekBar;
+    TextView tv_styleDegree;
     public SharedPreferences sharedPreferences;
 
     private static final String[] SUPPORTED_LANGUAGES = {"eng-GBR", "eng-USA"};
     private GridView gv;
     TextToSpeech textToSpeech;
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,28 +51,74 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         gv = findViewById(R.id.gv);
         aSwitch = findViewById(R.id.switch_use_custom_language);
-        boolean isFChecked = sharedPreferences.getBoolean(TTSService.USE_CUSTOM_LANGUAGE, false);
+        rv_styles = findViewById(R.id.rv_voice_styles);
+        seekBar = findViewById(R.id.tts_style_degree);
+        tv_styleDegree = findViewById(R.id.tts_style_degree_value);
+        int styleIndex = sharedPreferences.getInt(TTSService.VOICE_STYLE_INDEX, 0);
+        int styleDegree = sharedPreferences.getInt(TTSService.VOICE_STYLE_DEGREE, 100);
+        tv_styleDegree.setText(styleDegree + "");
+        seekBar.setProgress(styleDegree);
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                tv_styleDegree.setText(progress + "");
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putInt(TTSService.VOICE_STYLE_DEGREE, progress);
+                editor.apply();
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+        List<TtsStyle> styles = TtsStyleManger.getInstance().getStyles();
+        TtsStyleAdapter rvadapter = new TtsStyleAdapter(styles);
+        rvadapter.setSelect(styleIndex);
+        rv_styles.setAdapter(rvadapter);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
+        rv_styles.setLayoutManager(linearLayoutManager);
+        linearLayoutManager.scrollToPositionWithOffset(styleIndex, 0);
+        rvadapter.setItemClickListener(new TtsStyleAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(int position, TtsStyle item) {
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString(TTSService.VOICE_STYLE, item.value);
+                editor.putInt(TTSService.VOICE_STYLE_INDEX, position);
+                editor.apply();
+            }
+        });
+
+        boolean isFChecked = sharedPreferences.getBoolean(TTSService.USE_CUSTOM_VOICE, false);
         aSwitch.setChecked(isFChecked);
         gv.setVisibility(isFChecked ? View.VISIBLE : View.INVISIBLE);
         aSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean(TTSService.USE_CUSTOM_LANGUAGE, isChecked);
+            editor.putBoolean(TTSService.USE_CUSTOM_VOICE, isChecked);
             gv.setVisibility(isChecked ? View.VISIBLE : View.INVISIBLE);
             editor.apply();
         });
+
+
         textToSpeech = new TextToSpeech(MainActivity.this, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
                 // TODO Auto-generated method stub
                 if (status == TextToSpeech.SUCCESS) {
                     int result = textToSpeech.setLanguage(Locale.CHINA);
-                    //int result = SetLanguage(Locale.CHINA.getLanguage());
-                    //如果打印为-2，说明不支持这种语言
-                    Toast.makeText(MainActivity.this, "-------------result = " + result, Toast.LENGTH_LONG).show();
-                    if (result == TextToSpeech.LANG_MISSING_DATA
+                     if (result == TextToSpeech.LANG_MISSING_DATA
                             || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                     } else {
-                        textToSpeech.speak("初始化成功。", TextToSpeech.QUEUE_FLUSH, null, null);
+                        if (!textToSpeech.isSpeaking()) {
+                            textToSpeech.speak("初始化成功。", TextToSpeech.QUEUE_FLUSH, null, null);
+                        }
                     }
                 }
             }
@@ -70,70 +130,21 @@ public class MainActivity extends Activity {
         gv.setOnItemClickListener((parent, view, position, id) -> {
 
             TtsActor actor = (TtsActor) adapter.getItem(position);
-            boolean origin = sharedPreferences.getBoolean(TTSService.USE_CUSTOM_LANGUAGE, false);
+            boolean origin = sharedPreferences.getBoolean(TTSService.USE_CUSTOM_VOICE, false);
             //TTSService.setActor(actor);
             SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean(TTSService.USE_CUSTOM_LANGUAGE, true);
-            editor.putString(TTSService.CUSTOM_LANGUAGE, actor.getShortName());
+            editor.putBoolean(TTSService.USE_CUSTOM_VOICE, true);
+            editor.putString(TTSService.CUSTOM_VOICE, actor.getShortName());
             editor.apply();
-
-            textToSpeech.speak(getResources().getString(R.string.tts_sample_zh), TextToSpeech.QUEUE_FLUSH, null, null);
-            editor.putBoolean(TTSService.USE_CUSTOM_LANGUAGE, origin);
+            if (!textToSpeech.isSpeaking()) {
+                textToSpeech.speak(getResources().getString(R.string.tts_sample_zh), TextToSpeech.QUEUE_FLUSH, null, null);
+            }
+            editor.putBoolean(TTSService.USE_CUSTOM_VOICE, origin);
             editor.apply();
 
         });
 
 
-    }
-
-    private int SetLanguage(String lang) {
-        int result = 0;
-        if (lang.equals("CANADA")) {
-            result = textToSpeech.setLanguage(Locale.CANADA);
-        } else if (lang.equals("CANADA_FRENCH")) {
-            result = textToSpeech.setLanguage(Locale.CANADA_FRENCH);
-        } else if (lang.equals("CHINA")) {
-            result = textToSpeech.setLanguage(Locale.CHINA);
-        } else if (lang.equals("CHINESE")) {
-            result = textToSpeech.setLanguage(Locale.CHINESE);
-        } else if (lang.equals("ENGLISH")) {
-            result = textToSpeech.setLanguage(Locale.ENGLISH);
-        } else if (lang.equals("FRANCE")) {
-            result = textToSpeech.setLanguage(Locale.FRANCE);
-        } else if (lang.equals("FRENCH")) {
-            result = textToSpeech.setLanguage(Locale.FRENCH);
-        } else if (lang.equals("GERMAN")) {
-            result = textToSpeech.setLanguage(Locale.GERMAN);
-        } else if (lang.equals("GERMANY")) {
-            result = textToSpeech.setLanguage(Locale.GERMANY);
-        } else if (lang.equals("ITALIAN")) {
-            result = textToSpeech.setLanguage(Locale.ITALIAN);
-        } else if (lang.equals("ITALY")) {
-            result = textToSpeech.setLanguage(Locale.ITALY);
-        } else if (lang.equals("JAPAN")) {
-            result = textToSpeech.setLanguage(Locale.JAPAN);
-        } else if (lang.equals("JAPANESE")) {
-            result = textToSpeech.setLanguage(Locale.JAPANESE);
-        } else if (lang.equals("KOREA")) {
-            result = textToSpeech.setLanguage(Locale.KOREA);
-        } else if (lang.equals("KOREAN")) {
-            result = textToSpeech.setLanguage(Locale.KOREAN);
-        } else if (lang.equals("PRC")) {
-            result = textToSpeech.setLanguage(Locale.PRC);
-        } else if (lang.equals("ROOT")) {
-            result = textToSpeech.setLanguage(Locale.ROOT);
-        } else if (lang.equals("SIMPLIFIED_CHINESE")) {
-            result = textToSpeech.setLanguage(Locale.SIMPLIFIED_CHINESE);
-        } else if (lang.equals("TAIWAN")) {
-            result = textToSpeech.setLanguage(Locale.TAIWAN);
-        } else if (lang.equals("TRADITIONAL_CHINESE")) {
-            result = textToSpeech.setLanguage(Locale.TRADITIONAL_CHINESE);
-        } else if (lang.equals("UK")) {
-            result = textToSpeech.setLanguage(Locale.UK);
-        } else if (lang.equals("US")) {
-            result = textToSpeech.setLanguage(Locale.US);
-        }
-        return result;
     }
 
 

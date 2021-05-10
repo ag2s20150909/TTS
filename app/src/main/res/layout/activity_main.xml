@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -26,11 +27,46 @@
             android:text="@string/kill_battery" />
 
         <Switch
-            android:text="@string/use_custom_language"
             android:id="@+id/switch_use_custom_language"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:text="@string/use_custom_language" />
     </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/tts_voice_style" />
+
+   <androidx.recyclerview.widget.RecyclerView
+       android:id="@+id/rv_voice_styles"
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"/>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tts_voice_style_degree" />
+
+        <TextView
+            android:id="@+id/tts_style_degree_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="100" />
+    </LinearLayout>
+
+    <SeekBar
+        android:id="@+id/tts_style_degree"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="200"
+        android:min="1"
+        tools:targetApi="o" />
 
 
     <GridView

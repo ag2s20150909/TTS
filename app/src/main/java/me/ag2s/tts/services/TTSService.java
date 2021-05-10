@@ -44,8 +44,11 @@ public class TTSService extends TextToSpeechService {
 
     private static final String TAG = TTSService.class.getSimpleName();
 
-    public static final String USE_CUSTOM_LANGUAGE = "use_custom_language";
-    public static final String CUSTOM_LANGUAGE = "custom_language";
+    public static final String USE_CUSTOM_VOICE = "use_custom_voice";
+    public static final String CUSTOM_VOICE = "custom_voice";
+    public static final String VOICE_STYLE = "voice_style";
+    public static final String VOICE_STYLE_DEGREE = "voice_style_degree";
+    public static final String VOICE_STYLE_INDEX = "voice_style_index";
 
     public SharedPreferences sharedPreferences;
     private OkHttpClient client;
@@ -146,13 +149,13 @@ public class TTSService extends TextToSpeechService {
         public void onOpen(@NotNull WebSocket webSocket, @NotNull Response response) {
             super.onOpen(webSocket, response);
             //更新 Sec-WebSocket-Accept
-            String SecWebSocketAccept = response.header("Sec-WebSocket-Accept");
-            if (SecWebSocketAccept != null && !SecWebSocketAccept.isEmpty()) {
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                Log.d(TAG, "SSS:" + SecWebSocketAccept);
-                editor.putString("Sec-WebSocket-Accept", SecWebSocketAccept);
-                editor.apply();
-            }
+//            String SecWebSocketAccept = response.header("Sec-WebSocket-Accept");
+//            if (SecWebSocketAccept != null && !SecWebSocketAccept.isEmpty()) {
+//                SharedPreferences.Editor editor = sharedPreferences.edit();
+//                Log.d(TAG, "SSS:" + SecWebSocketAccept);
+//                editor.putString("Sec-WebSocket-Accept", SecWebSocketAccept);
+//                editor.apply();
+//            }
             Log.d(TAG, "onOpen" + response.headers().toString());
         }
     };
@@ -174,10 +177,6 @@ public class TTSService extends TextToSpeechService {
                 .url(url)
                 .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36 Edg/90.0.818.56")
                 .addHeader("Origin", "chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold")
-                //.addHeader("Sec-WebSocket-Key", "vZ8qxy8q/+2qpzpnhFmgQA==")
-                //.addHeader("Sec-WebSocket-Version", "13")
-                //.addHeader("Sec-WebSocket-Extensions","permessage-deflate; client_max_window_bits")
-                //.addHeader("Sec-WebSocket-Accept", sharedPreferences.getString("Sec-WebSocket-Accept", "n6OeLXUK+jnjNCyRI3wmP10OFDc="))
                 .build();
         this.webSocket = client.newWebSocket(request, webSocketListener);
         return webSocket;
@@ -215,11 +214,13 @@ public class TTSService extends TextToSpeechService {
         String text = request.getCharSequenceText().toString();
         int pitch = request.getPitch();
         int rate = request.getSpeechRate();
+        String style = sharedPreferences.getString(VOICE_STYLE, "cheerful");
+        String styledegree = CommonTool.div(sharedPreferences.getInt(VOICE_STYLE_DEGREE, 100), 100, 2) + "";
 
         String name = request.getVoiceName();
         String time = getTime();
-        if (sharedPreferences.getBoolean(USE_CUSTOM_LANGUAGE, false) && request.getLanguage().equals("zho")) {
-            name = sharedPreferences.getString(CUSTOM_LANGUAGE, "zh-CN-XiaoxiaoNeural");
+        if (sharedPreferences.getBoolean(USE_CUSTOM_VOICE, false) && request.getLanguage().equals("zho")) {
+            name = sharedPreferences.getString(CUSTOM_VOICE, "zh-CN-XiaoxiaoNeural");
         }
 
         String RequestId = CommonTool.getMD5String(text + time);
@@ -227,7 +228,7 @@ public class TTSService extends TextToSpeechService {
 
         Log.d(TAG, "SSS:" + request.getVoiceName());
         Log.d(TAG, "SSS:" + CommonTool.getMD5String(time));
-
+        //role='OlderAdultMale'
         String sb = "X-RequestId:" + RequestId + "\r\n" +
                 "Content-Type:application/ssml+xml\r\n" +
                 "X-Timestamp:" + time + "Z\r\n" +
@@ -237,7 +238,7 @@ public class TTSService extends TextToSpeechService {
                 "<prosody pitch='+" + (pitch - 100) + "Hz' " +
                 "rate ='+" + (rate - 100) + "%' " +
                 "volume='+" + 0 + "%'>" +
-                "<express-as role='OlderAdultMale' style='lyrical' styledegree='2' >" + text + "</express-as>" +
+                "<express-as  style='" + style + "' styledegree='" + styledegree + "' >" + text + "</express-as>" +
                 "</prosody></voice></speak>" +
                 "";
         Log.d(TAG, "SSS:" + sb);
