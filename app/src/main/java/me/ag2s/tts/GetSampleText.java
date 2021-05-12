@@ -9,6 +9,8 @@ import android.util.Log;
 
 public class GetSampleText extends Activity {
 
+    private static final String TAG = GetSampleText.class.getSimpleName();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -19,39 +21,52 @@ public class GetSampleText extends Activity {
         String language = i.getExtras().getString("language");
         String country = i.getExtras().getString("country");
         String variant = i.getExtras().getString("variant");
+        Log.d(TAG, language + "_" + country + "_" + variant);
 
         if (language != null) {
-            if (language.equals("en")) {
-                returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_en));
-            } else if (language.equals("zh")) {
-                returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_zh));
-            } else if (language.equals("ru")) {
-                returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_ru));
-            } else if (language.equals("tr")) {
-                returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_tr));
-            } else if (language.equals("de")) {
-                returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_de));
-            } else if (language.equals("it")) {
-                returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_it));
-            } else if (language.equals("ja")) {
-                returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_ja));
-            } else if (language.equals("fr")) {
-                returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_fr));
-            } else if (language.equals("nl")) {
-                returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_nl));
-            } else if (language.equals("pt")) {
-                returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_pt));
-            } else if (language.equals("es")) {
-                returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_es));
-            } else if (language.equals("ko")) {
-                returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_ko));
-            } else {
-                returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_default));
+            switch (language) {
+                case "en":
+                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_en));
+                    break;
+                case "zh":
+                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_zh));
+                    break;
+                case "ru":
+                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_ru));
+                    break;
+                case "tr":
+                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_tr));
+                    break;
+                case "de":
+                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_de));
+                    break;
+                case "it":
+                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_it));
+                    break;
+                case "ja":
+                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_ja));
+                    break;
+                case "fr":
+                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_fr));
+                    break;
+                case "nl":
+                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_nl));
+                    break;
+                case "pt":
+                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_pt));
+                    break;
+                case "es":
+                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_es));
+                    break;
+                case "ko":
+                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_ko));
+                    break;
+                default:
+                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_default));
+                    break;
             }
-        } else {
-            result = TextToSpeech.LANG_NOT_SUPPORTED;
-            //returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_default));
         }
+
 
         setResult(result, returnData);
         finish();

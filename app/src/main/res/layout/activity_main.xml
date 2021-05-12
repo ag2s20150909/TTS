@@ -25,6 +25,13 @@
             android:layout_height="wrap_content"
             android:onClick="killBATTERY"
             android:text="@string/kill_battery" />
+        <Button
+            android:id="@+id/button3"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="test"
+            android:text="@string/test" />
 
         <Switch
             android:id="@+id/switch_use_custom_language"
@@ -34,17 +41,20 @@
     </LinearLayout>
 
     <TextView
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/tts_voice_style" />
 
    <androidx.recyclerview.widget.RecyclerView
+       android:visibility="gone"
        android:id="@+id/rv_voice_styles"
        android:layout_width="match_parent"
        android:layout_height="wrap_content"/>
 
 
     <LinearLayout
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -61,6 +71,7 @@
     </LinearLayout>
 
     <SeekBar
+        android:visibility="gone"
         android:id="@+id/tts_style_degree"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -69,7 +80,7 @@
         tools:targetApi="o" />
 
 
-    <GridView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/gv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

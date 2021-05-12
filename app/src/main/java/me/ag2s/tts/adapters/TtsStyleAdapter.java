@@ -50,20 +50,16 @@ public class TtsStyleAdapter extends RecyclerView.Adapter<TtsStyleAdapter.MyHold
     public MyHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.tts_style_item, parent, false);
-        MyHolder holder = new MyHolder(view);
-        return holder;
+        return new MyHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull @NotNull MyHolder holder, int position) {
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setSelect(position);
-                if (itemClickListener != null) {
-                    itemClickListener.onItemClick(position, mList.get(position));
+        holder.itemView.setOnClickListener(v -> {
+            setSelect(position);
+            if (itemClickListener != null) {
+                itemClickListener.onItemClick(position, mList.get(position));
 
-                }
             }
         });
         holder.textView.setText(mList.get(position).name);
@@ -86,7 +82,7 @@ public class TtsStyleAdapter extends RecyclerView.Adapter<TtsStyleAdapter.MyHold
     /**
      * 自定义的ViewHolder
      */
-    class MyHolder extends RecyclerView.ViewHolder {
+    static class MyHolder extends RecyclerView.ViewHolder {
 
         TextView textView;
         TextView tv_des;

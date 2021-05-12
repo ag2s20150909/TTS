@@ -6,16 +6,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.speech.tts.TextToSpeech;
 import android.view.View;
-import android.widget.GridView;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -25,7 +28,6 @@ import java.util.Locale;
 import me.ag2s.tts.adapters.TtsActorAdapter;
 import me.ag2s.tts.adapters.TtsStyleAdapter;
 import me.ag2s.tts.services.TTSService;
-import me.ag2s.tts.services.TtsActor;
 import me.ag2s.tts.services.TtsActorManger;
 import me.ag2s.tts.services.TtsStyle;
 import me.ag2s.tts.services.TtsStyleManger;
@@ -39,8 +41,7 @@ public class MainActivity extends Activity {
     TextView tv_styleDegree;
     public SharedPreferences sharedPreferences;
 
-    private static final String[] SUPPORTED_LANGUAGES = {"eng-GBR", "eng-USA"};
-    private GridView gv;
+    private RecyclerView gv;
     TextToSpeech textToSpeech;
 
     @SuppressLint("SetTextI18n")
@@ -86,39 +87,32 @@ public class MainActivity extends Activity {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
         rv_styles.setLayoutManager(linearLayoutManager);
         linearLayoutManager.scrollToPositionWithOffset(styleIndex, 0);
-        rvadapter.setItemClickListener(new TtsStyleAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(int position, TtsStyle item) {
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString(TTSService.VOICE_STYLE, item.value);
-                editor.putInt(TTSService.VOICE_STYLE_INDEX, position);
-                editor.apply();
-            }
+        rvadapter.setItemClickListener((position, item) -> {
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(TTSService.VOICE_STYLE, item.value);
+            editor.putInt(TTSService.VOICE_STYLE_INDEX, position);
+            editor.apply();
         });
 
         boolean isFChecked = sharedPreferences.getBoolean(TTSService.USE_CUSTOM_VOICE, false);
         aSwitch.setChecked(isFChecked);
-        gv.setVisibility(isFChecked ? View.VISIBLE : View.INVISIBLE);
+        //gv.setVisibility(isFChecked ? View.VISIBLE : View.INVISIBLE);
         aSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putBoolean(TTSService.USE_CUSTOM_VOICE, isChecked);
-            gv.setVisibility(isChecked ? View.VISIBLE : View.INVISIBLE);
+            //gv.setVisibility(isChecked ? View.VISIBLE : View.INVISIBLE);
             editor.apply();
         });
 
 
-        textToSpeech = new TextToSpeech(MainActivity.this, new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                // TODO Auto-generated method stub
-                if (status == TextToSpeech.SUCCESS) {
-                    int result = textToSpeech.setLanguage(Locale.CHINA);
-                     if (result == TextToSpeech.LANG_MISSING_DATA
-                            || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    } else {
-                        if (!textToSpeech.isSpeaking()) {
-                            textToSpeech.speak("初始化成功。", TextToSpeech.QUEUE_FLUSH, null, null);
-                        }
+        textToSpeech = new TextToSpeech(MainActivity.this, status -> {
+            // TODO Auto-generated method stub
+            if (status == TextToSpeech.SUCCESS) {
+                int result = textToSpeech.setLanguage(Locale.CHINA);
+                if (result != TextToSpeech.LANG_MISSING_DATA
+                        && result != TextToSpeech.LANG_NOT_SUPPORTED) {
+                    if (!textToSpeech.isSpeaking()) {
+                        textToSpeech.speak("初始化成功。", TextToSpeech.QUEUE_FLUSH, null, null);
                     }
                 }
             }
@@ -126,21 +120,28 @@ public class MainActivity extends Activity {
 
         TtsActorAdapter adapter = new TtsActorAdapter(this);
         gv.setAdapter(adapter);
-        adapter.upgrade(TtsActorManger.getInstance().getActors());
-        gv.setOnItemClickListener((parent, view, position, id) -> {
-
-            TtsActor actor = (TtsActor) adapter.getItem(position);
+        adapter.upgrade(TtsActorManger.getInstance().getActors());//getActorsByLocale(Locale.getDefault()));
+        GridLayoutManager gvm = new GridLayoutManager(this, 3);
+        gv.setLayoutManager(gvm);
+        adapter.setItemClickListener((position, item) -> {
             boolean origin = sharedPreferences.getBoolean(TTSService.USE_CUSTOM_VOICE, false);
-            //TTSService.setActor(actor);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean(TTSService.USE_CUSTOM_VOICE, true);
-            editor.putString(TTSService.CUSTOM_VOICE, actor.getShortName());
-            editor.apply();
-            if (!textToSpeech.isSpeaking()) {
-                textToSpeech.speak(getResources().getString(R.string.tts_sample_zh), TextToSpeech.QUEUE_FLUSH, null, null);
+
+            if (origin) {
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString(TTSService.CUSTOM_VOICE, item.getShortName());
+                editor.apply();
             }
-            editor.putBoolean(TTSService.USE_CUSTOM_VOICE, origin);
-            editor.apply();
+
+            Locale locale = item.getLocale();
+            Toast.makeText(this, locale.getLanguage() + "" + locale.getCountry() + "" + locale.getVariant(), Toast.LENGTH_LONG).show();
+            if (!textToSpeech.isSpeaking()) {
+                Bundle bundle = new Bundle();
+                bundle.putString("voiceName", item.getShortName());
+                bundle.putString("language", locale.getISO3Language());
+                bundle.putString("country", locale.getISO3Country());
+                bundle.putString("variant", item.getGender() ? "Female" : "Male");
+                textToSpeech.speak(getResources().getString(R.string.tts_sample_zh), TextToSpeech.QUEUE_FLUSH, bundle, null);
+            }
 
         });
 
@@ -153,11 +154,22 @@ public class MainActivity extends Activity {
         startActivity(intent);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     public void killBATTERY(View view) {
-        Intent i = new Intent();
-        i.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-        //data为应用包名
-        i.setData(Uri.parse("package:" + this.getPackageName()));
+        Intent intent = new Intent();
+        String packageName = getPackageName();
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        if (pm.isIgnoringBatteryOptimizations(packageName))
+            intent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+        else {
+            intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+            intent.setData(Uri.parse("package:" + packageName));
+        }
+        startActivity(intent);
+    }
+
+    public void test(View view) {
+        Intent i = new Intent(this, DownloadVoiceData.class);
         startActivity(i);
     }
 }

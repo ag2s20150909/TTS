@@ -18,13 +18,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TTS">
 
-
+<!--       获取示例文本。-->
         <activity android:name=".GetSampleText">
             <intent-filter>
                 <action android:name="android.speech.tts.engine.GET_SAMPLE_TEXT" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <!--       下载语音文件。-->
         <activity
             android:name=".DownloadVoiceData"
             android:label="DownloadVoiceData">
@@ -34,6 +35,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <!--       检查语音文件。-->
         <activity
             android:name=".CheckVoiceData"
             android:label="CheckVoiceData">

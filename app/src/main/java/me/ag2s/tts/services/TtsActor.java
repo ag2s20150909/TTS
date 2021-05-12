@@ -34,6 +34,23 @@ public class TtsActor {
         this.note = note;
     }
 
+    public TtsActor(String shortName, boolean gender, String note) {
+        this.gender=gender;
+        this.note=note;
+        this.shortName=shortName;
+        String tag = "-";
+        if (shortName.contains("-")) {
+            tag = "-";
+        } else if (shortName.contains("_")) {
+            tag = "_";
+        }
+        //String[] temp = locale.split(tag);
+
+        this.name = shortName.substring(shortName.lastIndexOf(tag) + 1);
+        this.locale = shortName.substring(0, shortName.lastIndexOf(tag));
+
+    }
+
     public TtsActor(String name, String shortName, String locate, boolean gender) {
         this(name, shortName, locate, gender, "");
     }
@@ -82,7 +99,7 @@ public class TtsActor {
         return note;
     }
 
-    public void setNote(String status) {
+    public void setNote(String note) {
         this.note = note;
     }
 }
