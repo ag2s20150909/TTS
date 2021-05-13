@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import me.ag2s.tts.APP;
 import me.ag2s.tts.utils.CommonTool;
@@ -54,6 +53,7 @@ public class TTSService extends TextToSpeechService {
     public static final String VOICE_STYLE_DEGREE = "voice_style_degree";
     public static final String VOICE_STYLE_INDEX = "voice_style_index";
     public static final String USE_AUTO_RETRY = "use_auto_retry";
+    public static final String USE_AUTO_UPDATE = "use_auto_update";
 
     public SharedPreferences sharedPreferences;
     private OkHttpClient client;
@@ -240,6 +240,7 @@ public class TTSService extends TextToSpeechService {
             isSynthesizing = false;
             return;
         }
+        text=CommonTool.encodeHtml(text);
 
 
         int pitch = request.getPitch() - 100;

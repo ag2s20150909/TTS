@@ -88,6 +88,33 @@ public class HttpTool {
         }
     }
 
+    public static byte[] getBytes(String url) {
+        final OkHttpClient client = APP.getBootClient();
+        Request.Builder requestBuilder = new Request.Builder().get().url(url);
+        requestBuilder.header("Referer", url);
+
+
+        requestBuilder.header("User-Agent", UA);
+
+        final Request request = requestBuilder.build();
+
+
+        try {
+
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful()) {
+                // return new String(response.body().bytes(), "utf-8");
+                return Objects.requireNonNull(response.body()).bytes();
+
+                //iv.setImageBitmap(b);
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     @SuppressWarnings("unused")
     public static Bitmap getBitmap(String url) {
         final OkHttpClient client = APP.getBootClient();

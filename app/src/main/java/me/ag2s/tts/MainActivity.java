@@ -2,6 +2,7 @@ package me.ag2s.tts;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -25,7 +26,6 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.math.BigDecimal;
@@ -41,7 +41,6 @@ import me.ag2s.tts.services.TtsStyle;
 import me.ag2s.tts.services.TtsStyleManger;
 import me.ag2s.tts.services.TtsVoiceSample;
 import me.ag2s.tts.utils.HttpTool;
-import okhttp3.HttpUrl;
 
 
 public class MainActivity extends Activity implements View.OnClickListener {
@@ -176,7 +175,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
             }
 
         });
-        checkUpdate();
+        if (sharedPreferences.getBoolean(TTSService.USE_AUTO_UPDATE,true)){
+            checkUpdate();
+        }
+
 
 
     }
@@ -198,32 +200,51 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     }
 
-    public void checkUpdate(){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
+    public void checkUpdate() {
+        new Thread(() -> {
 
-                try {
-                    JSONObject json= new JSONObject(HttpTool.httpGet("https://ghproxy.com/https://raw.githubusercontent.com/ag2s20150909/TTS/master/release/output-metadata.json")).optJSONArray("elements").optJSONObject(0);
-                    String fileName=json.optString("outputFile");
-                    BigDecimal versionName= new BigDecimal(json.optString("versionName").split("_")[1].trim());
-                    PackageManager pm = MainActivity.this.getPackageManager();
-                    PackageInfo pi = pm.getPackageInfo(MainActivity.this.getPackageName(), 0);
-                    BigDecimal appVersionName = new BigDecimal(pi.versionName.split("_")[1].trim());
-                    if(appVersionName.compareTo(versionName)<0){
-                        Log.d(TAG,"需要更新。");
-                    }else {
-                        Log.d(TAG,"不需要更新。");
-                    }
-
-
-
-                    Log.d(TAG,fileName);
-                } catch (Exception e) {
-                    e.printStackTrace();
+            try {
+                JSONObject json = new JSONObject(HttpTool.httpGet("https://ghproxy.com/https://raw.githubusercontent.com/ag2s20150909/TTS/master/release/output-metadata.json")).optJSONArray("elements").optJSONObject(0);
+                String fileName = json.optString("outputFile");
+                BigDecimal versionName = new BigDecimal(json.optString("versionName").split("_")[1].trim());
+                PackageManager pm = MainActivity.this.getPackageManager();
+                PackageInfo pi = pm.getPackageInfo(MainActivity.this.getPackageName(), 0);
+                BigDecimal appVersionName = new BigDecimal(pi.versionName.split("_")[1].trim());
+                Log.d(TAG, appVersionName.toString() + "\n" + versionName.toString());
+                if (appVersionName.compareTo(versionName) < 0) {
+                    Log.d(TAG, "需要更新。");
+                    downLoadAndInstall(fileName);
+                } else {
+                    //downLoadAndInstall(fileName);
+                    Log.d(TAG, "不需要更新。");
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }).start();
+    }
+
+    private void downLoadAndInstall(String appName) {
+        try {
+            String url = "https://ghproxy.com/https://raw.githubusercontent.com/ag2s20150909/TTS/master/release/" + appName;
+
+            runOnUiThread(() -> new AlertDialog.Builder(MainActivity.this)
+                    .setTitle("有新版本")
+                    .setMessage("发现新版本:\n" + appName+"\n如需更新，点击确定，将跳转到浏览器下载。如不想更新，点击取消，将不再检查更新，直到你清除应用数据。")
+                    .setPositiveButton("确定", (dialog, which) -> {
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.setDataAndType(Uri.parse(url),
+                                "application/vnd.android.package-archive");
+                        startActivity(intent);
+                    })
+                    .setNegativeButton("取消", (dialog, which) -> {
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putBoolean(TTSService.USE_AUTO_UPDATE,false);
+                        editor.apply();
+                    })
+                    .create().show());
+        } catch (Exception ignored) {
+        }
     }
 
     public void setTTS() {
