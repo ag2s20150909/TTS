@@ -26,7 +26,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
-        versionName "0.2"
+        versionName "0.2_${releaseTime()}"
 
     }
 
@@ -50,7 +50,6 @@ android {
     }
 
 
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -59,14 +58,12 @@ android {
     android.applicationVariants.all {
         variant ->
             // 打包完成后复制到的目录
-           // def outputFileDir = "${project.projectDir.absolutePath}/${variant.buildType.name}/${variant.flavorName}/${variant.versionName}"
+            // def outputFileDir = "${project.projectDir.absolutePath}/${variant.buildType.name}/${variant.flavorName}/${variant.versionName}"
             def today = new Date()
-            def path = ((project.name != "app") ? project.name : rootProject.name.replace(" ","")) + "_" +
+            def path = ((project.name != "app") ? project.name : rootProject.name.replace(" ", "")) + "_" +
                     //variant.flavorName + "_" +
-                    variant.buildType.name + "_"+
-                    "v"+variant.versionName + "_" +
-                    today.format('yyyyMMddhhmm') +
-                    ".apk"
+                    variant.buildType.name + "_" +
+                    "v"+variant.versionName + ".apk"
             variant.outputs.forEach {
 
                 //print(it)
@@ -90,7 +87,7 @@ android {
                     def outputFileDir = new File(projectRootDir + File.separator, "release")
                     println("outputFileDir=" + outputFileDir)
                     //设置自定义apk生成路径
-                    variant.getPackageApplicationProvider().get().outputDirectory=outputFileDir
+                    variant.getPackageApplicationProvider().get().outputDirectory = outputFileDir
                 }
             }
 
@@ -106,4 +103,10 @@ dependencies {
     //An HTTP & HTTP/2 client for Android and Java applications.
     //noinspection GradleDependency
     implementation 'com.squareup.okhttp3:okhttp:4.9.1'
+}
+
+static def releaseTime() {
+
+    return new Date().format("yyyyMMddhhmm", TimeZone.getTimeZone("GMT+08:00"))
+
 }

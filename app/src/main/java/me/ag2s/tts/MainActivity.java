@@ -23,6 +23,9 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,6 +37,7 @@ import me.ag2s.tts.services.TtsActorManger;
 import me.ag2s.tts.services.TtsStyle;
 import me.ag2s.tts.services.TtsStyleManger;
 import me.ag2s.tts.services.TtsVoiceSample;
+import me.ag2s.tts.utils.HttpTool;
 import okhttp3.HttpUrl;
 
 
@@ -169,6 +173,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             }
 
         });
+        checkUpdate();
 
 
     }
@@ -194,7 +199,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
         new Thread(new Runnable() {
             @Override
             public void run() {
-               // String html= HttpUrl.get("");
+
+                try {
+                    JSONObject json= new JSONObject(HttpTool.httpGet("https://ghproxy.com/https://raw.githubusercontent.com/ag2s20150909/TTS/master/release/output-metadata.json")).optJSONArray("elements").optJSONObject(0);
+                    String fileName=json.optString("outputFile");
+
+                    Log.d(TAG,fileName);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }).start();
     }
