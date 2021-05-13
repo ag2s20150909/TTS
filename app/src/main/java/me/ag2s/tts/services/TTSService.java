@@ -145,8 +145,8 @@ public class TTSService extends TextToSpeechService {
                     int offset = 0;
                     while (offset < data.toByteArray().length) {
                         int bytesToWrite = Math.min(maxBufferSize, length - offset);
-//                            Log.d(TAG, "maxBufferSize" + maxBufferSize +
-//                                    "data.length - offset" + (length - offset));
+                            Log.d(TAG, "maxBufferSize" + maxBufferSize +
+                                    "data.length - offset" + (length - offset));
                         callback.audioAvailable(data.toByteArray(), offset, bytesToWrite);
                         offset += bytesToWrite;
                     }
@@ -240,7 +240,7 @@ public class TTSService extends TextToSpeechService {
             isSynthesizing = false;
             return;
         }
-        text=CommonTool.encodeHtml(text);
+        //text=CommonTool.encodeHtml(text);
 
 
         int pitch = request.getPitch() - 100;

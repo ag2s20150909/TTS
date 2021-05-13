@@ -107,6 +107,6 @@ dependencies {
 
 static def releaseTime() {
 
-    return new Date().format("yyyyMMddhhmm", TimeZone.getTimeZone("GMT+08:00"))
+    return new Date().format("yyyyMMddHHmm", TimeZone.getTimeZone("GMT+08:00"))
 
 }
