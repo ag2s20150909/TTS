@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -203,9 +206,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 try {
                     JSONObject json= new JSONObject(HttpTool.httpGet("https://ghproxy.com/https://raw.githubusercontent.com/ag2s20150909/TTS/master/release/output-metadata.json")).optJSONArray("elements").optJSONObject(0);
                     String fileName=json.optString("outputFile");
+                    BigDecimal versionName= new BigDecimal(json.optString("versionName").split("_")[1].trim());
+                    PackageManager pm = MainActivity.this.getPackageManager();
+                    PackageInfo pi = pm.getPackageInfo(MainActivity.this.getPackageName(), 0);
+                    BigDecimal appVersionName = new BigDecimal(pi.versionName.split("_")[1].trim());
+                    if(appVersionName.compareTo(versionName)<0){
+                        Log.d(TAG,"需要更新。");
+                    }else {
+                        Log.d(TAG,"不需要更新。");
+                    }
+
+
 
                     Log.d(TAG,fileName);
-                } catch (JSONException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
