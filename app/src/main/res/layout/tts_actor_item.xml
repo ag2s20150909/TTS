@@ -1,34 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_margin="5dp"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_margin="5dp"
     android:orientation="vertical">
 
-<!--    <LinearLayout-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:orientation="horizontal">-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        tools:ignore="UseCompoundDrawables">
 
-<!--        <ImageView-->
-<!--            android:id="@+id/act_flags"-->
-<!--            android:layout_width="40dp"-->
-<!--            android:layout_height="40dp"-->
-<!--            android:src="@drawable/ic_woman"-->
-<!--            android:contentDescription="TODO" />-->
+        <ImageView
+            android:id="@+id/act_flags"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:contentDescription="TODO"
+            android:src="@drawable/ic_woman"
+            tools:ignore="ContentDescription,HardcodedText" />
 
         <TextView
-            android:drawableStart="@drawable/ic_woman"
             android:id="@+id/actor_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="微软晓晓"
-            android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+            android:textAppearance="@android:style/TextAppearance.Material.Medium"
+            tools:ignore="HardcodedText" />
+    </LinearLayout>
+
     <TextView
         android:id="@+id/act_des"
-        android:text="@string/tts_sample_zh"
         android:layout_width="match_parent"
-        android:layout_height="100dp"/>
+        android:layout_height="100dp"
+        android:text="@string/tts_sample_zh" />
 
 
 </LinearLayout>

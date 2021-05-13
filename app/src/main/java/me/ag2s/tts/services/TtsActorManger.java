@@ -296,7 +296,7 @@ public class TtsActorManger {
             if ((!b11)&&(!b21)) {
                 return 0;
             }
-
+            //两个都相同
             if (b11 && b12 && b13 == b21 && b22 && b23) {
                 return 0;
             }
@@ -331,6 +331,7 @@ public class TtsActorManger {
 
     @SuppressWarnings("unused")
     public List<TtsActor> getActors() {
+        //return sortByLocale(this.actors, Locale.getDefault());
         return this.actors;
     }
 

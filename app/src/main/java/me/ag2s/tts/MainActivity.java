@@ -11,11 +11,12 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.speech.tts.TextToSpeech;
+import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -24,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import me.ag2s.tts.adapters.TtsActorAdapter;
 import me.ag2s.tts.adapters.TtsStyleAdapter;
@@ -31,17 +33,23 @@ import me.ag2s.tts.services.TTSService;
 import me.ag2s.tts.services.TtsActorManger;
 import me.ag2s.tts.services.TtsStyle;
 import me.ag2s.tts.services.TtsStyleManger;
+import me.ag2s.tts.services.TtsVoiceSample;
+import okhttp3.HttpUrl;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements View.OnClickListener {
     private static final String TAG = "CheckVoiceData";
+    private static final AtomicInteger mNextRequestId = new AtomicInteger(0);
     private Switch aSwitch;
+    private Switch bSwitch;
     private RecyclerView rv_styles;
-    SeekBar seekBar;
+    private SeekBar seekBar;
     TextView tv_styleDegree;
     public SharedPreferences sharedPreferences;
 
     private RecyclerView gv;
+    private Button btn_set_tts;
+    private Button btn_IgnoringBatteryOptimizations;
     TextToSpeech textToSpeech;
 
     @SuppressLint("SetTextI18n")
@@ -50,8 +58,13 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         sharedPreferences = getApplicationContext().getSharedPreferences("TTS", Context.MODE_PRIVATE);
         setContentView(R.layout.activity_main);
+        btn_set_tts = findViewById(R.id.btn_set_tts);
+        btn_IgnoringBatteryOptimizations = findViewById(R.id.btn_kill_battery);
+        btn_set_tts.setOnClickListener(this);
+        btn_IgnoringBatteryOptimizations.setOnClickListener(this);
         gv = findViewById(R.id.gv);
         aSwitch = findViewById(R.id.switch_use_custom_language);
+        bSwitch = findViewById(R.id.switch_use_auto_retry);
         rv_styles = findViewById(R.id.rv_voice_styles);
         seekBar = findViewById(R.id.tts_style_degree);
         tv_styleDegree = findViewById(R.id.tts_style_degree_value);
@@ -104,6 +117,14 @@ public class MainActivity extends Activity {
             editor.apply();
         });
 
+        boolean useAutoRetry = sharedPreferences.getBoolean(TTSService.USE_AUTO_RETRY, false);
+        bSwitch.setChecked(useAutoRetry);
+        bSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean(TTSService.USE_AUTO_RETRY, isChecked);
+            editor.apply();
+        });
+
 
         textToSpeech = new TextToSpeech(MainActivity.this, status -> {
             // TODO Auto-generated method stub
@@ -120,27 +141,31 @@ public class MainActivity extends Activity {
 
         TtsActorAdapter adapter = new TtsActorAdapter(this);
         gv.setAdapter(adapter);
-        adapter.upgrade(TtsActorManger.getInstance().getActors());//getActorsByLocale(Locale.getDefault()));
+        adapter.upgrade(TtsActorManger.getInstance().getActorsByLocale(Locale.getDefault()));//getActorsByLocale(Locale.getDefault()));
         GridLayoutManager gvm = new GridLayoutManager(this, 3);
         gv.setLayoutManager(gvm);
+
+        adapter.setSelect(gv, sharedPreferences.getInt(TTSService.CUSTOM_VOICE_INDEX, 0));
         adapter.setItemClickListener((position, item) -> {
             boolean origin = sharedPreferences.getBoolean(TTSService.USE_CUSTOM_VOICE, false);
 
             if (origin) {
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString(TTSService.CUSTOM_VOICE, item.getShortName());
+                editor.putInt(TTSService.CUSTOM_VOICE_INDEX, position);
+                adapter.setSelect(gv, position);
                 editor.apply();
             }
 
             Locale locale = item.getLocale();
-            Toast.makeText(this, locale.getLanguage() + "" + locale.getCountry() + "" + locale.getVariant(), Toast.LENGTH_LONG).show();
+
             if (!textToSpeech.isSpeaking()) {
                 Bundle bundle = new Bundle();
                 bundle.putString("voiceName", item.getShortName());
                 bundle.putString("language", locale.getISO3Language());
                 bundle.putString("country", locale.getISO3Country());
                 bundle.putString("variant", item.getGender() ? "Female" : "Male");
-                textToSpeech.speak(getResources().getString(R.string.tts_sample_zh), TextToSpeech.QUEUE_FLUSH, bundle, null);
+                textToSpeech.speak(TtsVoiceSample.getByLocate(this, locale), TextToSpeech.QUEUE_FLUSH, bundle, MainActivity.class.getName() + mNextRequestId.getAndIncrement());
             }
 
         });
@@ -148,28 +173,73 @@ public class MainActivity extends Activity {
 
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            boolean i = powerManager.isIgnoringBatteryOptimizations(this.getPackageName());
+            if (i) {
+                btn_IgnoringBatteryOptimizations.setVisibility(View.GONE);
+            } else {
+                btn_IgnoringBatteryOptimizations.setVisibility(View.VISIBLE);
+            }
+        }
 
-    public void setTTS(View view) {
-        Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-        startActivity(intent);
+
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    public void killBATTERY(View view) {
+    public void checkUpdate(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+               // String html= HttpUrl.get("");
+            }
+        }).start();
+    }
+
+    public void setTTS() {
+        Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+        //startActivity(intent);
+        //Intent intent = new Intent();
+        intent.setAction("com.android.settings.TTS_SETTINGS");
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        this.startActivity(intent);
+    }
+
+    @SuppressLint("BatteryLife")
+    public void killBATTERY() {
         Intent intent = new Intent();
         String packageName = getPackageName();
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        if (pm.isIgnoringBatteryOptimizations(packageName))
-            intent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
-        else {
-            intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-            intent.setData(Uri.parse("package:" + packageName));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (pm.isIgnoringBatteryOptimizations(packageName))
+                intent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+            else {
+                intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                intent.setData(Uri.parse("package:" + packageName));
+                startActivity(intent);
+            }
         }
-        startActivity(intent);
+
     }
 
     public void test(View view) {
         Intent i = new Intent(this, DownloadVoiceData.class);
         startActivity(i);
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btn_set_tts:
+                setTTS();
+                break;
+            case R.id.btn_kill_battery:
+                killBATTERY();
+                break;
+        }
     }
 }

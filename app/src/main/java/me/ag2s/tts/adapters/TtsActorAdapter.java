@@ -1,6 +1,7 @@
 package me.ag2s.tts.adapters;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,8 +33,13 @@ public class TtsActorAdapter extends RecyclerView.Adapter<TtsActorAdapter.ViewHo
         return select;
     }
 
-    public void setSelect(int select) {
+    public void setSelect(RecyclerView rv,int select) {
         this.select = select;
+        RecyclerView.LayoutManager layoutManager=rv.getLayoutManager();
+        if (layoutManager!=null){
+            layoutManager.scrollToPosition(select);
+        }
+
         this.notifyDataSetChanged();
     }
     private int select=0;
@@ -46,6 +52,7 @@ public class TtsActorAdapter extends RecyclerView.Adapter<TtsActorAdapter.ViewHo
         this.mData = new ArrayList<>();
         this.mContext = context;
     }
+
 
     public void upgrade(List<TtsActor> d) {
         this.mData = TtsActorManger.getInstance().sortByLocale(d,Locale.US);
@@ -65,20 +72,27 @@ public class TtsActorAdapter extends RecyclerView.Adapter<TtsActorAdapter.ViewHo
     @Override
     public void onBindViewHolder(@NonNull @NotNull ViewHolder holder, int position) {
         holder.itemView.setOnClickListener(v -> {
-            setSelect(position);
             if (itemClickListener != null) {
+                this.select=position;
                 itemClickListener.onItemClick(position, mData.get(position));
             }
         });
+        if (select==position){
+            holder.itemView.setBackground(holder.itemView.getContext().getDrawable(R.drawable.select));
+        }else {
+            holder.itemView.setBackground(holder.itemView.getContext().getDrawable(R.drawable.unselect));
+        }
         TtsActor data = mData.get(position);
         holder.tv_title.setText(data.getName());
-        holder.tv_des.setText(String.format("%s%s", CommonTool.localeToEmoji(data.getLocale()), data.getNote()));
+        Locale locale=data.getLocale();
+        //locale.getDisplayCountry(Locale.getDefault());
+        holder.tv_des.setText(String.format("%s%s\n%s", CommonTool.localeToEmoji(locale),locale.getDisplayLanguage(Locale.getDefault()), data.getNote()));
         if (data.getGender()){
-            //holder.iv_flag.setImageResource(R.drawable.ic_woman);
-            holder.tv_title.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_woman,0,0,0);
+            holder.iv_flag.setImageResource(R.drawable.ic_woman);
+            //holder.tv_title.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_woman,0,0,0);
         } else {
-            //holder.iv_flag.setImageResource(R.drawable.ic_man);
-            holder.tv_title.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_man,0,0,0);
+            holder.iv_flag.setImageResource(R.drawable.ic_man);
+            //holder.tv_title.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_man,0,0,0);
         }
     }
 
@@ -91,12 +105,12 @@ public class TtsActorAdapter extends RecyclerView.Adapter<TtsActorAdapter.ViewHo
 
         TextView tv_title;
         TextView tv_des;
-        //ImageView iv_flag;
+        ImageView iv_flag;
 
         public ViewHolder(@NonNull @NotNull View itemView) {
             super(itemView);
             tv_title = itemView.findViewById(R.id.actor_name);
-            //iv_flag = itemView.findViewById(R.id.act_flags);
+            iv_flag = itemView.findViewById(R.id.act_flags);
             tv_des = itemView.findViewById(R.id.act_des);
         }
     }

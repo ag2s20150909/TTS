@@ -5,58 +5,62 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <LinearLayout
+    <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
 
-        <Button
-            android:id="@+id/button"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="setTTS"
-            android:text="@string/set_tts" />
 
-        <Button
-            android:id="@+id/button2"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="killBATTERY"
-            android:text="@string/kill_battery" />
-        <Button
-            android:id="@+id/button3"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="test"
-            android:text="@string/test" />
+            <Button
+                android:id="@+id/btn_set_tts"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/set_tts" />
 
-        <Switch
-            android:id="@+id/switch_use_custom_language"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/use_custom_language" />
-    </LinearLayout>
+            <Button
+                android:visibility="gone"
+                android:id="@+id/btn_kill_battery"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="killBATTERY"
+                android:text="@string/kill_battery" />
+
+            <Switch
+                android:id="@+id/switch_use_custom_language"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/use_custom_language" />
+
+            <Switch
+                android:id="@+id/switch_use_auto_retry"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="自动重试" />
+        </LinearLayout>
+    </HorizontalScrollView>
 
     <TextView
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/tts_voice_style" />
+        android:text="@string/tts_voice_style"
+        android:visibility="visible" />
 
-   <androidx.recyclerview.widget.RecyclerView
-       android:visibility="gone"
-       android:id="@+id/rv_voice_styles"
-       android:layout_width="match_parent"
-       android:layout_height="wrap_content"/>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_voice_styles"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="visible" />
 
 
     <LinearLayout
-        android:visibility="gone"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:visibility="visible">
 
         <TextView
             android:layout_width="wrap_content"
@@ -67,16 +71,17 @@
             android:id="@+id/tts_style_degree_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="100" />
+            android:hint="100"
+            tools:ignore="HardcodedText" />
     </LinearLayout>
 
     <SeekBar
-        android:visibility="gone"
         android:id="@+id/tts_style_degree"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:max="200"
         android:min="1"
+        android:visibility="visible"
         tools:targetApi="o" />
 
 

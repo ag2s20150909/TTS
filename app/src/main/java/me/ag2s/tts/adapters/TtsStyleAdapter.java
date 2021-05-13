@@ -64,10 +64,10 @@ public class TtsStyleAdapter extends RecyclerView.Adapter<TtsStyleAdapter.MyHold
         });
         holder.textView.setText(mList.get(position).name);
         holder.tv_des.setText(mList.get(position).extra);
-        if (position==select){
-            holder.itemView.setBackgroundColor(Color.CYAN);
+        if (select==position){
+            holder.itemView.setBackground(holder.itemView.getContext().getDrawable(R.drawable.select));
         }else {
-            holder.itemView.setBackgroundColor(Color.GRAY);
+            holder.itemView.setBackground(holder.itemView.getContext().getDrawable(R.drawable.unselect));
         }
 
 

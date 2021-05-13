@@ -6,6 +6,10 @@ import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 
+import java.util.Locale;
+
+import me.ag2s.tts.services.TtsVoiceSample;
+
 
 public class GetSampleText extends Activity {
 
@@ -22,52 +26,8 @@ public class GetSampleText extends Activity {
         String country = i.getExtras().getString("country");
         String variant = i.getExtras().getString("variant");
         Log.d(TAG, language + "_" + country + "_" + variant);
-
-        if (language != null) {
-            switch (language) {
-                case "en":
-                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_en));
-                    break;
-                case "zh":
-                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_zh));
-                    break;
-                case "ru":
-                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_ru));
-                    break;
-                case "tr":
-                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_tr));
-                    break;
-                case "de":
-                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_de));
-                    break;
-                case "it":
-                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_it));
-                    break;
-                case "ja":
-                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_ja));
-                    break;
-                case "fr":
-                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_fr));
-                    break;
-                case "nl":
-                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_nl));
-                    break;
-                case "pt":
-                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_pt));
-                    break;
-                case "es":
-                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_es));
-                    break;
-                case "ko":
-                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_ko));
-                    break;
-                default:
-                    returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, getString(R.string.tts_sample_default));
-                    break;
-            }
-        }
-
-
+        Locale locale = new Locale(language, country);
+        returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, TtsVoiceSample.getByLocate(this, locale));
         setResult(result, returnData);
         finish();
     }
