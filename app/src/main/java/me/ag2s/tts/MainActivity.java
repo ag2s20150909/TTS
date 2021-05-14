@@ -15,12 +15,16 @@ import android.os.PowerManager;
 import android.provider.Settings;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -175,10 +179,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
             }
 
         });
-        if (sharedPreferences.getBoolean(TTSService.USE_AUTO_UPDATE,true)){
+        if (sharedPreferences.getBoolean(TTSService.USE_AUTO_UPDATE, true)) {
             checkUpdate();
         }
-
 
 
     }
@@ -200,6 +203,50 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.app, menu);
+        return true;
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        switch (item.getItemId()) {
+            case R.id.check_update:
+                checkUpdate();
+                break;
+            case R.id.battery_optimizations:
+                killBATTERY();
+                break;
+            case R.id.raw_16khz_16bit_mono_pcm:
+                //0
+                editor.putInt(TTSService.AUDIO_FORMAT_INDEX,0);
+                editor.apply();
+                break;
+            case R.id.raw_24khz_16bit_mono_pcm:
+                //0
+                editor.putInt(TTSService.AUDIO_FORMAT_INDEX,1);
+                editor.apply();
+                break;
+            case R.id.raw_48khz_16bit_mono_pcm:
+                //0
+                editor.putInt(TTSService.AUDIO_FORMAT_INDEX,2);
+                editor.apply();
+                break;
+            case R.id.raw_8khz_16bit_mono_pcm:
+                //0
+                editor.putInt(TTSService.AUDIO_FORMAT_INDEX,3);
+                editor.apply();
+                break;
+            default:
+                Toast.makeText(this, item.getItemId() + "", Toast.LENGTH_LONG).show();
+                break;
+        }
+        return true;
+    }
+
     public void checkUpdate() {
         new Thread(() -> {
 
@@ -217,6 +264,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 } else {
                     //downLoadAndInstall(fileName);
                     Log.d(TAG, "不需要更新。");
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "不需要更新", Toast.LENGTH_LONG).show());
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -230,7 +278,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
             runOnUiThread(() -> new AlertDialog.Builder(MainActivity.this)
                     .setTitle("有新版本")
-                    .setMessage("发现新版本:\n" + appName+"\n如需更新，点击确定，将跳转到浏览器下载。如不想更新，点击取消，将不再检查更新，直到你清除应用数据。")
+                    .setMessage("发现新版本:\n" + appName + "\n如需更新，点击确定，将跳转到浏览器下载。如不想更新，点击取消，将不再自动检查更新，直到你清除应用数据。你可以到右上角菜单手动检查更新。")
                     .setPositiveButton("确定", (dialog, which) -> {
                         Intent intent = new Intent(Intent.ACTION_VIEW);
                         intent.setDataAndType(Uri.parse(url),
@@ -239,7 +287,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     })
                     .setNegativeButton("取消", (dialog, which) -> {
                         SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putBoolean(TTSService.USE_AUTO_UPDATE,false);
+                        editor.putBoolean(TTSService.USE_AUTO_UPDATE, false);
                         editor.apply();
                     })
                     .create().show());

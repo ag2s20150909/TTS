@@ -3,7 +3,6 @@ package me.ag2s.tts.services;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.media.AudioFormat;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.speech.tts.SynthesisCallback;
@@ -54,6 +53,7 @@ public class TTSService extends TextToSpeechService {
     public static final String VOICE_STYLE_INDEX = "voice_style_index";
     public static final String USE_AUTO_RETRY = "use_auto_retry";
     public static final String USE_AUTO_UPDATE = "use_auto_update";
+    public static final String AUDIO_FORMAT_INDEX = "audio_format_index";
 
     public SharedPreferences sharedPreferences;
     private OkHttpClient client;
@@ -62,6 +62,7 @@ public class TTSService extends TextToSpeechService {
     private boolean isSynthesizing;
     private static List<TtsActor> languages;
     private List<Voice> voices;
+
     public final static String[] supportedLanguages = {"deu-DEU", "eng-AUS", "eng-CAN", "eng-GBR", "eng-IND", "eng-USA", "spa-ESP", "spa-MEX", "fra-CAN", "fra-FRA", "hin-IND", "ita-ITA", "jpn-JPN", "kor-KOR", "nld-NLD", "pol-POL", "por-BRA", "rus-RUS", "tur-TUR", "zho-CHN", "zho-HKG", "zho-TWN"};
 
     public final static String[] supportVoiceNames = {"de-DE-KatjaNeural", "en-AU-NatashaNeural", "en-CA-ClaraNeural", "en-GB-MiaNeural", "en-IN-NeerjaNeural", "en-US-AriaNeural", "en-US-GuyNeural", "es-ES-ElviraNeural", "es-MX-DaliaNeural", "fr-CA-SylvieNeural", "fr-FR-DeniseNeural", "hi-IN-SwaraNeural", "it-IT-ElsaNeural", "ja-JP-NanamiNeural", "ko-KR-SunHiNeural", "nl-NL-ColetteNeural", "pl-PL-ZofiaNeural", "pt-BR-FranciscaNeural", "ru-RU-SvetlanaNeural", "tr-TR-EmelNeural", "zh-CN-XiaoxiaoNeural", "zh-CN-YunyangNeural", "zh-HK-HiuGaaiNeural", "zh-TW-HsiaoYuNeural"};
@@ -74,7 +75,7 @@ public class TTSService extends TextToSpeechService {
      * This is the sampling rate of our output audio. This engine outputs
      * audio at 16khz 16bits per sample PCM audio.
      */
-    private static final int SAMPLING_RATE_HZ = 48000;
+    private   int oldindex=0;
     SynthesisCallback callback;
     private final WebSocketListener webSocketListener = new WebSocketListener() {
         @Override
@@ -83,7 +84,7 @@ public class TTSService extends TextToSpeechService {
             Log.v(TAG, "onClosed" + reason);
             TTSService.this.webSocket = null;
             callback.done();
-            isSynthesizing=false;
+            isSynthesizing = false;
         }
 
         @Override
@@ -98,7 +99,7 @@ public class TTSService extends TextToSpeechService {
             Log.v(TAG, "onFailure", t);
             TTSService.this.webSocket = null;
             callback.done();
-            isSynthesizing=false;
+            isSynthesizing = false;
 
             if (sharedPreferences.getBoolean(USE_AUTO_RETRY, false)) {
                 Log.d(TAG, "AAAA:使用自动重试。");
@@ -145,8 +146,8 @@ public class TTSService extends TextToSpeechService {
                     int offset = 0;
                     while (offset < data.toByteArray().length) {
                         int bytesToWrite = Math.min(maxBufferSize, length - offset);
-                            Log.d(TAG, "maxBufferSize" + maxBufferSize +
-                                    "data.length - offset" + (length - offset));
+//                            Log.d(TAG, "maxBufferSize" + maxBufferSize +
+//                                    "data.length - offset" + (length - offset));
                         callback.audioAvailable(data.toByteArray(), offset, bytesToWrite);
                         offset += bytesToWrite;
                     }
@@ -189,7 +190,7 @@ public class TTSService extends TextToSpeechService {
                 .addHeader("Origin", "chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold")
                 .build();
         this.webSocket = client.newWebSocket(request, webSocketListener);
-        sendConfig(this.webSocket, new TtsConfig.Builder().sentenceBoundaryEnabled(true).build());
+        sendConfig(this.webSocket, new TtsConfig.Builder(sharedPreferences.getInt(AUDIO_FORMAT_INDEX, 0)).sentenceBoundaryEnabled(true).build());
         return webSocket;
     }
 
@@ -254,14 +255,14 @@ public class TTSService extends TextToSpeechService {
 
         String name = request.getVoiceName();
         String time = getTime();
-        Locale locale=Locale.getDefault();
+        Locale locale = Locale.getDefault();
         if (sharedPreferences.getBoolean(USE_CUSTOM_VOICE, false) && request.getLanguage().equals(locale.getISO3Language())) {
             name = sharedPreferences.getString(CUSTOM_VOICE, "zh-CN-XiaoxiaoNeural");
         }
 
         String RequestId = CommonTool.getMD5String(text + time + request.getCallerUid());
 
-        String xml=locale.getLanguage()+"_"+locale.getCountry();
+        String xml = locale.getLanguage() + "_" + locale.getCountry();
 
 
         Log.d(TAG, "SSS:" + request.getVoiceName());
@@ -271,7 +272,7 @@ public class TTSService extends TextToSpeechService {
                 "Content-Type:application/ssml+xml\r\n" +
                 "X-Timestamp:" + time + "Z\r\n" +
                 "Path:ssml\r\n\r\n" +
-                "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xmlns:mstts='https://www.w3.org/2001/mstts' xml:lang='"+xml+"'>" +
+                "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xmlns:mstts='https://www.w3.org/2001/mstts' xml:lang='" + xml + "'>" +
                 "<voice  name='" + name + "'>" +
                 "<prosody pitch='" + pitchString + "' " +
                 "rate ='" + rateString + "' " +
@@ -281,8 +282,18 @@ public class TTSService extends TextToSpeechService {
                 "</prosody></voice></speak>" +
                 "";
         //Log.d(TAG, "SSS:" + sb);
+        int index=sharedPreferences.getInt(AUDIO_FORMAT_INDEX, 0);
+        TtsConfig ttsConfig=new TtsConfig.Builder(index).build();
+        TtsOutputFormat format =ttsConfig.getFormat();
+        this.callback.start(format.HZ,
+                format.BitRate, 1 /* Number of channels. */);
         webSocket = getOrCreateWs();
 
+
+        if (oldindex!=index){
+            sendConfig(webSocket,ttsConfig);
+            oldindex=index;
+        }
         webSocket.send(sb);
     }
 
@@ -484,8 +495,7 @@ public class TTSService extends TextToSpeechService {
         // framework. We use a fixed sampling rate (16khz), and send data across
         // in 16bit PCM mono.
         this.callback = callback;
-        this.callback.start(SAMPLING_RATE_HZ,
-                AudioFormat.ENCODING_PCM_16BIT, 1 /* Number of channels. */);
+
         isSynthesizing = true;
         sendText(request, this.callback);
 

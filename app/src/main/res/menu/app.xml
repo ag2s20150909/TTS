@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/check_update"
+        android:title="检查更新" />
+    <item
+        android:id="@+id/battery_optimizations"
+        android:title="电池优化" />
+    <item
+        android:id="@+id/setting"
+        android:title="关于" />
+    <item
+        android:id="@+id/menu_delete"
+        android:title="删除">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/raw_16khz_16bit_mono_pcm"
+                    android:title="@string/raw_16khz_16bit_mono_pcm" />
+                <item
+                    android:id="@+id/raw_24khz_16bit_mono_pcm"
+                    android:title="@string/raw_24khz_16bit_mono_pcm" />
+                <item
+                    android:id="@+id/raw_48khz_16bit_mono_pcm"
+                    android:title="@string/raw_48khz_16bit_mono_pcm" />
+                <item
+                    android:id="@+id/raw_8khz_16bit_mono_pcm"
+                    android:title="@string/raw_8khz_16bit_mono_pcm" />
+            </group>
+        </menu>
+    </item>
+
+
+</menu>
