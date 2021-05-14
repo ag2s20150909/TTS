@@ -6,12 +6,12 @@
     <item
         android:id="@+id/battery_optimizations"
         android:title="电池优化" />
-    <item
-        android:id="@+id/setting"
-        android:title="关于" />
+<!--    <item-->
+<!--        android:id="@+id/setting"-->
+<!--        android:title="关于" />-->
     <item
         android:id="@+id/menu_delete"
-        android:title="删除">
+        android:title="音频流格式">
         <menu>
             <group android:checkableBehavior="single">
                 <item
