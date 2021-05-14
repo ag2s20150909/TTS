@@ -29,6 +29,9 @@
     <string name="raw_48khz_16bit_mono_pcm">Raw48Khz16BitMonoPcm</string>
     <string name="raw_8khz_16bit_mono_pcm">Raw8Khz16BitMonoPcm</string>
     <string name="raw_8khz_8bit_mono_mulaw">Raw8Khz8BitMonoMULaw</string>
+    <string name="check_update">检查更新</string>
+    <string name="battery_optimizations">电池优化</string>
+    <string name="audio_format">音频流格式</string>
 
 
 </resources>
