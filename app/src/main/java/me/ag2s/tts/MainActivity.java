@@ -283,8 +283,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     .setMessage("发现新版本:\n" + appName + "\n如需更新，点击确定，将跳转到浏览器下载。如不想更新，点击取消，将不再自动检查更新，直到你清除应用数据。你可以到右上角菜单手动检查更新。")
                     .setPositiveButton("确定", (dialog, which) -> {
                         Intent intent = new Intent(Intent.ACTION_VIEW);
-                        intent.setDataAndType(Uri.parse(url),
-                                "application/vnd.android.package-archive");
+                        intent.setData(Uri.parse(url));
                         startActivity(intent);
                     })
                     .setNegativeButton("取消", (dialog, which) -> {
