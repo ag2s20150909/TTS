@@ -507,15 +507,18 @@ public class TTSService extends TextToSpeechService {
         this.callback = callback;
 
         isSynthesizing = true;
+        //使用System.nanoTime()来保证获得的是精准的时间间隔
+
         long startTime=System.nanoTime();
         sendText(request, this.callback);
 
         while (isSynthesizing) {
             try {
                 Thread.sleep(100);
-                long extime=System.nanoTime()-startTime;
-                if(extime>10E9){
-                    callback.error();
+                long time=System.nanoTime()-startTime;
+                //超时40秒后跳过
+                if(time>40E9){
+                    callback.error(TextToSpeech.ERROR_NETWORK_TIMEOUT);
                     isSynthesizing=false;
                 }
             } catch (InterruptedException e) {
