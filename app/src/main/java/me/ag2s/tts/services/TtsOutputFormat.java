@@ -1,7 +1,5 @@
 package me.ag2s.tts.services;
 
-import java.util.ArrayList;
-
 public class TtsOutputFormat {
    public String name;
    public String value;

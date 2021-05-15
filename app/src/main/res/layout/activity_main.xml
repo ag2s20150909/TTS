@@ -40,7 +40,7 @@
                 android:id="@+id/switch_use_auto_retry"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="自动重试" />
+                android:text="@string/auto_retry" />
         </LinearLayout>
     </HorizontalScrollView>
 

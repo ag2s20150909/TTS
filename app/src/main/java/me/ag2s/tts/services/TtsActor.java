@@ -37,7 +37,7 @@ public class TtsActor {
     public TtsActor(String shortName, boolean gender, String note) {
         this.gender=gender;
         this.note=note;
-        this.shortName=shortName.replace("Neural","");
+        this.shortName=shortName;
         String tag = "-";
         if (shortName.contains("-")) {
             tag = "-";
@@ -46,7 +46,7 @@ public class TtsActor {
         }
         //String[] temp = locale.split(tag);
 
-        this.name = shortName.substring(shortName.lastIndexOf(tag) + 1);
+        this.name = shortName.substring(shortName.lastIndexOf(tag) + 1).replace("Neural","");
         this.locale = shortName.substring(0, shortName.lastIndexOf(tag));
 
     }

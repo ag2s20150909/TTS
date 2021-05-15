@@ -151,7 +151,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         TtsActorAdapter adapter = new TtsActorAdapter(this);
         gv.setAdapter(adapter);
-        adapter.upgrade(TtsActorManger.getInstance().getActorsByLocale(Locale.getDefault()));//getActorsByLocale(Locale.getDefault()));
+        adapter.upgrade(TtsActorManger.getInstance().getActors());//getActorsByLocale(Locale.getDefault()));
         GridLayoutManager gvm = new GridLayoutManager(this, 3);
         gv.setLayoutManager(gvm);
 
@@ -176,6 +176,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 bundle.putString("country", locale.getISO3Country());
                 bundle.putString("variant", item.getGender() ? "Female" : "Male");
                 textToSpeech.speak(TtsVoiceSample.getByLocate(this, locale), TextToSpeech.QUEUE_FLUSH, bundle, MainActivity.class.getName() + mNextRequestId.getAndIncrement());
+            }else {
+                Toast.makeText(MainActivity.this,""+item.getShortName(),Toast.LENGTH_SHORT).show();
             }
 
         });

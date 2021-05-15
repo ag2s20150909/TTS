@@ -24,7 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -63,19 +62,17 @@ public class TTSService extends TextToSpeechService {
     private static List<TtsActor> languages;
     private List<Voice> voices;
 
-    public final static String[] supportedLanguages = {"deu-DEU", "eng-AUS", "eng-CAN", "eng-GBR", "eng-IND", "eng-USA", "spa-ESP", "spa-MEX", "fra-CAN", "fra-FRA", "hin-IND", "ita-ITA", "jpn-JPN", "kor-KOR", "nld-NLD", "pol-POL", "por-BRA", "rus-RUS", "tur-TUR", "zho-CHN", "zho-HKG", "zho-TWN"};
+    public final static String[] supportedLanguages = {"zho-CHN", "zho-HKG", "zho-TWN", "eng-IRL", "bul-BGR", "nld-NLD", "lav-LVA", "est-EST", "fra-FRA", "gle-IRL", "ara-SAU", "deu-AUT", "eng-PHL", "fra-CHE", "por-BRA", "eng-GBR", "fin-FIN", "swe-SWE", "ukr-UKR", "ell-GRC", "ces-CZE", "msa-MYS", "tam-IND", "kor-KOR", "slv-SVN", "spa-MEX", "deu-DEU", "eng-CAN", "ita-ITA", "tur-TUR", "deu-CHE", "por-PRT", "tha-THA", "eng-IND", "ara-EGY", "fra-CAN", "hrv-HRV", "hun-HUN", "urd-PAK", "tel-IND", "nob-NOR", "eng-AUS", "jpn-JPN", "heb-ISR", "eng-USA", "ron-ROU", "cym-GBR", "hin-IND", "ind-IDN", "cat-ESP", "mlt-MLT", "rus-RUS", "vie-VNM", "slk-SVK", "nld-BEL", "fra-BEL", "lit-LTU", "dan-DNK"};
 
     public final static String[] supportVoiceNames = {"de-DE-KatjaNeural", "en-AU-NatashaNeural", "en-CA-ClaraNeural", "en-GB-MiaNeural", "en-IN-NeerjaNeural", "en-US-AriaNeural", "en-US-GuyNeural", "es-ES-ElviraNeural", "es-MX-DaliaNeural", "fr-CA-SylvieNeural", "fr-FR-DeniseNeural", "hi-IN-SwaraNeural", "it-IT-ElsaNeural", "ja-JP-NanamiNeural", "ko-KR-SunHiNeural", "nl-NL-ColetteNeural", "pl-PL-ZofiaNeural", "pt-BR-FranciscaNeural", "ru-RU-SvetlanaNeural", "tr-TR-EmelNeural", "zh-CN-XiaoxiaoNeural", "zh-CN-YunyangNeural", "zh-HK-HiuGaaiNeural", "zh-TW-HsiaoYuNeural"};
 
-    public final static String[] supportVoiceLocales = {"de_DE", "en_AU", "en_CA", "en_GB", "en_IN", "en_US", "en_US", "es_ES", "es_MX", "fr_CA", "fr_FR", "hi_IN", "it_IT", "ja_JP", "ko_KR", "nl_NL", "pl_PL", "pt_BR", "ru_RU", "tr_TR", "zh_CN", "zh_CN", "zh_HK", "zh_TW"};
-
-    public final static String[] supportVoiceVariants = {"Female", "Female", "Female", "Female", "Female", "Female", "Male", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Female", "Male", "Female", "Female"};
     private volatile String[] mCurrentLanguage = null;
+    private PowerManager.WakeLock wakelock;
     /*
      * This is the sampling rate of our output audio. This engine outputs
      * audio at 16khz 16bits per sample PCM audio.
      */
-    private   int oldindex=0;
+    private int oldindex = 0;
     SynthesisCallback callback;
     private final WebSocketListener webSocketListener = new WebSocketListener() {
         @Override
@@ -144,7 +141,7 @@ public class TTSService extends TextToSpeechService {
                     //最大BufferSize
                     final int maxBufferSize = callback.getMaxBufferSize();
                     int offset = 0;
-                    while (offset < data.toByteArray().length) {
+                    while (offset < length) {
                         int bytesToWrite = Math.min(maxBufferSize, length - offset);
 //                            Log.d(TAG, "maxBufferSize" + maxBufferSize +
 //                                    "data.length - offset" + (length - offset));
@@ -169,6 +166,7 @@ public class TTSService extends TextToSpeechService {
             Log.d(TAG, "onOpen" + response.headers().toString());
         }
     };
+
 
     public TTSService() {
     }
@@ -197,7 +195,6 @@ public class TTSService extends TextToSpeechService {
     //发送合成语音配置
     private void sendConfig(WebSocket ws, TtsConfig ttsConfig) {
         String msg = "X-Timestamp:+" + getTime() + "\r\n" +
-//                "Connection: Keep-Alive\r\n" +
                 "Content-Type:application/json; charset=utf-8\r\n" +
                 "Path:speech.config\r\n\r\n"
                 + ttsConfig.toString();
@@ -234,8 +231,10 @@ public class TTSService extends TextToSpeechService {
 
         String text = CommonTool.FixTrim(request.getCharSequenceText().toString());
         Log.d(TAG, "源：" + text);
-        text = text.replaceAll("[-.]", "");
+        //替换一些会导致不返回数据的特殊字符
+        text = text.replaceAll("[-.<>]", "");
         Log.d(TAG, "长度：" + text.length());
+        //长度为0，直接跳过。
         if (text.length() < 1) {
             callback.done();
             isSynthesizing = false;
@@ -255,18 +254,22 @@ public class TTSService extends TextToSpeechService {
 
         String name = request.getVoiceName();
         String time = getTime();
-        Locale locale = Locale.getDefault();
-        if (sharedPreferences.getBoolean(USE_CUSTOM_VOICE, false) && request.getLanguage().equals(locale.getISO3Language())) {
+        Locale locale = new Locale(request.getLanguage(),request.getCountry());
+        //&& request.getLanguage().equals(locale.getISO3Language())
+        if (sharedPreferences.getBoolean(USE_CUSTOM_VOICE, false) ) {
             name = sharedPreferences.getString(CUSTOM_VOICE, "zh-CN-XiaoxiaoNeural");
         }
 
         String RequestId = CommonTool.getMD5String(text + time + request.getCallerUid());
+//        if(request.getLanguage().equals(Locale.CHINESE.getISO3Language())){
+//
+//        }
 
-        String xml = locale.getLanguage() + "_" + locale.getCountry();
+        String xml = "en-US";
 
 
-        Log.d(TAG, "SSS:" + request.getVoiceName());
-        Log.d(TAG, "SSS:" + CommonTool.getMD5String(time));
+        Log.d(TAG, "SSS:" + name);
+        Log.d(TAG, "SSS:" + xml);
         //role='OlderAdultMale'
         String sb = "X-RequestId:" + RequestId + "\r\n" +
                 "Content-Type:application/ssml+xml\r\n" +
@@ -282,17 +285,17 @@ public class TTSService extends TextToSpeechService {
                 "</prosody></voice></speak>" +
                 "";
         //Log.d(TAG, "SSS:" + sb);
-        int index=sharedPreferences.getInt(AUDIO_FORMAT_INDEX, 0);
-        TtsConfig ttsConfig=new TtsConfig.Builder(index).build();
-        TtsOutputFormat format =ttsConfig.getFormat();
+        int index = sharedPreferences.getInt(AUDIO_FORMAT_INDEX, 0);
+        TtsConfig ttsConfig = new TtsConfig.Builder(index).build();
+        TtsOutputFormat format = ttsConfig.getFormat();
         this.callback.start(format.HZ,
                 format.BitRate, 1 /* Number of channels. */);
         webSocket = getOrCreateWs();
 
 
-        if (oldindex!=index){
-            sendConfig(webSocket,ttsConfig);
-            oldindex=index;
+        if (oldindex != index) {
+            sendConfig(webSocket, ttsConfig);
+            oldindex = index;
         }
         webSocket.send(sb);
     }
@@ -327,6 +330,7 @@ public class TTSService extends TextToSpeechService {
     }
 
 
+    @SuppressLint("InvalidWakeLockTag")
     @Override
     public void onCreate() {
         super.onCreate();
@@ -339,6 +343,9 @@ public class TTSService extends TextToSpeechService {
                 .build();
         sharedPreferences = getApplicationContext().getSharedPreferences("TTS", Context.MODE_PRIVATE);
         powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        // 获得唤醒锁
+        wakelock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyWakelockTag");
+        wakelock.acquire(100 * 60 * 1000L /*10 minutes*/);
 
 
     }
@@ -346,18 +353,27 @@ public class TTSService extends TextToSpeechService {
 
     public static int getIsLanguageAvailable(String lang, String country, String variant) {
         Locale locale = new Locale(lang, country, variant);
+        boolean isLanguage = false;
+        boolean isCountry = false;
         for (String lan : supportedLanguages) {
             String[] temp = lan.split("-");
             Locale locale1 = new Locale(temp[0], temp[1]);
             if (locale.getISO3Language().equals(locale1.getISO3Language())) {
-                if (locale.getCountry().equals(locale1.getCountry())) {
-                    if (locale.getVariant().equals(locale1.getVariant())) {
-                        return TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE;
-                    }
-                    return TextToSpeech.LANG_COUNTRY_AVAILABLE;
-                }
-                return TextToSpeech.LANG_AVAILABLE;
+                isLanguage = true;
             }
+            if (isLanguage && locale.getISO3Country().equals(locale1.getISO3Country())) {
+                isCountry = true;
+            }
+            if (isCountry && locale.getVariant().equals(locale1.getVariant())) {
+                return TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE;
+            }
+
+        }
+        if (isCountry) {
+            return TextToSpeech.LANG_COUNTRY_AVAILABLE;
+        }
+        if (isLanguage) {
+            return TextToSpeech.LANG_AVAILABLE;
         }
         return TextToSpeech.LANG_NOT_SUPPORTED;
     }
@@ -387,21 +403,14 @@ public class TTSService extends TextToSpeechService {
     }
 
 
-    @Override
-    public List<Voice> onGetVoices() {
-
-        return super.onGetVoices();
-    }
-
-
-    @Override
-    protected Set<String> onGetFeaturesForLanguage(String lang, String country, String variant) {
-        HashSet<String> hashSet = new HashSet<>();
-        hashSet.add(lang);
-        hashSet.add(country);
-        hashSet.add(variant);
-        return hashSet;
-    }
+//    @Override
+//    protected Set<String> onGetFeaturesForLanguage(String lang, String country, String variant) {
+//        HashSet<String> hashSet = new HashSet<>();
+//        hashSet.add(lang);
+//        hashSet.add(country);
+//        hashSet.add(variant);
+//        return hashSet;
+//    }
 
     public List<String> getVoiceNames(String lang, String country, String variant) {
         List<String> vos = new ArrayList<>();
@@ -416,7 +425,7 @@ public class TTSService extends TextToSpeechService {
     @Override
     public int onIsValidVoiceName(String voiceName) {
         for (String vn : supportVoiceNames) {
-            if (voiceName.equals(vn)) {
+            if (voiceName.toLowerCase().equals(vn.toLowerCase())) {
                 return TextToSpeech.SUCCESS;
             }
         }
@@ -453,7 +462,7 @@ public class TTSService extends TextToSpeechService {
     @Override
     protected int onLoadLanguage(String lang, String country, String variant) {
         int result = onIsLanguageAvailable(lang, country, variant);
-        if (result == TextToSpeech.LANG_COUNTRY_AVAILABLE) {
+        if (result == TextToSpeech.LANG_COUNTRY_AVAILABLE || TextToSpeech.LANG_AVAILABLE == result || result == TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE) {
             mCurrentLanguage = new String[]{lang, country, variant};
         }
 
@@ -465,6 +474,7 @@ public class TTSService extends TextToSpeechService {
      */
     @Override
     protected void onStop() {
+        webSocket.close(1000,"closed by call onStop");
         isSynthesizing = false;
     }
 
@@ -475,9 +485,8 @@ public class TTSService extends TextToSpeechService {
      * @param request  合成请求 SynthesisRequest
      * @param callback 合成callback SynthesisCallback
      */
-    @SuppressLint("WrongConstant")
     @Override
-    protected void onSynthesizeText(SynthesisRequest request, SynthesisCallback callback) {
+    protected synchronized void onSynthesizeText(SynthesisRequest request, SynthesisCallback callback) {
         // Note that we call onLoadLanguage here since there is no guarantee
         // that there would have been a prior call to this function.
         int load = onLoadLanguage(request.getLanguage(), request.getCountry(),
@@ -486,6 +495,7 @@ public class TTSService extends TextToSpeechService {
         // we error out early before wasting too much time.
         if (load == TextToSpeech.LANG_NOT_SUPPORTED) {
             callback.error(TextToSpeech.ERROR_INVALID_REQUEST);
+            Log.e(TAG, "语言不支持:" + request.getLanguage());
             return;
         }
         // At this point, we have loaded the language we need for synthesis and
@@ -497,11 +507,17 @@ public class TTSService extends TextToSpeechService {
         this.callback = callback;
 
         isSynthesizing = true;
+        long startTime=System.nanoTime();
         sendText(request, this.callback);
 
         while (isSynthesizing) {
             try {
                 Thread.sleep(100);
+                long extime=System.nanoTime()-startTime;
+                if(extime>10E9){
+                    callback.error();
+                    isSynthesizing=false;
+                }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -510,5 +526,10 @@ public class TTSService extends TextToSpeechService {
 
     }
 
-
+    @Override
+    public void onDestroy() {
+        // 释放唤醒锁, 如果没有其它唤醒锁存在, 设备会很快进入休眠状态
+        wakelock.release();
+        super.onDestroy();
+    }
 }

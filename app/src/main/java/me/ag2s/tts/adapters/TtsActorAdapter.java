@@ -55,7 +55,7 @@ public class TtsActorAdapter extends RecyclerView.Adapter<TtsActorAdapter.ViewHo
 
 
     public void upgrade(List<TtsActor> d) {
-        this.mData = TtsActorManger.getInstance().sortByLocale(d,Locale.US);
+        this.mData = d;
 
         this.notifyDataSetChanged();
     }
