@@ -23,15 +23,15 @@
         android:theme="@style/Theme.TTS"
         android:allowBackup="false">
 
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="me.ag2s.tts.fileProvider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
+<!--        <provider-->
+<!--            android:name="androidx.core.content.FileProvider"-->
+<!--            android:authorities="me.ag2s.tts.fileProvider"-->
+<!--            android:exported="false"-->
+<!--            android:grantUriPermissions="true">-->
+<!--            <meta-data-->
+<!--                android:name="android.support.FILE_PROVIDER_PATHS"-->
+<!--                android:resource="@xml/file_paths" />-->
+<!--        </provider>-->
 
 
 <!--       获取示例文本。-->
