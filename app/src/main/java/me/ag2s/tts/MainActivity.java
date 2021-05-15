@@ -26,6 +26,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -278,12 +279,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
         try {
             String url = "https://ghproxy.com/https://raw.githubusercontent.com/ag2s20150909/TTS/master/release/" + appName;
 
+
+
             runOnUiThread(() -> new AlertDialog.Builder(MainActivity.this)
                     .setTitle("有新版本")
                     .setMessage("发现新版本:\n" + appName + "\n如需更新，点击确定，将跳转到浏览器下载。如不想更新，点击取消，将不再自动检查更新，直到你清除应用数据。你可以到右上角菜单手动检查更新。")
                     .setPositiveButton("确定", (dialog, which) -> {
                         Intent intent = new Intent(Intent.ACTION_VIEW);
                         intent.setData(Uri.parse(url));
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);
                     })
                     .setNegativeButton("取消", (dialog, which) -> {
@@ -321,6 +325,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
 
     }
+
+
 
     public void test(View view) {
         Intent i = new Intent(this, DownloadVoiceData.class);
