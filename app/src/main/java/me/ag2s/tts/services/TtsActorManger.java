@@ -67,7 +67,7 @@ public class TtsActorManger {
         actors.add(new TtsActor("en-IN-PrabhatNeural", false, "常规"));
         //英语（爱尔兰）
         actors.add(new TtsActor("en-IE-EmilyNeural", true, "常规"));
-        actors.add(new TtsActor("en-IE-EmilyNeural", false, "常规"));
+        actors.add(new TtsActor("en-IE-ConnorNeural", false, "常规"));
         //英语（菲律宾）
         actors.add(new TtsActor("en-PH-RosaNeural", true, "常规"));
         actors.add(new TtsActor("en-PH-JamesNeural", false, "常规"));
