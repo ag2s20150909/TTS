@@ -18,7 +18,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.TTS">
+        android:theme="@style/Theme.TTS"
+        android:allowBackup="false">
 
 <!--       获取示例文本。-->
         <activity android:name=".GetSampleText">
@@ -64,7 +65,8 @@
         <service
             android:name=".services.TTSService"
             android:label="@string/app_name"
-            android:exported="false">
+            android:exported="true"
+            tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="android.intent.action.TTS_SERVICE" />
 

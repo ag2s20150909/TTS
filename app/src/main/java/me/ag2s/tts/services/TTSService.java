@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -403,14 +404,14 @@ public class TTSService extends TextToSpeechService {
     }
 
 
-//    @Override
-//    protected Set<String> onGetFeaturesForLanguage(String lang, String country, String variant) {
-//        HashSet<String> hashSet = new HashSet<>();
-//        hashSet.add(lang);
-//        hashSet.add(country);
-//        hashSet.add(variant);
-//        return hashSet;
-//    }
+    @Override
+    protected Set<String> onGetFeaturesForLanguage(String lang, String country, String variant) {
+        HashSet<String> hashSet = new HashSet<>();
+        hashSet.add(lang);
+        hashSet.add(country);
+        hashSet.add(variant);
+        return hashSet;
+    }
 
     public List<String> getVoiceNames(String lang, String country, String variant) {
         List<String> vos = new ArrayList<>();
@@ -474,7 +475,7 @@ public class TTSService extends TextToSpeechService {
      */
     @Override
     protected void onStop() {
-        webSocket.close(1000,"closed by call onStop");
+        //webSocket.close(1000,"closed by call onStop");
         isSynthesizing = false;
     }
 
@@ -486,7 +487,7 @@ public class TTSService extends TextToSpeechService {
      * @param callback 合成callback SynthesisCallback
      */
     @Override
-    protected synchronized void onSynthesizeText(SynthesisRequest request, SynthesisCallback callback) {
+    protected  void onSynthesizeText(SynthesisRequest request, SynthesisCallback callback) {
         // Note that we call onLoadLanguage here since there is no guarantee
         // that there would have been a prior call to this function.
         int load = onLoadLanguage(request.getLanguage(), request.getCountry(),
@@ -518,7 +519,7 @@ public class TTSService extends TextToSpeechService {
                 long time=System.nanoTime()-startTime;
                 //超时40秒后跳过
                 if(time>40E9){
-                    callback.error(TextToSpeech.ERROR_NETWORK_TIMEOUT);
+                    //callback.error(TextToSpeech.ERROR_NETWORK_TIMEOUT);
                     isSynthesizing=false;
                 }
             } catch (InterruptedException e) {
