@@ -31,7 +31,7 @@ public class TtsStyleManger {
         styles.add(new TtsStyle("亲切","affectionate","以较高的音调和音量表达温暖而亲切的语气。 说话者处于吸引听众注意力的状态。 说话者的“个性”往往是讨人喜欢的。"));
         styles.add(new TtsStyle("温和","gentle","以较低的音调和音量表达温和、礼貌和愉快的语气"));
         styles.add(new TtsStyle("优美","lyrical","以优美又带感伤的方式表达情感"));
-        styles.add(new TtsStyle("欢快","cheerful","以较高的音调和音量表达欢快、热情的语气"));
+        styles.add(new TtsStyle("测试","narration","以较高的音调和音量表达欢快、热情的语气"));
 
     }
 

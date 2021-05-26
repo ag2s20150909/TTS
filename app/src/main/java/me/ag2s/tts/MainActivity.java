@@ -26,7 +26,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -36,12 +35,15 @@ import org.json.JSONObject;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import me.ag2s.tts.adapters.TtsActorAdapter;
 import me.ag2s.tts.adapters.TtsStyleAdapter;
 import me.ag2s.tts.services.TTSService;
 import me.ag2s.tts.services.TtsActorManger;
+import me.ag2s.tts.services.TtsFormatManger;
+import me.ag2s.tts.services.TtsOutputFormat;
 import me.ag2s.tts.services.TtsStyle;
 import me.ag2s.tts.services.TtsStyleManger;
 import me.ag2s.tts.services.TtsVoiceSample;
@@ -177,8 +179,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 bundle.putString("country", locale.getISO3Country());
                 bundle.putString("variant", item.getGender() ? "Female" : "Male");
                 textToSpeech.speak(TtsVoiceSample.getByLocate(this, locale), TextToSpeech.QUEUE_FLUSH, bundle, MainActivity.class.getName() + mNextRequestId.getAndIncrement());
-            }else {
-                Toast.makeText(MainActivity.this,""+item.getShortName(),Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(MainActivity.this, "" + item.getShortName(), Toast.LENGTH_SHORT).show();
             }
 
         });
@@ -193,6 +195,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onResume() {
         super.onResume();
+
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
             boolean i = powerManager.isIgnoringBatteryOptimizations(this.getPackageName());
@@ -208,13 +212,38 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.app, menu);
-        return true;
+        //getMenuInflater().inflate(R.menu.app, menu);
+        menu.add(Menu.NONE, Menu.FIRST + 1, 0, R.string.check_update);
+        menu.add(Menu.NONE, Menu.FIRST + 2, 0, R.string.battery_optimizations);
+
+        Menu aa = menu.addSubMenu(100, 100, 1, R.string.audio_format);
+
+
+        List<TtsOutputFormat> formats = TtsFormatManger.getInstance().getFormats();
+        int index = sharedPreferences.getInt(TTSService.AUDIO_FORMAT_INDEX, 0);
+        for (int i = 0; i < formats.size(); i++) {
+            boolean b = i == index;
+            aa.add(100, 1000 + i, 0, formats.get(i).name);
+        }
+
+        MenuItem menuItem = menu.findItem(100);
+        menuItem.getSubMenu().setGroupCheckable(menuItem.getGroupId(), true, true);
+        invalidateOptionsMenu();
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        //menu.findItem(sharedPreferences.getInt(TTSService.AUDIO_FORMAT_INDEX,0)+1000).setChecked(true);
+        menu.findItem(sharedPreferences.getInt(TTSService.AUDIO_FORMAT_INDEX, 0) + 1000).setChecked(true);
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int aindex = sharedPreferences.getInt(TTSService.AUDIO_FORMAT_INDEX, 0);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         switch (item.getItemId()) {
             case R.id.check_update:
@@ -223,28 +252,19 @@ public class MainActivity extends Activity implements View.OnClickListener {
             case R.id.battery_optimizations:
                 killBATTERY();
                 break;
-            case R.id.raw_16khz_16bit_mono_pcm:
-                //0
-                editor.putInt(TTSService.AUDIO_FORMAT_INDEX,0);
-                editor.apply();
-                break;
-            case R.id.raw_24khz_16bit_mono_pcm:
-                //0
-                editor.putInt(TTSService.AUDIO_FORMAT_INDEX,1);
-                editor.apply();
-                break;
-            case R.id.raw_48khz_16bit_mono_pcm:
-                //0
-                editor.putInt(TTSService.AUDIO_FORMAT_INDEX,2);
-                editor.apply();
-                break;
-            case R.id.raw_8khz_16bit_mono_pcm:
-                //0
-                editor.putInt(TTSService.AUDIO_FORMAT_INDEX,3);
-                editor.apply();
-                break;
             default:
-                Toast.makeText(this, item.getItemId() + "", Toast.LENGTH_LONG).show();
+                if (item.getGroupId() == 100) {
+                    int index = item.getItemId() - 1000;
+                    boolean b = index == aindex;
+                    item.setChecked(b);
+                    Toast.makeText(this, TtsFormatManger.getInstance().getFormat(index).value, Toast.LENGTH_LONG).show();
+                    editor.putInt(TTSService.AUDIO_FORMAT_INDEX, index);
+                    editor.apply();
+                } else {
+                    return super.onOptionsItemSelected(item);
+                }
+
+
                 break;
         }
         return true;
@@ -254,7 +274,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         new Thread(() -> {
 
             try {
-                JSONObject json = new JSONObject(HttpTool.httpGet("https://ghproxy.com/https://raw.githubusercontent.com/ag2s20150909/TTS/master/release/output-metadata.json")).optJSONArray("elements").optJSONObject(0);
+                JSONObject json = Objects.requireNonNull(new JSONObject(HttpTool.httpGet("https://ghproxy.com/https://raw.githubusercontent.com/ag2s20150909/TTS/master/release/output-metadata.json")).optJSONArray("elements")).optJSONObject(0);
                 String fileName = json.optString("outputFile");
                 BigDecimal versionName = new BigDecimal(json.optString("versionName").split("_")[1].trim());
                 PackageManager pm = MainActivity.this.getPackageManager();
@@ -278,7 +298,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private void downLoadAndInstall(String appName) {
         try {
             String url = "https://ghproxy.com/https://raw.githubusercontent.com/ag2s20150909/TTS/master/release/" + appName;
-
 
 
             runOnUiThread(() -> new AlertDialog.Builder(MainActivity.this)
@@ -325,7 +344,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
 
     }
-
 
 
     public void test(View view) {

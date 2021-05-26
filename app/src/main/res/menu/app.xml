@@ -6,29 +6,8 @@
     <item
         android:id="@+id/battery_optimizations"
         android:title="@string/battery_optimizations" />
-<!--    <item-->
-<!--        android:id="@+id/setting"-->
-<!--        android:title="关于" />-->
-    <item
-        android:id="@+id/audio_format"
-        android:title="@string/audio_format">
-        <menu>
-            <group android:checkableBehavior="single">
-                <item
-                    android:id="@+id/raw_16khz_16bit_mono_pcm"
-                    android:title="@string/raw_16khz_16bit_mono_pcm" />
-                <item
-                    android:id="@+id/raw_24khz_16bit_mono_pcm"
-                    android:title="@string/raw_24khz_16bit_mono_pcm" />
-                <item
-                    android:id="@+id/raw_48khz_16bit_mono_pcm"
-                    android:title="@string/raw_48khz_16bit_mono_pcm" />
-                <item
-                    android:id="@+id/raw_8khz_16bit_mono_pcm"
-                    android:title="@string/raw_8khz_16bit_mono_pcm" />
-            </group>
-        </menu>
-    </item>
-
+<!--        <item-->
+<!--            android:id="@+id/setting"-->
+<!--            android:title="关于" />-->
 
 </menu>
