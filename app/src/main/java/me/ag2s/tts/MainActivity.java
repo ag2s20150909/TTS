@@ -40,7 +40,6 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import me.ag2s.mp3util.Mp3Encoder;
 import me.ag2s.tts.adapters.TtsActorAdapter;
 import me.ag2s.tts.adapters.TtsStyleAdapter;
 import me.ag2s.tts.services.TTSService;
