@@ -15,8 +15,8 @@ public class TtsDictManger {
     }
     private final List<TtsDict> dict;
     private TtsDictManger(){
-        dict =new ArrayList<>();
-        dict.add(new TtsDict("洁癖","jie 2 pi 3"));
+        dict =new ArrayList<>(20);
+        dict.add(new TtsDict("佛然","bo 2 ran 2"));
     }
 
     public void add(TtsDict dic){

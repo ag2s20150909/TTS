@@ -10,6 +10,8 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/Mp3Util" />
+            <option value="$PROJECT_DIR$/OpusUtils" />
             <option value="$PROJECT_DIR$/app" />
           </set>
         </option>

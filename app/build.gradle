@@ -29,6 +29,12 @@ android {
         versionName "0.2_${releaseTime()}"
 
     }
+//    externalNativeBuild {
+//        cmake {
+//            cppFlags "-std=c++11 -frtti -fexceptions"
+//            abiFilters /*'armeabi', 'mips',*/ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'//NDK 17及以上不再支持ABIs [mips64, armeabi, mips]
+//        }
+//    }
 
     buildTypes {
         release {
@@ -52,6 +58,8 @@ android {
     }
 
 
+
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -61,7 +69,7 @@ android {
         variant ->
             // 打包完成后复制到的目录
             // def outputFileDir = "${project.projectDir.absolutePath}/${variant.buildType.name}/${variant.flavorName}/${variant.versionName}"
-            def today = new Date()
+            //def today = new Date()
             def path = ((project.name != "app") ? project.name : rootProject.name.replace(" ", "")) + "_" +
                     //variant.flavorName + "_" +
                     variant.buildType.name + "_" +
@@ -94,17 +102,24 @@ android {
             }
 
     }
+
+
 }
 
 dependencies {
 
 
     implementation "androidx.recyclerview:recyclerview:1.2.0"
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    implementation "org.apache.commons:commons-lang3:3.12.0"
+
     //网络
     implementation 'com.squareup.okio:okio:2.10.0'
     //An HTTP & HTTP/2 client for Android and Java applications.
     //noinspection GradleDependency
     implementation 'com.squareup.okhttp3:okhttp:4.9.1'
+    implementation project(path: ':Mp3Util')
+    implementation project(path: ':OpusUtils')
 }
 
 static def releaseTime() {

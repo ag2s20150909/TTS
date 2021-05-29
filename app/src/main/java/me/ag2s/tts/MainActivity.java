@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.media.MediaCodecInfo;
+import android.media.MediaCodecList;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -38,6 +40,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import me.ag2s.mp3util.Mp3Encoder;
 import me.ag2s.tts.adapters.TtsActorAdapter;
 import me.ag2s.tts.adapters.TtsStyleAdapter;
 import me.ag2s.tts.services.TTSService;
@@ -187,6 +190,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         if (sharedPreferences.getBoolean(TTSService.USE_AUTO_UPDATE, true)) {
             checkUpdate();
         }
+        //String lameVersion= new Mp3Encoder().getVersion();
+        //Log.e(TAG,"LAME:"+lameVersion);
 
 
     }
@@ -235,7 +240,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        //menu.findItem(sharedPreferences.getInt(TTSService.AUDIO_FORMAT_INDEX,0)+1000).setChecked(true);
         menu.findItem(sharedPreferences.getInt(TTSService.AUDIO_FORMAT_INDEX, 0) + 1000).setChecked(true);
         return super.onPrepareOptionsMenu(menu);
     }
@@ -246,14 +250,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
         int aindex = sharedPreferences.getInt(TTSService.AUDIO_FORMAT_INDEX, 0);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         switch (item.getItemId()) {
-            case R.id.check_update:
+            case Menu.FIRST + 1:
                 checkUpdate();
                 break;
-            case R.id.battery_optimizations:
+            case Menu.FIRST + 2:
                 killBATTERY();
                 break;
             default:
-                if (item.getGroupId() == 100) {
+                if (item.getGroupId() == 100&&item.getItemId()>=1000&&item.getItemId()<1100) {
                     int index = item.getItemId() - 1000;
                     boolean b = index == aindex;
                     item.setChecked(b);
@@ -330,6 +334,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     @SuppressLint("BatteryLife")
     public void killBATTERY() {
+        test();
         Intent intent = new Intent();
         String packageName = getPackageName();
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -346,9 +351,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
 
-    public void test(View view) {
-        Intent i = new Intent(this, DownloadVoiceData.class);
-        startActivity(i);
+    public void test() {
+        MediaCodecList list = new MediaCodecList(MediaCodecList.REGULAR_CODECS);//REGULAR_CODECS参考api说明
+        MediaCodecInfo[] codecs = list.getCodecInfos();
+        Log.d(TAG, "Decoders: ");
+        for (MediaCodecInfo codec : codecs) {
+            if (codec.isEncoder())
+                continue;
+            Log.d(TAG, codec.getName());
+        }
+        Log.d(TAG, "Encoders: ");
+        for (MediaCodecInfo codec : codecs) {
+            if (codec.isEncoder())
+                Log.d(TAG, codec.getName());
+        }
     }
 
     @SuppressLint("NonConstantResourceId")

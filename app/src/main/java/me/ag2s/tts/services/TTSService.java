@@ -3,7 +3,6 @@ package me.ag2s.tts.services;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.media.AudioFormat;
 import android.media.MediaCodec;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
@@ -144,7 +143,13 @@ public class TTSService extends TextToSpeechService {
                         callback.done();
                         isSynthesizing = false;
                     } else {
+                        if (currentMime.contains("opus")) {
+                            //doOpus(callback,currentFormat,mData.readByteString());
+                        } else {
+
+                        }
                         doDecode(callback, currentFormat, mData.readByteString());
+
                     }
 
                 }
@@ -167,10 +172,16 @@ public class TTSService extends TextToSpeechService {
             if (audioIndex != -1 && callback != null) {
                 try {
                     currentMime = bytes.substring(startIndex, endIndex).utf8();
-
+                    Log.d(TAG, "当前Mime:" + currentMime);
                     if (!currentFormat.needDecode) {
-                        //audioIndex=bytes.lastIndexOf("RIFF".getBytes(StandardCharsets.UTF_8))+44;
+                        if (currentMime.equals("audio/x-wav") && bytes.lastIndexOf("RIFF".getBytes(StandardCharsets.UTF_8)) != -1) {
+                            //去除WAV文件的文件头，解决播放开头时的杂音
+                            audioIndex += 44;
+                            Log.d(TAG, "移除WAV文件头");
+                        }
                         doUnDecode(callback, currentFormat, bytes.substring(audioIndex));
+
+
                     } else {
                         mData.write(bytes.substring(audioIndex));
                     }
@@ -215,7 +226,7 @@ public class TTSService extends TextToSpeechService {
                 if (!TextUtils.isEmpty(mime) && mime.startsWith("audio")) {
                     audioTrackIndex = i;
                     Log.d(TAG, "找到音频流的索引为：" + audioTrackIndex);
-                    Log.d(TAG, "找到音频流的索引为：" + trackFormat.toString());
+                    Log.d(TAG, "找到音频流的索引为：" + mime);
                     break;
                 }
             }
@@ -226,10 +237,44 @@ public class TTSService extends TextToSpeechService {
                 isSynthesizing = false;
                 return;
             }
+            //opus的音频必须设置这个才能正确的解码
+            if ("audio/opus".equals(mime)) {
+                Log.d(TAG, data.substring(0, 4).utf8());
+                Buffer buf = new Buffer();
+                // Magic Signature：固定头，占8个字节，为字符串OpusHead
+                buf.write("OpusHead".getBytes(StandardCharsets.UTF_8));
+                // Version：版本号，占1字节，固定为0x01
+                buf.writeByte(1);
+                // Channel Count：通道数，占1字节，根据音频流通道自行设置，如0x02
+                buf.writeByte(1);
+                // Pre-skip：回放的时候从解码器中丢弃的samples数量，占2字节，为小端模式，默认设置0x00,
+                buf.writeShortLe(0);
+                // Input Sample Rate (Hz)：音频流的Sample Rate，占4字节，为小端模式，根据实际情况自行设置
+                buf.writeIntLe(currentFormat.HZ);
+                //Output Gain：输出增益，占2字节，为小端模式，没有用到默认设置0x00, 0x00就好
+                buf.writeShortLe(0);
+                // Channel Mapping Family：通道映射系列，占1字节，默认设置0x00就好
+                buf.writeByte(0);
+                //Channel Mapping Table：可选参数，上面的Family默认设置0x00的时候可忽略
+
+
+                byte[] csd1bytes = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+                byte[] csd2bytes = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+                ByteString hd = buf.readByteString();
+                Log.d(TAG, hd.hex());
+                ByteBuffer csd0 = ByteBuffer.wrap(hd.toByteArray());
+                trackFormat.setByteBuffer("csd-0", csd0);
+                ByteBuffer csd1 = ByteBuffer.wrap(csd1bytes);
+                trackFormat.setByteBuffer("csd-1", csd1);
+                ByteBuffer csd2 = ByteBuffer.wrap(csd2bytes);
+                trackFormat.setByteBuffer("csd-2", csd2);
+
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                Log.d(TAG, "找到音频流的索引为：" + trackFormat.toString());
+            }
             //选择此音轨
             mediaExtractor.selectTrack(audioTrackIndex);
-
-
 
             //创建解码器
             mediaCodec = MediaCodec.createDecoderByType(mime);
@@ -238,11 +283,11 @@ public class TTSService extends TextToSpeechService {
 
 
             mediaCodec.start();
-            if (trackFormat.containsKey(MediaFormat.KEY_SAMPLE_RATE)) {
-                cb.start(trackFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE), AudioFormat.ENCODING_PCM_16BIT, trackFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT));
-            } else {
-                cb.start(currentFormat.HZ, AudioFormat.ENCODING_PCM_16BIT, trackFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT));
-            }
+//            if (trackFormat.containsKey(MediaFormat.KEY_SAMPLE_RATE)) {
+//                //cb.start(trackFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE), AudioFormat.ENCODING_PCM_16BIT, trackFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT));
+//            } else {
+//               // cb.start(currentFormat.HZ, AudioFormat.ENCODING_PCM_16BIT, trackFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT));
+//            }
 
             MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
             ByteBuffer inputBuffer;
@@ -304,6 +349,7 @@ public class TTSService extends TextToSpeechService {
             isSynthesizing = false;
         }
     }
+
 
     private void doUnDecode(SynthesisCallback cb, TtsOutputFormat format, ByteString data) {
         int length = data.toByteArray().length;
@@ -463,10 +509,10 @@ public class TTSService extends TextToSpeechService {
             sendConfig(webSocket, ttsConfig);
             oldindex = index;
         }
-        if (!currentFormat.needDecode) {
-            callback.start(format.HZ,
-                    format.BitRate, 1 /* Number of channels. */);
-        }
+        //if (!currentFormat.needDecode) {
+        callback.start(format.HZ,
+                format.BitRate, 1 /* Number of channels. */);
+        //}
 
 
         webSocket.send(sb);
