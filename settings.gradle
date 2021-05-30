@@ -1,4 +1,2 @@
 rootProject.name = "TTS"
 include ':app'
-include ':OpusUtils'
-include ':Mp3Util'
