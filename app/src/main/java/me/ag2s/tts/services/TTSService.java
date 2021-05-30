@@ -143,11 +143,6 @@ public class TTSService extends TextToSpeechService {
                         callback.done();
                         isSynthesizing = false;
                     } else {
-                        if (currentMime.contains("opus")) {
-                            //doOpus(callback,currentFormat,mData.readByteString());
-                        } else {
-
-                        }
                         doDecode(callback, currentFormat, mData.readByteString());
 
                     }
@@ -435,8 +430,8 @@ public class TTSService extends TextToSpeechService {
         Log.d(TAG, "源：" + text);
         //替换一些会导致不返回数据的特殊字符
         //String temp = text.replaceAll("[-.<>*#@%$…]", "");
-        //替换
-        String temp = text.replaceAll("[\\s\\p{P}\\p{Z}\\p{N}\\p{S}]", "");
+        //换一些会导致不返回数据的特殊字符\p{N}
+        String temp = text.replaceAll("[\\s\\p{P}\\p{Z}\\p{S}]", "");
         Log.d(TAG, "长度：" + temp.length());
         //长度为0，直接跳过。
         if (temp.length() < 1) {
