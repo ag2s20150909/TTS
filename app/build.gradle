@@ -29,12 +29,6 @@ android {
         versionName "0.2_${releaseTime()}"
 
     }
-//    externalNativeBuild {
-//        cmake {
-//            cppFlags "-std=c++11 -frtti -fexceptions"
-//            abiFilters /*'armeabi', 'mips',*/ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'//NDK 17及以上不再支持ABIs [mips64, armeabi, mips]
-//        }
-//    }
 
     buildTypes {
         release {
