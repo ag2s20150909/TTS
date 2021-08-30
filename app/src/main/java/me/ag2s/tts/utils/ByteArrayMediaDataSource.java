@@ -5,8 +5,6 @@ import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 
-import java.io.IOException;
-
 @RequiresApi(api = Build.VERSION_CODES.M)
 public class ByteArrayMediaDataSource extends MediaDataSource {
 

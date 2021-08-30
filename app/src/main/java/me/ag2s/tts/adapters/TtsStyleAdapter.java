@@ -1,6 +1,5 @@
 package me.ag2s.tts.adapters;
 
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,9 +21,19 @@ public class TtsStyleAdapter extends RecyclerView.Adapter<TtsStyleAdapter.MyHold
         return select;
     }
 
+    public void setSelect(RecyclerView rv, int select) {
+        setSelect(select);
+        RecyclerView.LayoutManager layoutManager = rv.getLayoutManager();
+        if (layoutManager != null) {
+            layoutManager.scrollToPosition(select);
+        }
+    }
+
     public void setSelect(int select) {
+        int old=this.select;
         this.select = select;
-        this.notifyDataSetChanged();
+        this.notifyItemChanged(old);
+        this.notifyItemChanged(select);
     }
 
     public interface OnItemClickListener {
@@ -32,7 +41,7 @@ public class TtsStyleAdapter extends RecyclerView.Adapter<TtsStyleAdapter.MyHold
     }
 
     private int select=0;
-    private List<TtsStyle> mList;//数据源
+    private final List<TtsStyle> mList;//数据源
     private OnItemClickListener itemClickListener;
 
     public TtsStyleAdapter(List<TtsStyle> data) {
@@ -54,7 +63,7 @@ public class TtsStyleAdapter extends RecyclerView.Adapter<TtsStyleAdapter.MyHold
     }
 
     @Override
-    public void onBindViewHolder(@NonNull @NotNull MyHolder holder, int position) {
+    public void onBindViewHolder(@NotNull MyHolder holder, int position) {
         holder.itemView.setOnClickListener(v -> {
             setSelect(position);
             if (itemClickListener != null) {
@@ -84,8 +93,8 @@ public class TtsStyleAdapter extends RecyclerView.Adapter<TtsStyleAdapter.MyHold
      */
     static class MyHolder extends RecyclerView.ViewHolder {
 
-        TextView textView;
-        TextView tv_des;
+        final TextView textView;
+        final TextView tv_des;
 
         public MyHolder(View itemView) {
             super(itemView);

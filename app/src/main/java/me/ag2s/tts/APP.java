@@ -3,19 +3,12 @@ package me.ag2s.tts;
 import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
-import android.util.Log;
-
-import java.io.File;
-import java.util.ArrayList;
 
 import me.ag2s.tts.utils.LoggingInterceptor;
-import me.ag2s.tts.utils.OkHttpDns;
-import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 
 
 public class APP extends Application {
-    private static final String TAG = "APP";
     /**
      * 全局的android.content.Context
      */

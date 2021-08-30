@@ -17,6 +17,7 @@ import okio.Utf8;
 /**
  * Trivial Dns Encoder/Decoder, basically ripped from Netty full implementation.
  */
+@SuppressWarnings("unused")
 class DnsRecordCodec {
     private static final byte SERVFAIL = 2;
     private static final byte NXDOMAIN = 3;
@@ -28,6 +29,12 @@ class DnsRecordCodec {
     private DnsRecordCodec() {
     }
 
+    /**
+     * 加密请求
+     * @param host host
+     * @param type type
+     * @return byteString
+     */
     public static ByteString encodeQuery(String host, int type) {
         Buffer buf = new Buffer();
 
@@ -56,6 +63,12 @@ class DnsRecordCodec {
         return buf.readByteString();
     }
 
+    /**
+     * 解码请求
+     * @param byteString byteString
+     * @return ipString
+     * @throws EOFException e
+     */
     public static String decodeQuery(ByteString byteString) throws EOFException {
         StringBuilder query= new StringBuilder();
         Buffer buf = new Buffer();

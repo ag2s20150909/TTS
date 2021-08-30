@@ -103,15 +103,9 @@ android {
 dependencies {
 
 
-    implementation "androidx.recyclerview:recyclerview:1.2.0"
-    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
-    implementation "org.apache.commons:commons-lang3:3.12.0"
-
-    //网络
-    implementation 'com.squareup.okio:okio:2.10.0'
+    implementation "androidx.recyclerview:recyclerview:1.2.1"
     //An HTTP & HTTP/2 client for Android and Java applications.
-    //noinspection GradleDependency
-    implementation 'com.squareup.okhttp3:okhttp:4.9.1'
+    implementation 'com.squareup.okhttp3:okhttp:5.0.0-alpha.2'
 }
 
 static def releaseTime() {

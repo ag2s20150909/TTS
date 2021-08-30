@@ -16,7 +16,7 @@
 
 package com.franmontiel.persistentcookiejar;
 
-import android.util.Log;
+import androidx.annotation.NonNull;
 
 import com.franmontiel.persistentcookiejar.cache.CookieCache;
 import com.franmontiel.persistentcookiejar.persistence.CookiePersistor;
@@ -28,11 +28,11 @@ import java.util.List;
 import okhttp3.Cookie;
 import okhttp3.HttpUrl;
 
+@SuppressWarnings("unused")
 public class PersistentCookieJar implements ClearableCookieJar {
-    private static final String TAG=PersistentCookieJar.class.getSimpleName();
 
-    private CookieCache cache;
-    private CookiePersistor persistor;
+    private final CookieCache cache;
+    private final CookiePersistor persistor;
 
     public PersistentCookieJar(CookieCache cache, CookiePersistor persistor) {
         this.cache = cache;
@@ -42,7 +42,7 @@ public class PersistentCookieJar implements ClearableCookieJar {
     }
 
     @Override
-    synchronized public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
+    synchronized public void saveFromResponse(@NonNull HttpUrl url, @NonNull List<Cookie> cookies) {
         cache.addAll(cookies);
         persistor.saveAll(filterPersistentCookies(cookies));
     }
@@ -58,8 +58,9 @@ public class PersistentCookieJar implements ClearableCookieJar {
         return persistentCookies;
     }
 
+    @NonNull
     @Override
-    synchronized public List<Cookie> loadForRequest(HttpUrl url) {
+    synchronized public List<Cookie> loadForRequest(@NonNull HttpUrl url) {
         List<Cookie> cookiesToRemove = new ArrayList<>();
         List<Cookie> validCookies = new ArrayList<>();
 
@@ -77,9 +78,6 @@ public class PersistentCookieJar implements ClearableCookieJar {
         }
 
         persistor.removeAll(cookiesToRemove);
-        //Log.v(TAG,url.toString());
-        //Log.v(TAG,validCookies.toString());
-
         return validCookies;
     }
 

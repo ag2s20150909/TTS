@@ -3,6 +3,8 @@ package me.ag2s.tts.utils;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -25,9 +27,11 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okhttp3.internal.Util;
 import okhttp3.internal.publicsuffix.PublicSuffixDatabase;
 import okio.ByteString;
 
+@SuppressWarnings("unused")
 public class OkHttpDns implements Dns {
 
     public static final MediaType DNS_MESSAGE = MediaType.get("application/dns-message");
@@ -103,8 +107,9 @@ public class OkHttpDns implements Dns {
     }
 
 
+    @NonNull
     @Override
-    public List<InetAddress> lookup(String hostname) throws UnknownHostException {
+    public List<InetAddress> lookup(@NonNull String hostname) throws UnknownHostException {
         if (!resolvePrivateAddresses || !resolvePublicAddresses) {
             boolean privateHost = isPrivateHost(hostname);
 
@@ -159,7 +164,7 @@ public class OkHttpDns implements Dns {
         for (Call call : networkRequests) {
             call.enqueue(new Callback() {
                 @Override
-                public void onFailure(Call call, IOException e) {
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {
                     synchronized (failures) {
                         failures.add(e);
                     }
@@ -167,7 +172,7 @@ public class OkHttpDns implements Dns {
                 }
 
                 @Override
-                public void onResponse(Call call, Response response) {
+                public void onResponse(@NonNull Call call, @NonNull Response response) {
                     processResponse(response, hostname, responses, failures);
                     latch.countDown();
                 }
@@ -210,10 +215,11 @@ public class OkHttpDns implements Dns {
         UnknownHostException unknownHostException = new UnknownHostException(hostname);
         unknownHostException.initCause(failure);
 
-        for (int i = 1; i < failures.size(); i++) {
-            //Util.addIfAbsent(failures,unknownHostException);
-            //addSuppressedIfPossible(unknownHostException, failures.get(i));
-        }
+//        for (int i = 1; i < failures.size(); i++) {
+//            //Util.addIfAbsent(failures,unknownHostException);
+//            Util.addIfAbsent();
+//            addSuppressedIfPossible(unknownHostException, failures.get(i));
+//        }
 
         throw unknownHostException;
     }

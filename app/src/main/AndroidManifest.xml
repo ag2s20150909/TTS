@@ -26,7 +26,9 @@
 
 
         <!--       获取示例文本。-->
-        <activity android:name=".GetSampleText">
+        <activity
+            android:name=".GetSampleText"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.speech.tts.engine.GET_SAMPLE_TEXT" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -35,6 +37,7 @@
         <!--       下载语音文件。-->
         <activity
             android:name=".DownloadVoiceData"
+            android:exported="true"
             android:label="DownloadVoiceData">
             <intent-filter>
                 <action android:name="android.speech.tts.engine.INSTALL_TTS_DATA" />
@@ -45,6 +48,7 @@
         <!--       检查语音文件。-->
         <activity
             android:name=".CheckVoiceData"
+            android:exported="true"
             android:label="CheckVoiceData">
             <intent-filter>
                 <action android:name="android.speech.tts.engine.CHECK_TTS_DATA" />
@@ -53,6 +57,7 @@
         </activity>
         <activity
             android:name=".MainActivity"
+            android:exported="true"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

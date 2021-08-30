@@ -30,7 +30,7 @@ import okhttp3.Cookie;
  */
 class IdentifiableCookie {
 
-    private Cookie cookie;
+    private final Cookie cookie;
 
     static List<IdentifiableCookie> decorateAll(Collection<Cookie> cookies) {
         List<IdentifiableCookie> identifiableCookies = new ArrayList<>(cookies.size());

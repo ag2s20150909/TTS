@@ -3,10 +3,10 @@ package me.ag2s.tts.services;
 import org.jetbrains.annotations.NotNull;
 
 public class TtsOutputFormat {
-   public String name;
-   public String value;
-   public int HZ;
-   public int BitRate;
+   public final String name;
+   public final String value;
+   public final int HZ;
+   public final int BitRate;
    public boolean needDecode=false;
    public TtsOutputFormat(String name,int hz,int bitRate){
        this.name=name;

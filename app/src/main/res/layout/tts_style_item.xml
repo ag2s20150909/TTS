@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
     <TextView
-        android:textSize="10sp"
+        android:textSize="11sp"
         android:text="@string/tts_sample_zh"
         android:textStyle="normal"
         android:id="@+id/tts_style_des"

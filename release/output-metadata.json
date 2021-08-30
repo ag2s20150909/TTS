@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "artifactType": {
     "type": "APK",
     "kind": "Directory"
@@ -10,9 +10,11 @@
     {
       "type": "SINGLE",
       "filters": [],
+      "attributes": [],
       "versionCode": 1,
-      "versionName": "0.2_202105301426",
-      "outputFile": "TTS_release_v0.2_202105301426.apk"
+      "versionName": "0.2_202108301909",
+      "outputFile": "TTS_release_v0.2_202108301909.apk"
     }
-  ]
+  ],
+  "elementType": "File"
 }

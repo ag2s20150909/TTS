@@ -1,5 +1,7 @@
 package me.ag2s.tts;
 
+import static me.ag2s.tts.services.Constants.CUSTOM_VOICE;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -42,7 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import me.ag2s.tts.adapters.TtsActorAdapter;
 import me.ag2s.tts.adapters.TtsStyleAdapter;
-import me.ag2s.tts.services.TTSService;
+import me.ag2s.tts.services.Constants;
 import me.ag2s.tts.services.TtsActorManger;
 import me.ag2s.tts.services.TtsFormatManger;
 import me.ag2s.tts.services.TtsOutputFormat;
@@ -55,15 +57,9 @@ import me.ag2s.tts.utils.HttpTool;
 public class MainActivity extends Activity implements View.OnClickListener {
     private static final String TAG = "CheckVoiceData";
     private static final AtomicInteger mNextRequestId = new AtomicInteger(0);
-    private Switch aSwitch;
-    private Switch bSwitch;
-    private RecyclerView rv_styles;
-    private SeekBar seekBar;
     TextView tv_styleDegree;
     public SharedPreferences sharedPreferences;
 
-    private RecyclerView gv;
-    private Button btn_set_tts;
     private Button btn_IgnoringBatteryOptimizations;
     TextToSpeech textToSpeech;
 
@@ -73,18 +69,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         sharedPreferences = getApplicationContext().getSharedPreferences("TTS", Context.MODE_PRIVATE);
         setContentView(R.layout.activity_main);
-        btn_set_tts = findViewById(R.id.btn_set_tts);
+        Button btn_set_tts = findViewById(R.id.btn_set_tts);
         btn_IgnoringBatteryOptimizations = findViewById(R.id.btn_kill_battery);
         btn_set_tts.setOnClickListener(this);
         btn_IgnoringBatteryOptimizations.setOnClickListener(this);
-        gv = findViewById(R.id.gv);
-        aSwitch = findViewById(R.id.switch_use_custom_language);
-        bSwitch = findViewById(R.id.switch_use_auto_retry);
-        rv_styles = findViewById(R.id.rv_voice_styles);
-        seekBar = findViewById(R.id.tts_style_degree);
+        RecyclerView gv = findViewById(R.id.gv);
+        Switch aSwitch = findViewById(R.id.switch_use_custom_language);
+        Switch bSwitch = findViewById(R.id.switch_use_auto_retry);
+        RecyclerView rv_styles = findViewById(R.id.rv_voice_styles);
+        SeekBar seekBar = findViewById(R.id.tts_style_degree);
         tv_styleDegree = findViewById(R.id.tts_style_degree_value);
-        int styleIndex = sharedPreferences.getInt(TTSService.VOICE_STYLE_INDEX, 0);
-        int styleDegree = sharedPreferences.getInt(TTSService.VOICE_STYLE_DEGREE, 100);
+        int styleIndex = sharedPreferences.getInt(Constants.VOICE_STYLE_INDEX, 0);
+        int styleDegree = sharedPreferences.getInt(Constants.VOICE_STYLE_DEGREE, 100);
         tv_styleDegree.setText(styleDegree + "");
         seekBar.setProgress(styleDegree);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -93,7 +89,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 tv_styleDegree.setText(progress + "");
                 SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putInt(TTSService.VOICE_STYLE_DEGREE, progress);
+                editor.putInt(Constants.VOICE_STYLE_DEGREE, progress);
                 editor.apply();
 
             }
@@ -117,26 +113,26 @@ public class MainActivity extends Activity implements View.OnClickListener {
         linearLayoutManager.scrollToPositionWithOffset(styleIndex, 0);
         rvadapter.setItemClickListener((position, item) -> {
             SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString(TTSService.VOICE_STYLE, item.value);
-            editor.putInt(TTSService.VOICE_STYLE_INDEX, position);
+            editor.putString(Constants.VOICE_STYLE, item.value);
+            editor.putInt(Constants.VOICE_STYLE_INDEX, position);
             editor.apply();
         });
 
-        boolean isFChecked = sharedPreferences.getBoolean(TTSService.USE_CUSTOM_VOICE, false);
+        boolean isFChecked = sharedPreferences.getBoolean(Constants.USE_CUSTOM_VOICE, false);
         aSwitch.setChecked(isFChecked);
         //gv.setVisibility(isFChecked ? View.VISIBLE : View.INVISIBLE);
         aSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean(TTSService.USE_CUSTOM_VOICE, isChecked);
+            editor.putBoolean(Constants.USE_CUSTOM_VOICE, isChecked);
             //gv.setVisibility(isChecked ? View.VISIBLE : View.INVISIBLE);
             editor.apply();
         });
 
-        boolean useAutoRetry = sharedPreferences.getBoolean(TTSService.USE_AUTO_RETRY, false);
+        boolean useAutoRetry = sharedPreferences.getBoolean(Constants.USE_AUTO_RETRY, false);
         bSwitch.setChecked(useAutoRetry);
         bSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean(TTSService.USE_AUTO_RETRY, isChecked);
+            editor.putBoolean(Constants.USE_AUTO_RETRY, isChecked);
             editor.apply();
         });
 
@@ -154,21 +150,19 @@ public class MainActivity extends Activity implements View.OnClickListener {
             }
         }, this.getPackageName());
 
-        TtsActorAdapter adapter = new TtsActorAdapter(this);
-        gv.setAdapter(adapter);
-        adapter.upgrade(TtsActorManger.getInstance().getActors());//getActorsByLocale(Locale.getDefault()));
-        GridLayoutManager gvm = new GridLayoutManager(this, 3);
-        gv.setLayoutManager(gvm);
 
-        adapter.setSelect(gv, sharedPreferences.getInt(TTSService.CUSTOM_VOICE_INDEX, 0));
+        TtsActorAdapter adapter = new TtsActorAdapter(TtsActorManger.getInstance().getActors());
+        gv.setAdapter(adapter);
+        gv.setLayoutManager(new GridLayoutManager(this, 3));
+        adapter.setSelect(gv, sharedPreferences.getInt(Constants.CUSTOM_VOICE_INDEX, 0));
         adapter.setItemClickListener((position, item) -> {
-            boolean origin = sharedPreferences.getBoolean(TTSService.USE_CUSTOM_VOICE, false);
+            boolean origin = sharedPreferences.getBoolean(Constants.USE_CUSTOM_VOICE, false);
 
             if (origin) {
                 SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString(TTSService.CUSTOM_VOICE, item.getShortName());
-                editor.putInt(TTSService.CUSTOM_VOICE_INDEX, position);
-                adapter.setSelect(gv, position);
+                editor.putString(CUSTOM_VOICE, item.getShortName());
+                editor.putInt(Constants.CUSTOM_VOICE_INDEX, position);
+                //adapter.setSelect(gv, position);
                 editor.apply();
             }
 
@@ -186,11 +180,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
             }
 
         });
-        if (sharedPreferences.getBoolean(TTSService.USE_AUTO_UPDATE, true)) {
+        if (sharedPreferences.getBoolean(Constants.USE_AUTO_UPDATE, true)) {
             checkUpdate();
         }
-        //String lameVersion= new Mp3Encoder().getVersion();
-        //Log.e(TAG,"LAME:"+lameVersion);
 
 
     }
@@ -216,7 +208,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        //getMenuInflater().inflate(R.menu.app, menu);
         menu.add(Menu.NONE, Menu.FIRST + 1, 0, R.string.check_update);
         menu.add(Menu.NONE, Menu.FIRST + 2, 0, R.string.battery_optimizations);
 
@@ -224,9 +215,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 
         List<TtsOutputFormat> formats = TtsFormatManger.getInstance().getFormats();
-        int index = sharedPreferences.getInt(TTSService.AUDIO_FORMAT_INDEX, 0);
         for (int i = 0; i < formats.size(); i++) {
-            boolean b = i == index;
             aa.add(100, 1000 + i, 0, formats.get(i).name);
         }
 
@@ -239,14 +228,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(sharedPreferences.getInt(TTSService.AUDIO_FORMAT_INDEX, 0) + 1000).setChecked(true);
+        menu.findItem(sharedPreferences.getInt(Constants.AUDIO_FORMAT_INDEX, 0) + 1000).setChecked(true);
         return super.onPrepareOptionsMenu(menu);
     }
 
     @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int aindex = sharedPreferences.getInt(TTSService.AUDIO_FORMAT_INDEX, 0);
+        int aindex = sharedPreferences.getInt(Constants.AUDIO_FORMAT_INDEX, 0);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         switch (item.getItemId()) {
             case Menu.FIRST + 1:
@@ -256,12 +245,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 killBATTERY();
                 break;
             default:
-                if (item.getGroupId() == 100&&item.getItemId()>=1000&&item.getItemId()<1100) {
+                if (item.getGroupId() == 100 && item.getItemId() >= 1000 && item.getItemId() < 1100) {
                     int index = item.getItemId() - 1000;
                     boolean b = index == aindex;
                     item.setChecked(b);
                     Toast.makeText(this, TtsFormatManger.getInstance().getFormat(index).value, Toast.LENGTH_LONG).show();
-                    editor.putInt(TTSService.AUDIO_FORMAT_INDEX, index);
+                    editor.putInt(Constants.AUDIO_FORMAT_INDEX, index);
                     editor.apply();
                 } else {
                     return super.onOptionsItemSelected(item);
@@ -314,7 +303,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     })
                     .setNegativeButton("取消", (dialog, which) -> {
                         SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putBoolean(TTSService.USE_AUTO_UPDATE, false);
+                        editor.putBoolean(Constants.USE_AUTO_UPDATE, false);
                         editor.apply();
                     })
                     .create().show());
@@ -324,8 +313,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     public void setTTS() {
         Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-        //startActivity(intent);
-        //Intent intent = new Intent();
         intent.setAction("com.android.settings.TTS_SETTINGS");
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         this.startActivity(intent);
@@ -378,4 +365,5 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
         }
     }
+
 }

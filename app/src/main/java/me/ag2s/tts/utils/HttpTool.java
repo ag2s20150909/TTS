@@ -37,7 +37,7 @@ public class HttpTool {
         try {
             Response response = client.newCall(request).execute();
             if (response.isSuccessful()) {
-                return new String(response.body().bytes(), StandardCharsets.UTF_8);
+                return new String(Objects.requireNonNull(response.body()).bytes(), StandardCharsets.UTF_8);
             } else {
                 Log.e(TAG, HTTPERROR + response.message() + " errorCode:" + response.code());
                 return HTTPERROR + response.message() + " errorCode:" + response.code();
@@ -47,148 +47,7 @@ public class HttpTool {
         }
     }
 
-    public static String httpGet(String url, HashMap<String, String> header) {
-        OkHttpClient client = APP.getBootClient();
-        Request.Builder requestbuilder = new Request.Builder().get().url(url);
-        //String refer=url.substring(0,url.lastIndexOf("/")+1);
-        //requestbuilder.header("Referer", refer);
-        requestbuilder.header("User-Agent", PcUserAgent);
 
-        for (Map.Entry<String, String> entry : header.entrySet()) {
-            requestbuilder.addHeader(entry.getKey(), entry.getValue());
-        }
-
-        Request request = requestbuilder.build();
-        try {
-            Response response = client.newCall(request).execute();
-            if (response.isSuccessful()) {
-                return new String(Objects.requireNonNull(response.body()).bytes(), StandardCharsets.UTF_8);
-            } else {
-                return HTTPERROR + response.message() + " errorcode:" + response.code();
-            }
-        } catch (Exception e) {
-            return HTTPERROR + CommonTool.getStackTrace(e);
-        }
-    }
-
-    public static String httpGetPC(String url) {
-        OkHttpClient client = APP.getBootClient();
-        Request.Builder requestBuilder = new Request.Builder().get().url(url);
-        String refer = url.substring(0, url.lastIndexOf("/") + 1);
-        requestBuilder.header("Referer", refer);
-        requestBuilder.header("User-Agent", PcUserAgent);
-        Request request = requestBuilder.build();
-        try {
-            Response response = client.newCall(request).execute();
-            if (response.isSuccessful()) {
-                return new String(Objects.requireNonNull(response.body()).bytes(), StandardCharsets.UTF_8);
-            } else return HTTPERROR + response.message() + " errorCode:" + response.code();
-        } catch (Exception e) {
-            return HTTPERROR + CommonTool.getStackTrace(e);
-        }
-    }
-
-    public static byte[] getBytes(String url) {
-        final OkHttpClient client = APP.getBootClient();
-        Request.Builder requestBuilder = new Request.Builder().get().url(url);
-        requestBuilder.header("Referer", url);
-
-        requestBuilder.header("User-Agent", UA);
-        final Request request = requestBuilder.build();
-
-
-        try {
-
-            Response response = client.newCall(request).execute();
-            if (response.isSuccessful()) {
-                return Objects.requireNonNull(response.body()).bytes();
-            } else {
-                return null;
-            }
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    @SuppressWarnings("unused")
-    public static Bitmap getBitmap(String url) {
-        final OkHttpClient client = APP.getBootClient();
-        Request.Builder requestBuilder = new Request.Builder().get().url(url);
-        requestBuilder.header("Referer", url);
-
-
-        requestBuilder.header("User-Agent", UA);
-
-        final Request request = requestBuilder.build();
-
-
-        try {
-
-            Response response = client.newCall(request).execute();
-            if (response.isSuccessful()) {
-                // return new String(response.body().bytes(), "utf-8");
-                byte[] bs = Objects.requireNonNull(response.body()).bytes();
-                return BitmapFactory.decodeByteArray(bs, 0, bs.length);
-                //iv.setImageBitmap(b);
-            } else {
-
-                return getErrorBitmap(response.message() + "" + response.code());
-
-                // return "error:" + response.message() + " errorcode:" + response.code();
-            }
-        } catch (Exception e) {
-            return getErrorBitmap(e.toString());
-            //return "error:" + e.getMessage();
-        }
-
-
-    }
-
-
-    public static Bitmap getErrorBitmap(String t) {
-        Paint paint = new Paint();
-        paint.setColor(Color.RED);
-        Bitmap b = Bitmap.createBitmap(300, 400, Bitmap.Config.ARGB_8888);
-        Canvas c = new Canvas(b);
-        c.drawText(t, 9.f, 9.f, paint);
-        return b;
-    }
-
-    public static String httpPost(String url, HashMap<String, String> headers, HashMap<String, String> map) {
-        OkHttpClient.Builder buider = APP.getBootClient().newBuilder();
-        OkHttpClient client = buider.build();
-        //构建Body
-        FormBody.Builder params = new FormBody.Builder();
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            params.add(entry.getKey(), entry.getValue());
-        }
-
-        //构建headers
-        String refer = url.substring(0, url.lastIndexOf("/") + 1);
-        Request.Builder rbuilder = new Request.Builder()
-
-                .header("Referer", refer)
-                .header("User-Agent", PcUserAgent)
-                .url(url)
-                .post(params.build());
-        for (Map.Entry<String, String> entry : headers.entrySet()) {
-            rbuilder.addHeader(entry.getKey(), entry.getValue());
-        }
-
-        Request request = rbuilder.build();
-
-        try {
-            Response response = client.newCall(request).execute();
-            if (response.isSuccessful()) {
-                return new String(Objects.requireNonNull(response.body()).bytes(), StandardCharsets.UTF_8);
-            } else {
-                return HTTPERROR + response.message() + " errorcode:" + response.code();
-            }
-        } catch (Exception e) {
-            return HTTPERROR + CommonTool.getStackTrace(e);
-        }
-
-    }
 
     @SuppressWarnings("unused")
     public static String httpPost(String url, HashMap<String, String> map) {

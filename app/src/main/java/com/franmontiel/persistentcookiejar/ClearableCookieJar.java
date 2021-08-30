@@ -21,6 +21,7 @@ import okhttp3.CookieJar;
 /**
  * This interface extends {@link CookieJar} and adds methods to clear the cookies.
  */
+@SuppressWarnings("unused")
 public interface ClearableCookieJar extends CookieJar {
 
     /**

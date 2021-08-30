@@ -42,7 +42,7 @@ public class TtsConfig {
 
         private boolean sentenceBoundaryEnabled = false;
         private boolean wordBoundaryEnabled = true;
-        private int index;
+        private final int index;
 
         public TtsConfig build() {
             return new TtsConfig(this);

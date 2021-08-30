@@ -4,8 +4,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class TtsDict {
-    public String world;
-    public String ph;
+    private final String world;
+    private final String ph;
     public TtsDict(String wd,String ph){
       this.world=wd;
       this.ph=ph;
