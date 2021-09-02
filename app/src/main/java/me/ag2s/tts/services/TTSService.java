@@ -55,7 +55,7 @@ public class TTSService extends TextToSpeechService {
     public SharedPreferences sharedPreferences;
     private OkHttpClient client;
     private WebSocket webSocket;
-    private boolean isSynthesizing;
+    private volatile boolean isSynthesizing;
     //当前的生成格式
     private volatile TtsOutputFormat currentFormat;
     //当前的数据
@@ -180,11 +180,10 @@ public class TTSService extends TextToSpeechService {
     };
 
 
-    private void doDecode(SynthesisCallback cb, TtsOutputFormat format, ByteString data) {
+    private void doDecode(SynthesisCallback cb, @SuppressWarnings("unused") TtsOutputFormat format, ByteString data) {
         try {
             MediaExtractor mediaExtractor = new MediaExtractor();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                //mediaExtractor.setDataSource("data:"+currentMime+";base64,"+data.base64());
                 //在高版本上使用自定义MediaDataSource
                 mediaExtractor.setDataSource(new ByteArrayMediaDataSource(data.toByteArray()));
             } else {
@@ -293,7 +292,6 @@ public class TTSService extends TextToSpeechService {
                 //不一定能一次取完，所以要循环取
                 ByteBuffer outputBuffer;
                 byte[] pcmData;
-                //player.play();
                 while (outputIndex >= 0) {
                     outputBuffer = mediaCodec.getOutputBuffer(outputIndex);
                     pcmData = new byte[bufferInfo.size];
@@ -301,8 +299,6 @@ public class TTSService extends TextToSpeechService {
                         outputBuffer.get(pcmData);
                         outputBuffer.clear();//用完后清空，复用
                     }
-
-                    //player.write(pcmData, 0, bufferInfo.size);
                     cb.audioAvailable(pcmData, 0, bufferInfo.size);
                     //释放
                     mediaCodec.releaseOutputBuffer(outputIndex, false);
@@ -321,7 +317,7 @@ public class TTSService extends TextToSpeechService {
     }
 
 
-    private void doUnDecode(SynthesisCallback cb, TtsOutputFormat format, ByteString data) {
+    private void doUnDecode(SynthesisCallback cb, @SuppressWarnings("unused") TtsOutputFormat format, ByteString data) {
         int length = data.toByteArray().length;
         //最大BufferSize
         final int maxBufferSize = cb.getMaxBufferSize();
@@ -331,8 +327,6 @@ public class TTSService extends TextToSpeechService {
             cb.audioAvailable(data.toByteArray(), offset, bytesToWrite);
             offset += bytesToWrite;
         }
-        //cb.done();
-        //isSynthesizing = false;
     }
 
 
@@ -429,7 +423,8 @@ public class TTSService extends TextToSpeechService {
 
 
         int pitch = request.getPitch() - 100;
-        int rate = request.getSpeechRate() - 100;
+        int rate = request.getSpeechRate();
+        //Log.e(TAG, "速度" + rate);
         String rateString = rate >= 0 ? "+" + rate + "%" : rate + "%";
         String pitchString = pitch >= 0 ? "+" + pitch + "Hz" : pitch + "Hz";
 
@@ -467,21 +462,17 @@ public class TTSService extends TextToSpeechService {
                 "</prosody></voice></speak>" +
                 "";
         Log.d(TAG, "SSS:" + sb);
-
+        callback.start(format.HZ,
+                format.BitRate, 1 /* Number of channels. */);
 
         webSocket = getOrCreateWs();
-
         if (oldindex != index) {
             sendConfig(webSocket, ttsConfig);
             oldindex = index;
         }
-        //if (!currentFormat.needDecode) {
-        callback.start(format.HZ,
-                format.BitRate, 1 /* Number of channels. */);
-        //}
-
-
         webSocket.send(sb);
+
+
     }
 
     public OkHttpDns getDNS() {
@@ -654,8 +645,10 @@ public class TTSService extends TextToSpeechService {
      */
     @Override
     protected void onStop() {
-        //webSocket.close(1000,"closed by call onStop");
-        isSynthesizing = false;
+        webSocket.close(1000, "closed by call onStop");
+        //webSocket=null;
+        //isSynthesizing=false;
+        //isSynthesizing = false;
     }
 
 
@@ -666,43 +659,32 @@ public class TTSService extends TextToSpeechService {
      * @param callback 合成callback SynthesisCallback
      */
     @Override
-    protected void onSynthesizeText(SynthesisRequest request, SynthesisCallback callback) {
-        // Note that we call onLoadLanguage here since there is no guarantee
-        // that there would have been a prior call to this function.
+    protected synchronized void onSynthesizeText(SynthesisRequest request, SynthesisCallback callback) {
+
+
         int load = onLoadLanguage(request.getLanguage(), request.getCountry(),
                 request.getVariant());
-        // We might get requests for a language we don't support - in which case
-        // we error out early before wasting too much time.
         if (load == TextToSpeech.LANG_NOT_SUPPORTED) {
             callback.error(TextToSpeech.ERROR_INVALID_REQUEST);
             Log.e(TAG, "语言不支持:" + request.getLanguage());
             return;
         }
-        // At this point, we have loaded the language we need for synthesis and
-        // it is guaranteed that we support it so we proceed with synthesis.
 
-        // We denote that we are ready to start sending audio across to the
-        // framework. We use a fixed sampling rate (16khz), and send data across
-        // in 16bit PCM mono.
         this.callback = callback;
 
         isSynthesizing = true;
         //使用System.nanoTime()来保证获得的是精准的时间间隔
-
         long startTime = System.nanoTime();
         sendText(request, this.callback);
 
         while (isSynthesizing) {
-            try {
-                //Thread.sleep(100);
-                long time = System.nanoTime() - startTime;
-                //超时40秒后跳过
-                if (time > 50E9) {
-                    //callback.error(TextToSpeech.ERROR_NETWORK_TIMEOUT);
-                    isSynthesizing = false;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+
+            long time = System.nanoTime() - startTime;
+            //超时40秒后跳过
+            if (time > 50E9) {
+                //callback.error(TextToSpeech.ERROR_NETWORK_TIMEOUT);
+                isSynthesizing = false;
+                callback.done();
             }
         }
 
