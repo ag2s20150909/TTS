@@ -423,7 +423,7 @@ public class TTSService extends TextToSpeechService {
 
 
         int pitch = request.getPitch() - 100;
-        int rate = request.getSpeechRate();
+        int rate = request.getSpeechRate()-100;
         //Log.e(TAG, "速度" + rate);
         String rateString = rate >= 0 ? "+" + rate + "%" : rate + "%";
         String pitchString = pitch >= 0 ? "+" + pitch + "Hz" : pitch + "Hz";
@@ -679,6 +679,11 @@ public class TTSService extends TextToSpeechService {
 
         while (isSynthesizing) {
 
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             long time = System.nanoTime() - startTime;
             //超时40秒后跳过
             if (time > 50E9) {
