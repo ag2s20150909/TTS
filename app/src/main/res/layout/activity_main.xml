@@ -62,11 +62,13 @@
         android:visibility="visible">
 
         <TextView
+            android:layout_margin="5dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/tts_voice_style_degree" />
 
         <TextView
+            android:layout_margin="5dp"
             android:id="@+id/tts_style_degree_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -75,10 +77,21 @@
     </LinearLayout>
 
     <SeekBar
+        android:layout_margin="5dp"
         android:id="@+id/tts_style_degree"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:max="200"
+        android:min="1"
+        android:visibility="visible"
+        tools:targetApi="o" />
+
+    <SeekBar
+        android:layout_margin="5dp"
+        android:id="@+id/tts_voice_volume"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="100"
         android:min="1"
         android:visibility="visible"
         tools:targetApi="o" />

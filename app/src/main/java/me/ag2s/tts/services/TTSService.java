@@ -8,6 +8,8 @@ import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.ConditionVariable;
+import android.os.SystemClock;
 import android.speech.tts.SynthesisCallback;
 import android.speech.tts.SynthesisRequest;
 import android.speech.tts.TextToSpeech;
@@ -423,10 +425,11 @@ public class TTSService extends TextToSpeechService {
 
 
         int pitch = request.getPitch() - 100;
-        int rate = request.getSpeechRate()-100;
+        int rate = request.getSpeechRate() - 100;
         //Log.e(TAG, "速度" + rate);
         String rateString = rate >= 0 ? "+" + rate + "%" : rate + "%";
         String pitchString = pitch >= 0 ? "+" + pitch + "Hz" : pitch + "Hz";
+        int volume = sharedPreferences.getInt(Constants.VOICE_VOLUME, 100);
 
 
         String style = sharedPreferences.getString(Constants.VOICE_STYLE, "cheerful");
@@ -456,7 +459,7 @@ public class TTSService extends TextToSpeechService {
                 "<voice  name=\"" + name + "\">" +
                 "<prosody pitch=\"" + pitchString + "\" " +
                 "rate =\"" + rateString + "\" " +
-                "volume=\"+" + 0 + "%\">" +
+                "volume=\"" + volume + "\">" +
 //                text+
                 "<mstts:express-as  style=\"" + style + "\" styledegree=\"" + styleDegreeString + "\" >" + text + "</mstts:express-as>" +
                 "</prosody></voice></speak>" +
@@ -646,9 +649,6 @@ public class TTSService extends TextToSpeechService {
     @Override
     protected void onStop() {
         webSocket.close(1000, "closed by call onStop");
-        //webSocket=null;
-        //isSynthesizing=false;
-        //isSynthesizing = false;
     }
 
 
@@ -677,10 +677,10 @@ public class TTSService extends TextToSpeechService {
         long startTime = System.nanoTime();
         sendText(request, this.callback);
 
-        while (isSynthesizing) {
+       while (isSynthesizing) {
 
             try {
-                Thread.sleep(10);
+                this.wait(10);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

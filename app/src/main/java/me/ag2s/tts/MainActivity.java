@@ -62,6 +62,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private Button btn_IgnoringBatteryOptimizations;
     TextToSpeech textToSpeech;
+    int styleDegree;
+    int volumeValue;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -77,17 +79,24 @@ public class MainActivity extends Activity implements View.OnClickListener {
         Switch aSwitch = findViewById(R.id.switch_use_custom_language);
         Switch bSwitch = findViewById(R.id.switch_use_auto_retry);
         RecyclerView rv_styles = findViewById(R.id.rv_voice_styles);
+
         SeekBar seekBar = findViewById(R.id.tts_style_degree);
+        SeekBar volumeBar=findViewById(R.id.tts_voice_volume);
+
         tv_styleDegree = findViewById(R.id.tts_style_degree_value);
         int styleIndex = sharedPreferences.getInt(Constants.VOICE_STYLE_INDEX, 0);
-        int styleDegree = sharedPreferences.getInt(Constants.VOICE_STYLE_DEGREE, 100);
-        tv_styleDegree.setText(styleDegree + "");
+
+        styleDegree = sharedPreferences.getInt(Constants.VOICE_STYLE_DEGREE, 100);
+        volumeValue=sharedPreferences.getInt(Constants.VOICE_VOLUME,100);
+        tv_styleDegree.setText("强度:"+styleDegree + "音量:"+volumeValue);
         seekBar.setProgress(styleDegree);
+        volumeBar.setProgress(volumeValue);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @SuppressLint("SetTextI18n")
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                tv_styleDegree.setText(progress + "");
+                styleDegree=progress;
+                tv_styleDegree.setText("强度:"+styleDegree + "音量:"+volumeValue);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putInt(Constants.VOICE_STYLE_DEGREE, progress);
                 editor.apply();
@@ -104,6 +113,31 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
             }
         });
+        volumeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                volumeValue=progress;
+                tv_styleDegree.setText("强度:"+styleDegree + "音量:"+volumeValue);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putInt(Constants.VOICE_VOLUME, progress);
+                editor.apply();
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+
+
+
         List<TtsStyle> styles = TtsStyleManger.getInstance().getStyles();
         TtsStyleAdapter rvadapter = new TtsStyleAdapter(styles);
         rvadapter.setSelect(styleIndex);
