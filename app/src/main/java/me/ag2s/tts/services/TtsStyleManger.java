@@ -16,7 +16,7 @@ public class TtsStyleManger {
     private final List<TtsStyle> styles;
     private TtsStyleManger(){
         styles=new ArrayList<>();
-        styles.add(new TtsStyle("默认","","默认值"));
+        styles.add(new TtsStyle("默认","Default","默认值"));
         styles.add(new TtsStyle("新闻","newscast","以正式专业的语气叙述新闻"));
         styles.add(new TtsStyle("客服","customerservice","以友好热情的语气为客户提供支持"));
         styles.add(new TtsStyle("助手","assistant","以热情而轻松的语气对数字助理讲话"));

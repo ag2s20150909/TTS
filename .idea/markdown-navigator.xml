@@ -24,7 +24,7 @@
         <option name="SIM_TOC_BLANK_LINE_SPACER" value="true" />
       </ParserOptions>
     </ParserSettings>
-    <HtmlSettings headerTopEnabled="false" headerBottomEnabled="false" bodyTopEnabled="false" bodyBottomEnabled="false" addPageHeader="false" addAnchorLinks="true" anchorLinksWrapText="false" imageUriSerials="false" addDocTypeHtml="true" noParaTags="false" defaultUrlTitle="false" migratedPlantUml="false" migratedAnchorLinks="false" plantUmlConversion="0">
+    <HtmlSettings headerTopEnabled="false" headerBottomEnabled="false" bodyTopEnabled="false" bodyBottomEnabled="false" addPageHeader="false" addAnchorLinks="false" anchorLinksWrapText="false" imageUriSerials="false" addDocTypeHtml="true" noParaTags="false" defaultUrlTitle="false" migratedPlantUml="true" migratedAnchorLinks="true" plantUmlConversion="0">
       <GeneratorProvider>
         <provider providerId="com.vladsch.md.nav.editor.text.html.generator" providerName="Unmodified HTML Generator" />
       </GeneratorProvider>
@@ -32,7 +32,23 @@
       <headerBottom />
       <bodyTop />
       <bodyBottom />
-      <fencedCodeConversions />
+      <fencedCodeConversions>
+        <option name="c4plantuml" value="NONE" />
+        <option name="ditaa" value="NONE" />
+        <option name="erd" value="NONE" />
+        <option name="graphviz" value="NONE" />
+        <option name="latex" value="KATEX" />
+        <option name="math" value="KATEX" />
+        <option name="mermaid" value="NONE" />
+        <option name="nomnoml" value="NONE" />
+        <option name="plantuml" value="NONE" />
+        <option name="puml" value="NONE" />
+        <option name="svgbob" value="NONE" />
+        <option name="umlet" value="NONE" />
+        <option name="vega" value="NONE" />
+        <option name="vegalite" value="NONE" />
+        <option name="wavedrom" value="NONE" />
+      </fencedCodeConversions>
     </HtmlSettings>
     <CssSettings previewScheme="UI_SCHEME" cssUri="" isCssUriEnabled="false" isCssUriSerial="true" isCssTextEnabled="false" isDynamicPageWidth="true">
       <StylesheetProvider>

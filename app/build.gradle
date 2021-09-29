@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
     buildToolsVersion "30.0.3"
     //签名设置
     signingConfigs {
@@ -24,7 +24,7 @@ android {
     defaultConfig {
         applicationId "me.ag2s.tts"
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 1
         versionName "0.2_${releaseTime()}"
 
@@ -105,7 +105,7 @@ dependencies {
 
     implementation "androidx.recyclerview:recyclerview:1.2.1"
     //An HTTP & HTTP/2 client for Android and Java applications.
-    implementation 'com.squareup.okhttp3:okhttp:5.0.0-alpha.2'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.1'
 }
 
 static def releaseTime() {

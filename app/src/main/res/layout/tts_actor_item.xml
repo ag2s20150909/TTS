@@ -25,12 +25,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="微软晓晓"
+            android:textSize="16sp"
             android:textAppearance="@android:style/TextAppearance.Material.Medium"
             tools:ignore="HardcodedText" />
     </LinearLayout>
 
     <TextView
         android:id="@+id/act_des"
+        android:textSize="12sp"
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:text="@string/tts_sample_zh" />

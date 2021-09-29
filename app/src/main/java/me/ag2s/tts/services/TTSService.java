@@ -65,9 +65,9 @@ public class TTSService extends TextToSpeechService {
     public static MediaCodec mediaCodec;
     public volatile String currentMime;
 
-    public final static String[] supportedLanguages = {"zho-CHN", "zho-HKG", "zho-TWN", "eng-IRL", "bul-BGR", "nld-NLD", "lav-LVA", "est-EST", "fra-FRA", "gle-IRL", "ara-SAU", "deu-AUT", "eng-PHL", "fra-CHE", "por-BRA", "eng-GBR", "fin-FIN", "swe-SWE", "ukr-UKR", "ell-GRC", "ces-CZE", "msa-MYS", "tam-IND", "kor-KOR", "slv-SVN", "spa-MEX", "deu-DEU", "eng-CAN", "ita-ITA", "tur-TUR", "deu-CHE", "por-PRT", "tha-THA", "eng-IND", "ara-EGY", "fra-CAN", "hrv-HRV", "hun-HUN", "urd-PAK", "tel-IND", "nob-NOR", "eng-AUS", "jpn-JPN", "heb-ISR", "eng-USA", "ron-ROU", "cym-GBR", "hin-IND", "ind-IDN", "cat-ESP", "mlt-MLT", "rus-RUS", "vie-VNM", "slk-SVK", "nld-BEL", "fra-BEL", "lit-LTU", "dan-DNK"};
+    //public final static String[] supportedLanguages = {"zho-CHN", "zho-HKG", "zho-TWN", "eng-IRL", "bul-BGR", "nld-NLD", "lav-LVA", "est-EST", "fra-FRA", "gle-IRL", "ara-SAU", "deu-AUT", "eng-PHL", "fra-CHE", "por-BRA", "eng-GBR", "fin-FIN", "swe-SWE", "ukr-UKR", "ell-GRC", "ces-CZE", "msa-MYS", "tam-IND", "kor-KOR", "slv-SVN", "spa-MEX", "deu-DEU", "eng-CAN", "ita-ITA", "tur-TUR", "deu-CHE", "por-PRT", "tha-THA", "eng-IND", "ara-EGY", "fra-CAN", "hrv-HRV", "hun-HUN", "urd-PAK", "tel-IND", "nob-NOR", "eng-AUS", "jpn-JPN", "heb-ISR", "eng-USA", "ron-ROU", "cym-GBR", "hin-IND", "ind-IDN", "cat-ESP", "mlt-MLT", "rus-RUS", "vie-VNM", "slk-SVK", "nld-BEL", "fra-BEL", "lit-LTU", "dan-DNK"};
 
-    public final static String[] supportVoiceNames = {"de-DE-KatjaNeural", "en-AU-NatashaNeural", "en-CA-ClaraNeural", "en-GB-MiaNeural", "en-IN-NeerjaNeural", "en-US-AriaNeural", "en-US-GuyNeural", "es-ES-ElviraNeural", "es-MX-DaliaNeural", "fr-CA-SylvieNeural", "fr-FR-DeniseNeural", "hi-IN-SwaraNeural", "it-IT-ElsaNeural", "ja-JP-NanamiNeural", "ko-KR-SunHiNeural", "nl-NL-ColetteNeural", "pl-PL-ZofiaNeural", "pt-BR-FranciscaNeural", "ru-RU-SvetlanaNeural", "tr-TR-EmelNeural", "zh-CN-XiaoxiaoNeural", "zh-CN-YunyangNeural", "zh-HK-HiuGaaiNeural", "zh-TW-HsiaoYuNeural"};
+    //public final static String[] supportVoiceNames = {"de-DE-KatjaNeural", "en-AU-NatashaNeural", "en-CA-ClaraNeural", "en-GB-MiaNeural", "en-IN-NeerjaNeural", "en-US-AriaNeural", "en-US-GuyNeural", "es-ES-ElviraNeural", "es-MX-DaliaNeural", "fr-CA-SylvieNeural", "fr-FR-DeniseNeural", "hi-IN-SwaraNeural", "it-IT-ElsaNeural", "ja-JP-NanamiNeural", "ko-KR-SunHiNeural", "nl-NL-ColetteNeural", "pl-PL-ZofiaNeural", "pt-BR-FranciscaNeural", "ru-RU-SvetlanaNeural", "tr-TR-EmelNeural", "zh-CN-XiaoxiaoNeural", "zh-CN-YunyangNeural", "zh-HK-HiuGaaiNeural", "zh-TW-HsiaoYuNeural"};
 
     private volatile String[] mCurrentLanguage = null;
 
@@ -529,7 +529,7 @@ public class TTSService extends TextToSpeechService {
         Locale locale = new Locale(lang, country, variant);
         boolean isLanguage = false;
         boolean isCountry = false;
-        for (String lan : supportedLanguages) {
+        for (String lan : Constants.supportedLanguages) {
             String[] temp = lan.split("-");
             Locale locale1 = new Locale(temp[0], temp[1]);
             if (locale.getISO3Language().equals(locale1.getISO3Language())) {
@@ -555,7 +555,7 @@ public class TTSService extends TextToSpeechService {
 
     /**
      * 是否支持该语言。语言通过lang、country、variant这三个Locale的字段来表示，意思分别是语言、国家和地区，
-     * 比如zh-CN表示大陆汉语。这个方法看着简单，但我在这里栽坑了好久，就是因为对语言编码标准（ISO 639-1、ISO 639-2）不熟悉。
+     * 比如zh-CN表示大陆汉语。（ISO 639-1、ISO 639-2）。
      */
     @Override
     protected int onIsLanguageAvailable(String lang, String country, String variant) {
@@ -598,7 +598,7 @@ public class TTSService extends TextToSpeechService {
 
     @Override
     public int onIsValidVoiceName(String voiceName) {
-        for (String vn : supportVoiceNames) {
+        for (String vn : Constants.supportVoiceNames) {
             if (voiceName.equalsIgnoreCase(vn)) {
                 return TextToSpeech.SUCCESS;
             }
@@ -674,7 +674,7 @@ public class TTSService extends TextToSpeechService {
 
         isSynthesizing = true;
         //使用System.nanoTime()来保证获得的是精准的时间间隔
-        long startTime = System.nanoTime();
+        long startTime = SystemClock.elapsedRealtime();
         sendText(request, this.callback);
 
        while (isSynthesizing) {
@@ -684,9 +684,9 @@ public class TTSService extends TextToSpeechService {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            long time = System.nanoTime() - startTime;
-            //超时40秒后跳过
-            if (time > 50E9) {
+            long time =  SystemClock.elapsedRealtime() - startTime;
+            //超时50秒后跳过
+            if (time > 50000) {
                 //callback.error(TextToSpeech.ERROR_NETWORK_TIMEOUT);
                 isSynthesizing = false;
                 callback.done();

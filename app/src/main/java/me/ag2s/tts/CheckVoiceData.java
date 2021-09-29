@@ -8,7 +8,9 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
+import me.ag2s.tts.services.Constants;
 import me.ag2s.tts.services.TTSService;
 
 public class CheckVoiceData extends Activity {
@@ -21,7 +23,7 @@ public class CheckVoiceData extends Activity {
 
         //ArrayList<String> unavailable = new ArrayList<>();
 
-        ArrayList<String> available = new ArrayList<>(Arrays.asList(TTSService.supportedLanguages));
+        ArrayList<String> available = new ArrayList<>(Arrays.asList(Constants.supportedLanguages));
 
 
         Intent returnData = new Intent();

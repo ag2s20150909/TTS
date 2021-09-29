@@ -15,14 +15,17 @@ import java.util.Objects;
 
 import me.ag2s.tts.APP;
 import okhttp3.FormBody;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 
 public class HttpTool {
     private static final String TAG = HttpTool.class.getSimpleName();
     public static final String HTTPERROR = "error:";
+    public static final MediaType JSON = MediaType.get("application/json;charset=UTF-8");
 
 
     public static String httpGet(String url) {
@@ -50,7 +53,7 @@ public class HttpTool {
 
 
     @SuppressWarnings("unused")
-    public static String httpPost(String url, HashMap<String, String> map) {
+    public static String httpPost(String url,HashMap<String, String> headers, HashMap<String, String> map) {
         OkHttpClient.Builder httpBuilder = APP.getBootClient().newBuilder();
         OkHttpClient client = httpBuilder.build();
         FormBody.Builder params = new FormBody.Builder();
@@ -59,12 +62,48 @@ public class HttpTool {
         }
         String refer = url.substring(0, url.lastIndexOf("/") + 1);
 
-        Request request = new Request.Builder()
+        Request.Builder requestBuilder = new Request.Builder()
                 .url(url)
                 .header("Referer", refer)
                 .header("User-Agent", UA)
-                .post(params.build())
-                .build();
+                .post(params.build());
+
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            requestBuilder.header(entry.getKey(), entry.getValue());
+        }
+        Request request=requestBuilder.build();
+
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful()) {
+                return new String(Objects.requireNonNull(response.body()).bytes(), StandardCharsets.UTF_8);
+            } else {
+                return HTTPERROR + response.message() + " errorcode:" + response.code();
+            }
+        } catch (Exception e) {
+            return HTTPERROR + CommonTool.getStackTrace(e);
+        }
+
+    }
+
+    @SuppressWarnings("unused")
+    public static String httpPostJson(String url, HashMap<String, String> headers,String json) {
+        OkHttpClient.Builder httpBuilder = APP.getBootClient().newBuilder();
+        OkHttpClient client = httpBuilder.build();
+
+        RequestBody body=RequestBody.create(json, JSON);
+        String refer = url.substring(0, url.lastIndexOf("/") + 1);
+
+        Request.Builder requestBuilder = new Request.Builder()
+                .url(url)
+                .header("Referer", refer)
+                .header("User-Agent", UA)
+                .post(body);
+
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            requestBuilder.addHeader(entry.getKey(), entry.getValue());
+        }
+        Request request=requestBuilder.build();
 
         try {
             Response response = client.newCall(request).execute();

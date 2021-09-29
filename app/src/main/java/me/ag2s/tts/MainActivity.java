@@ -57,6 +57,7 @@ import me.ag2s.tts.utils.HttpTool;
 public class MainActivity extends Activity implements View.OnClickListener {
     private static final String TAG = "CheckVoiceData";
     private static final AtomicInteger mNextRequestId = new AtomicInteger(0);
+//    static ExecutorService executor = Executors.newSingleThreadExecutor();
     TextView tv_styleDegree;
     public SharedPreferences sharedPreferences;
 
@@ -81,22 +82,22 @@ public class MainActivity extends Activity implements View.OnClickListener {
         RecyclerView rv_styles = findViewById(R.id.rv_voice_styles);
 
         SeekBar seekBar = findViewById(R.id.tts_style_degree);
-        SeekBar volumeBar=findViewById(R.id.tts_voice_volume);
+        SeekBar volumeBar = findViewById(R.id.tts_voice_volume);
 
         tv_styleDegree = findViewById(R.id.tts_style_degree_value);
         int styleIndex = sharedPreferences.getInt(Constants.VOICE_STYLE_INDEX, 0);
 
         styleDegree = sharedPreferences.getInt(Constants.VOICE_STYLE_DEGREE, 100);
-        volumeValue=sharedPreferences.getInt(Constants.VOICE_VOLUME,100);
-        tv_styleDegree.setText("强度:"+styleDegree + "音量:"+volumeValue);
+        volumeValue = sharedPreferences.getInt(Constants.VOICE_VOLUME, 100);
+        tv_styleDegree.setText("强度:" + styleDegree + "音量:" + volumeValue);
         seekBar.setProgress(styleDegree);
         volumeBar.setProgress(volumeValue);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @SuppressLint("SetTextI18n")
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                styleDegree=progress;
-                tv_styleDegree.setText("强度:"+styleDegree + "音量:"+volumeValue);
+                styleDegree = progress;
+                tv_styleDegree.setText("强度:" + styleDegree + "音量:" + volumeValue);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putInt(Constants.VOICE_STYLE_DEGREE, progress);
                 editor.apply();
@@ -116,8 +117,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         volumeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                volumeValue=progress;
-                tv_styleDegree.setText("强度:"+styleDegree + "音量:"+volumeValue);
+                volumeValue = progress;
+                tv_styleDegree.setText("强度:" + styleDegree + "音量:" + volumeValue);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putInt(Constants.VOICE_VOLUME, progress);
                 editor.apply();
@@ -134,8 +135,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
             }
         });
-
-
 
 
         List<TtsStyle> styles = TtsStyleManger.getInstance().getStyles();
@@ -290,7 +289,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     return super.onOptionsItemSelected(item);
                 }
 
-
                 break;
         }
         return true;
@@ -399,5 +397,40 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
         }
     }
+
+//    public void updataActors() {
+//
+//        executor.submit(new Runnable() {
+//            @Override
+//            public void run() {
+//                StringBuilder sb=new StringBuilder();
+//                for(String s:Constants.SUPPORT_LOC){
+//                    String[] ss=s.split("-");
+//                    Locale locale=new Locale(ss[0],ss[1]);
+//                    sb.append("\"").append(locale.getISO3Language()).append("-" ).append(locale.getISO3Country()).append("\",");
+//                }
+//                Log.e(TAG,sb.toString());
+//            }
+//        });
+//
+//
+//    }
+//
+//    private final Handler mHandler = new Handler(Looper.getMainLooper()) {
+//
+//        @Override
+//        public void handleMessage(@NonNull Message msg) {
+//            switch (msg.what) {
+//                case 0:
+//                    //tv.setText(Html.fromHtml((String) msg.obj));
+//                    return;
+//                case 1:
+//                    //tv1.setText((String) msg.obj);
+//                    return;
+//            }
+//            super.handleMessage(msg);
+//        }
+//
+//    };
 
 }
