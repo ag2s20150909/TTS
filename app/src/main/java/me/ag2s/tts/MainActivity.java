@@ -10,8 +10,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.media.MediaCodecInfo;
-import android.media.MediaCodecList;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -46,6 +44,7 @@ import me.ag2s.tts.adapters.TtsActorAdapter;
 import me.ag2s.tts.adapters.TtsStyleAdapter;
 import me.ag2s.tts.services.Constants;
 import me.ag2s.tts.services.TtsActorManger;
+import me.ag2s.tts.services.TtsDictManger;
 import me.ag2s.tts.services.TtsFormatManger;
 import me.ag2s.tts.services.TtsOutputFormat;
 import me.ag2s.tts.services.TtsStyle;
@@ -207,6 +206,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 bundle.putString("language", locale.getISO3Language());
                 bundle.putString("country", locale.getISO3Country());
                 bundle.putString("variant", item.getGender() ? "Female" : "Male");
+                bundle.putString("utteranceId","Sample");
                 textToSpeech.speak(TtsVoiceSample.getByLocate(this, locale), TextToSpeech.QUEUE_FLUSH, bundle, MainActivity.class.getName() + mNextRequestId.getAndIncrement());
             } else {
                 Toast.makeText(MainActivity.this, "" + item.getShortName(), Toast.LENGTH_SHORT).show();
@@ -243,6 +243,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     public boolean onCreateOptionsMenu(Menu menu) {
         menu.add(Menu.NONE, Menu.FIRST + 1, 0, R.string.check_update);
         menu.add(Menu.NONE, Menu.FIRST + 2, 0, R.string.battery_optimizations);
+        menu.add(Menu.NONE, Menu.FIRST + 3, 0, R.string.update_dic);
 
         Menu aa = menu.addSubMenu(100, 100, 1, R.string.audio_format);
 
@@ -276,6 +277,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
             case Menu.FIRST + 2:
                 killBATTERY();
+                break;
+            case Menu.FIRST +3 :
+                TtsDictManger.getInstance().updateDict();
                 break;
             default:
                 if (item.getGroupId() == 100 && item.getItemId() >= 1000 && item.getItemId() < 1100) {
@@ -352,7 +356,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     @SuppressLint("BatteryLife")
     public void killBATTERY() {
-        test();
         Intent intent = new Intent();
         String packageName = getPackageName();
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -369,21 +372,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
 
-    public void test() {
-        MediaCodecList list = new MediaCodecList(MediaCodecList.REGULAR_CODECS);//REGULAR_CODECS参考api说明
-        MediaCodecInfo[] codecs = list.getCodecInfos();
-        Log.d(TAG, "Decoders: ");
-        for (MediaCodecInfo codec : codecs) {
-            if (codec.isEncoder())
-                continue;
-            Log.d(TAG, codec.getName());
-        }
-        Log.d(TAG, "Encoders: ");
-        for (MediaCodecInfo codec : codecs) {
-            if (codec.isEncoder())
-                Log.d(TAG, codec.getName());
-        }
-    }
+
 
     @SuppressLint("NonConstantResourceId")
     @Override
@@ -398,39 +387,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
     }
 
-//    public void updataActors() {
-//
-//        executor.submit(new Runnable() {
-//            @Override
-//            public void run() {
-//                StringBuilder sb=new StringBuilder();
-//                for(String s:Constants.SUPPORT_LOC){
-//                    String[] ss=s.split("-");
-//                    Locale locale=new Locale(ss[0],ss[1]);
-//                    sb.append("\"").append(locale.getISO3Language()).append("-" ).append(locale.getISO3Country()).append("\",");
-//                }
-//                Log.e(TAG,sb.toString());
-//            }
-//        });
-//
-//
-//    }
-//
-//    private final Handler mHandler = new Handler(Looper.getMainLooper()) {
-//
-//        @Override
-//        public void handleMessage(@NonNull Message msg) {
-//            switch (msg.what) {
-//                case 0:
-//                    //tv.setText(Html.fromHtml((String) msg.obj));
-//                    return;
-//                case 1:
-//                    //tv1.setText((String) msg.obj);
-//                    return;
-//            }
-//            super.handleMessage(msg);
-//        }
-//
-//    };
+
 
 }

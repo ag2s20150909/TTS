@@ -8,7 +8,6 @@ import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.ConditionVariable;
 import android.os.SystemClock;
 import android.speech.tts.SynthesisCallback;
 import android.speech.tts.SynthesisRequest;
@@ -343,7 +342,11 @@ public class TTSService extends TextToSpeechService {
      */
     public WebSocket getOrCreateWs() {
         if (this.webSocket != null) {
-            return this.webSocket;
+            boolean isSuccess = this.webSocket.send("");
+            if(isSuccess){
+                return this.webSocket;
+            }
+
         }
         Request request = new Request.Builder()
                 .url(Constants.EDGE_URL)
@@ -392,19 +395,15 @@ public class TTSService extends TextToSpeechService {
             Set<String> keySet = bundle.keySet();
             for (String key : keySet) {
                 Object value = bundle.get(key);
-                Log.d(TAG, "sendText" + key + ":" + value.toString());
+                Log.e(TAG, "sendText:" + key + ":" + value.toString());
             }
         }
 
         String text = CommonTool.FixTrim(request.getCharSequenceText().toString());
         Log.d(TAG, "源：" + text);
         //替换一些会导致不返回数据的特殊字符
-        //String temp = text.replaceAll("[-.<>*#@%$…]", "");
-        //换一些会导致不返回数据的特殊字符\p{N}
-        String temp = text.replaceAll("[\\s\\p{P}\\p{Z}\\p{S}]", "");
-        Log.d(TAG, "长度：" + temp.length());
         //长度为0，直接跳过。
-        if (temp.length() < 1) {
+        if (CommonTool.isNoVoice(text)) {
             callback.start(format.HZ,
                     format.BitRate, 1 /* Number of channels. */);
             callback.done();
@@ -417,7 +416,15 @@ public class TTSService extends TextToSpeechService {
 
         //测试词典功能
         //"<phoneme alphabet='sapi' ph='cao 4 ni 3 ma 1' >艹尼M</phoneme>"
-        text = "<![CDATA[" + text + "]]>";
+        //text = "<![CDATA[" + text + "]]>";
+        text=text.replace("……","<break strength=\"strong\" />");
+
+        List<TtsDict> dicts=TtsDictManger.getInstance().getDict();
+        for(TtsDict dict:dicts){
+            text=text.replace(dict.getWorld(),dict.getXML());
+        }
+
+
 
         //text=CommonTool.encodeHtml(text);
         Log.d(TAG, "源：" + text);
@@ -427,8 +434,7 @@ public class TTSService extends TextToSpeechService {
         int pitch = request.getPitch() - 100;
         int rate = request.getSpeechRate() - 100;
         //Log.e(TAG, "速度" + rate);
-        String rateString = rate >= 0 ? "+" + rate + "%" : rate + "%";
-        String pitchString = pitch >= 0 ? "+" + pitch + "Hz" : pitch + "Hz";
+
         int volume = sharedPreferences.getInt(Constants.VOICE_VOLUME, 100);
 
 
@@ -445,26 +451,16 @@ public class TTSService extends TextToSpeechService {
 
         String RequestId = CommonTool.getMD5String(text + time + request.getCallerUid());
 
+
         String xml = locale.getLanguage() + "-" + locale.getCountry();
 
 
+
         Log.d(TAG, "SSS:" + name);
-        Log.d(TAG, "SSS:" + xml);
-        //role='OlderAdultMale'
-        String sb = "X-RequestId:" + RequestId + "\r\n" +
-                "Content-Type:application/ssml+xml\r\n" +
-                "X-Timestamp:" + time + "Z\r\n" +
-                "Path:ssml\r\n\r\n" +
-                "<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xmlns:mstts=\"https://www.w3.org/2001/mstts\" xml:lang=\"" + xml + "\">" +
-                "<voice  name=\"" + name + "\">" +
-                "<prosody pitch=\"" + pitchString + "\" " +
-                "rate =\"" + rateString + "\" " +
-                "volume=\"" + volume + "\">" +
-//                text+
-                "<mstts:express-as  style=\"" + style + "\" styledegree=\"" + styleDegreeString + "\" >" + text + "</mstts:express-as>" +
-                "</prosody></voice></speak>" +
-                "";
-        Log.d(TAG, "SSS:" + sb);
+        Log.e(TAG, "SSS:" + text);
+
+        String sb=CommonTool.getSSML(text,RequestId,time,name,style,styleDegreeString,pitch,rate,volume,xml);
+        Log.e(TAG, "SSS:" + sb);
         callback.start(format.HZ,
                 format.BitRate, 1 /* Number of channels. */);
 
@@ -515,7 +511,6 @@ public class TTSService extends TextToSpeechService {
         client = APP.getBootClient().newBuilder()
                 .cookieJar(new PersistentCookieJar(new SetCookieCache(),
                         new SharedPrefsCookiePersistor(getApplicationContext())))
-                //.addNetworkInterceptor(new LoggingInterceptor())
                 //.pingInterval(40, TimeUnit.SECONDS) // 设置 PING 帧发送间隔
                 .dns(getDNS())
                 .build();
@@ -634,7 +629,10 @@ public class TTSService extends TextToSpeechService {
      * is always called from a single thread only).
      */
     @Override
-    protected int onLoadLanguage(String lang, String country, String variant) {
+    protected int onLoadLanguage(String _lang, String _country, String _variant) {
+        String lang=_lang==null?"":_lang;
+        String country=_country==null?"":_country;
+        String variant=_variant==null?"":_variant;
         int result = onIsLanguageAvailable(lang, country, variant);
         if (result == TextToSpeech.LANG_COUNTRY_AVAILABLE || TextToSpeech.LANG_AVAILABLE == result || result == TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE) {
             mCurrentLanguage = new String[]{lang, country, variant};
@@ -687,7 +685,7 @@ public class TTSService extends TextToSpeechService {
             long time =  SystemClock.elapsedRealtime() - startTime;
             //超时50秒后跳过
             if (time > 50000) {
-                //callback.error(TextToSpeech.ERROR_NETWORK_TIMEOUT);
+                callback.error(TextToSpeech.ERROR_NETWORK_TIMEOUT);
                 isSynthesizing = false;
                 callback.done();
             }

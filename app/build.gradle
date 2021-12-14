@@ -105,7 +105,7 @@ dependencies {
 
     implementation "androidx.recyclerview:recyclerview:1.2.1"
     //An HTTP & HTTP/2 client for Android and Java applications.
-    implementation 'com.squareup.okhttp3:okhttp:4.9.1'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.2'
 }
 
 static def releaseTime() {

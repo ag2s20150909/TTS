@@ -103,7 +103,7 @@ public class TtsActorManger {
         //en-US,Eric,en-US-EricNeural,Male
         //en-US,Guy,en-US-GuyNeural,Male
         //en-US,Jacob,en-US-JacobNeural,Male
-        //en-US,Jenny Multilingual,en-US-JennyMultilingualNeural,Female
+        //en-US,Jenny Multilingual,en-US-JennyMultilingualNeural,Female "de-DE,en-AU,en-CA,en-GB,es-ES,es-MX,fr-CA,fr-FR,it-IT,ja-JP,ko-KR,pt-BR,zh-CN"
         //en-US,Jenny,en-US-JennyNeural,Female
         //en-US,Michelle,en-US-MichelleNeural,Female
         //en-US,Monica,en-US-MonicaNeural,Female
@@ -538,13 +538,21 @@ public class TtsActorManger {
         return list;
     }
 
-
+    /**
+     * 获取所有Actor
+     * @return List<TtsActor>
+     */
     @SuppressWarnings("unused")
     public synchronized List<TtsActor> getActors() {
         return sortByLocale(this.actors, Locale.getDefault());
         //return this.actors;
     }
 
+    /**
+     * 获取当前Locale支持的Actor
+     * @param locale locale
+     * @return List<TtsActor>
+     */
     @SuppressWarnings("unused")
     public List<TtsActor> getActorsByLocale(Locale locale) {
         List<TtsActor> newActors = new ArrayList<>();

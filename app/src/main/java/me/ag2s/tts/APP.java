@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
 
-import me.ag2s.tts.utils.LoggingInterceptor;
 import okhttp3.OkHttpClient;
 
 
@@ -33,7 +32,6 @@ public class APP extends Application {
     public static OkHttpClient getBootClient() {
         if (bootClient == null) {
             bootClient = new OkHttpClient.Builder()
-                    .addNetworkInterceptor(new LoggingInterceptor())
                     .build();
         }
         return bootClient;
@@ -44,12 +42,12 @@ public class APP extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        mContext = this;
+        mContext = this.getApplicationContext();
     }
 
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
-        mContext = this;
+        mContext = getApplicationContext();
     }
 }

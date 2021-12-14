@@ -19,6 +19,7 @@
 
     <string name="set_tts">设置TTS</string>
     <string name="kill_battery">电池优化</string>
+    <string name="update_dic">更新词典</string>
     <string name="use_custom_language">自定义</string>
     <string name="tts_voice_style">讲话风格(无效值将将忽略)</string>
     <string name="tts_voice_style_degree">风格强度与合成音量</string>
