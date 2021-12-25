@@ -13,6 +13,8 @@ import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.HttpUrl;
@@ -40,7 +42,12 @@ public class APP extends Application {
                 if (okHttpClient == null) {
                     DnsOverHttps dns = new DnsOverHttps.Builder().client(
                             APP.bootClient.newBuilder().cache(getCache("doh", 1024 * 1024 * 100)).build())
-                            .url(HttpUrl.get("https://dns.google/dns-query"))//30ms
+                            .url(HttpUrl.get("https://dns.alidns.com/dns-query"))
+                            .bootstrapDnsHosts(
+                                    getByName("223.5.5.5"),
+                                    getByName("223.6.6.6"),
+                                    getByName("2400:3200::1"),
+                                    getByName("2400:3200:baba::1"))
                             .includeIPv6(true)
                             .build();
                     okHttpClient = bootClient.newBuilder()
@@ -53,6 +60,14 @@ public class APP extends Application {
             }
         }
         return okHttpClient;
+    }
+
+    public static InetAddress getByName(String ip){
+        try {
+            return InetAddress.getByName(ip);
+        } catch (UnknownHostException e) {
+            return null;
+        }
     }
 
 
