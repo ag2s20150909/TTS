@@ -17,10 +17,10 @@ public class TtsStyle {
      */
     public final String extra;
 
-    public TtsStyle(String name,String value,String extra){
-        this.name=name;
-        this.value=value;
-        this.extra=extra;
+    public TtsStyle(String name, String value, String extra) {
+        this.name = name;
+        this.value = value;
+        this.extra = extra;
     }
 
 

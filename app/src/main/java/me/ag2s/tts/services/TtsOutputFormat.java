@@ -22,6 +22,7 @@ public class TtsOutputFormat {
        this.needDecode=needDecode;
     }
 
+    @SuppressWarnings("unused")
     public void setNeedDecode(boolean needDecode) {
         this.needDecode = needDecode;
     }

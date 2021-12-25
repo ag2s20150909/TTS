@@ -17,6 +17,7 @@ public class TtsDict implements Comparable<TtsDict> {
     public String getXML(){
         return "<phoneme alphabet='sapi' ph='"+this.ph+"' >"+this.world+"</phoneme>";
     }
+    @SuppressWarnings("unused")
     public JSONObject toJsonObject() throws JSONException {
        JSONObject jo= new JSONObject();
        jo.put("wd",world);

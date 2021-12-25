@@ -16,11 +16,11 @@ import me.ag2s.tts.R;
 import me.ag2s.tts.services.TtsStyle;
 
 public class TtsStyleAdapter extends RecyclerView.Adapter<TtsStyleAdapter.MyHolder> {
-
+    @SuppressWarnings("unused")
     public int getSelect() {
         return select;
     }
-
+    @SuppressWarnings("unused")
     public void setSelect(RecyclerView rv, int select) {
         setSelect(select);
         RecyclerView.LayoutManager layoutManager = rv.getLayoutManager();

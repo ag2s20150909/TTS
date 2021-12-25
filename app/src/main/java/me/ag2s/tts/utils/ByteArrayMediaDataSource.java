@@ -8,17 +8,20 @@ import androidx.annotation.RequiresApi;
 @RequiresApi(api = Build.VERSION_CODES.M)
 public class ByteArrayMediaDataSource extends MediaDataSource {
 
-    private byte [] data;
+    private byte[] data;
 
-    public ByteArrayMediaDataSource(byte [] data) {
-        this.data=data;
+    public ByteArrayMediaDataSource(byte[] data) {
+        this.data = data;
     }
+
     @Override
     public int readAt(long position, byte[] buffer, int offset, int size) {
-        if(position>=data.length){return -1;}
-        int endPosition= (int) (position + size);
-        int size2=size;
-        if (endPosition > data.length){
+        if (position >= data.length) {
+            return -1;
+        }
+        int endPosition = (int) (position + size);
+        int size2 = size;
+        if (endPosition > data.length) {
             size2 -= endPosition - data.length;
         }
         System.arraycopy(data, (int) position, buffer, offset, size2);
@@ -32,6 +35,6 @@ public class ByteArrayMediaDataSource extends MediaDataSource {
 
     @Override
     public void close() {
-       data=null;
+        data = null;
     }
 }

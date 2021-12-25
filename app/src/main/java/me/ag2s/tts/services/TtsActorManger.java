@@ -60,8 +60,6 @@ public class TtsActorManger {
         actors.add(new TtsActor("晓颜", "zh-CN-XiaoyanNeural", "zh-CN", true, "使用 SSML 提供多种语音风格"));
 
 
-
-
         actors.add(new TtsActor("曉佳", "zh-HK-HiuGaaiNeural", "zh-HK", true, "曉佳(HiuGaai),粤语女声"));
         actors.add(new TtsActor("曉曼", "zh-HK-HiuMaanNeural", "zh-HK", true, "曉曼(HiuMaan),粤语女声"));
         actors.add(new TtsActor("雲龍", "zh-HK-WanLungNeural", "zh-HK", false, "雲龍(WanLung),粤语男声"));
@@ -77,19 +75,17 @@ public class TtsActorManger {
         actors.add(new TtsActor("雲哲", "zh-TW-YunJheNeural", "zh-TW", false, "雲哲(YunJhe),湾湾男声"));
 
 
-
-
         //日语（日本）
         //ja-JP,七海,ja-JP-NanamiNeural,Female
         //ja-JP,圭太,ja-JP-KeitaNeural,Male
-        actors.add(new TtsActor("七海","ja-JP-NanamiNeural", "ja-JP",true, "七海(Nanami),日语女声"));
-        actors.add(new TtsActor("圭太","ja-JP-KeitaNeural", "ja-JP",false, "圭太(Keita),日语男声"));
+        actors.add(new TtsActor("七海", "ja-JP-NanamiNeural", "ja-JP", true, "七海(Nanami),日语女声"));
+        actors.add(new TtsActor("圭太", "ja-JP-KeitaNeural", "ja-JP", false, "圭太(Keita),日语男声"));
 
         //韩语（韩国）
         //ko-KR,선히,ko-KR-SunHiNeural,Female
         //ko-KR,인준,ko-KR-InJoonNeural,Male
-        actors.add(new TtsActor("선히","ko-KR-SunHiNeural", "ko-KR",true, "선히(SunHi),韩语女声"));
-        actors.add(new TtsActor("인준","ko-KR-InJoonNeural", "ko-KR",false, "인준(InJoon),韩语男声"));
+        actors.add(new TtsActor("선히", "ko-KR-SunHiNeural", "ko-KR", true, "선히(SunHi),韩语女声"));
+        actors.add(new TtsActor("인준", "ko-KR-InJoonNeural", "ko-KR", false, "인준(InJoon),韩语男声"));
 
         //美式英语
         //en-US,Amber,en-US-AmberNeural,Female
@@ -109,24 +105,23 @@ public class TtsActorManger {
         //en-US,Monica,en-US-MonicaNeural,Female
         //en-US,Sara,en-US-SaraNeural,Female
 
-        actors.add(new TtsActor("Jenny+","en-US-JennyMultilingualNeural","en-US" ,true, "多语言，支持中文，美式英语，成年女性"));
-        actors.add(new TtsActor("Amber","en-US-AmberNeural","en-US" ,true, "美式英语，年轻女性"));
-        actors.add(new TtsActor("Ana","en-US-AnaNeural","en-US" ,true, "美式英语，女童"));
-        actors.add(new TtsActor("Aria","en-US-AriaNeural","en-US" ,true, "美式英语，成年女性"));
-        actors.add(new TtsActor("Ashley","en-US-AshleyNeural","en-US" ,true, "美式英语，成年女性"));
-        actors.add(new TtsActor("Cora","en-US-CoraNeural","en-US" ,true, "美式英语，成年女性"));
-        actors.add(new TtsActor("Elizabeth","en-US-ElizabethNeural","en-US" ,true, "美式英语，成年女性"));
-        actors.add(new TtsActor("Jenny","en-US-JennyNeural","en-US" ,true, "美式英语，成年女性"));
-        actors.add(new TtsActor("Michelle","en-US-MichelleNeural","en-US" ,true, "美式英语，成年女性"));
-        actors.add(new TtsActor("Monica","en-US-MonicaNeural","en-US" ,true, "美式英语，成年女性"));
-        actors.add(new TtsActor("Sara","en-US-SaraNeural","en-US" ,true, "美式英语，成年女性"));
+        actors.add(new TtsActor("Jenny+", "en-US-JennyMultilingualNeural", "en-US", true, "多语言，支持中文，美式英语，成年女性"));
+        actors.add(new TtsActor("Amber", "en-US-AmberNeural", "en-US", true, "美式英语，年轻女性"));
+        actors.add(new TtsActor("Ana", "en-US-AnaNeural", "en-US", true, "美式英语，女童"));
+        actors.add(new TtsActor("Aria", "en-US-AriaNeural", "en-US", true, "美式英语，成年女性"));
+        actors.add(new TtsActor("Ashley", "en-US-AshleyNeural", "en-US", true, "美式英语，成年女性"));
+        actors.add(new TtsActor("Cora", "en-US-CoraNeural", "en-US", true, "美式英语，成年女性"));
+        actors.add(new TtsActor("Elizabeth", "en-US-ElizabethNeural", "en-US", true, "美式英语，成年女性"));
+        actors.add(new TtsActor("Jenny", "en-US-JennyNeural", "en-US", true, "美式英语，成年女性"));
+        actors.add(new TtsActor("Michelle", "en-US-MichelleNeural", "en-US", true, "美式英语，成年女性"));
+        actors.add(new TtsActor("Monica", "en-US-MonicaNeural", "en-US", true, "美式英语，成年女性"));
+        actors.add(new TtsActor("Sara", "en-US-SaraNeural", "en-US", true, "美式英语，成年女性"));
 
-        actors.add(new TtsActor("Brandon","en-US-BrandonNeural","en-US" ,false, "美式英语，成年男性"));
-        actors.add(new TtsActor("Christopher","en-US-ChristopherNeural","en-US" ,false, "美式英语，成年男性"));
-        actors.add(new TtsActor("Eric","en-US-EricNeural","en-US" ,false, "美式英语，成年男性"));
-        actors.add(new TtsActor("Guy","en-US-GuyNeural","en-US" ,false, "美式英语，成年男性"));
-        actors.add(new TtsActor("Jacob","en-US-JacobNeural","en-US" ,false, "美式英语，成年男性"));
-
+        actors.add(new TtsActor("Brandon", "en-US-BrandonNeural", "en-US", false, "美式英语，成年男性"));
+        actors.add(new TtsActor("Christopher", "en-US-ChristopherNeural", "en-US", false, "美式英语，成年男性"));
+        actors.add(new TtsActor("Eric", "en-US-EricNeural", "en-US", false, "美式英语，成年男性"));
+        actors.add(new TtsActor("Guy", "en-US-GuyNeural", "en-US", false, "美式英语，成年男性"));
+        actors.add(new TtsActor("Jacob", "en-US-JacobNeural", "en-US", false, "美式英语，成年男性"));
 
 
         //英式英语
@@ -241,7 +236,6 @@ public class TtsActorManger {
         actors.add(new TtsActor("nl-NL-ColetteNeural", true, "常规"));
         actors.add(new TtsActor("nl-NL-FennaNeural", true, "常规"));
         actors.add(new TtsActor("nl-NL-MaartenNeural", false, "常规"));
-
 
 
         //爱沙尼亚语(爱沙尼亚)
@@ -487,7 +481,7 @@ public class TtsActorManger {
         //sw-KE,Zuri,sw-KE-ZuriNeural,Female
         actors.add(new TtsActor("sw-KE-ZuriNeural", true, "常规"));
         actors.add(new TtsActor("sw-KE-RafikiNeural", false, "常规"));
-        Log.d(TAG,actors.size()+"");
+        Log.d(TAG, actors.size() + "");
 
 
     }
@@ -503,7 +497,7 @@ public class TtsActorManger {
             boolean b22 = loc2.getISO3Country().equals(locale.getISO3Country());
             boolean b23 = loc2.getDisplayVariant(Locale.US).equals(locale.getDisplayVariant(Locale.US));
             //语言不同
-            if ((!b11)&&(!b21)) {
+            if ((!b11) && (!b21)) {
                 return 0;
             }
             //两个都相同
@@ -540,6 +534,7 @@ public class TtsActorManger {
 
     /**
      * 获取所有Actor
+     *
      * @return List<TtsActor>
      */
     @SuppressWarnings("unused")
@@ -550,6 +545,7 @@ public class TtsActorManger {
 
     /**
      * 获取当前Locale支持的Actor
+     *
      * @param locale locale
      * @return List<TtsActor>
      */

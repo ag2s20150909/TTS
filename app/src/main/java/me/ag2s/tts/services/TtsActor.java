@@ -50,7 +50,7 @@ public class TtsActor {
         this.locale = shortName.substring(0, shortName.lastIndexOf(tag));
 
     }
-
+    @SuppressWarnings("unused")
     public TtsActor(String name, String shortName, String locate, boolean gender) {
         this(name, shortName, locate, gender, "");
     }
@@ -66,7 +66,7 @@ public class TtsActor {
     public String getShortName() {
         return shortName;
     }
-
+    @SuppressWarnings("unused")
     public void setShortName(String shortName) {
         this.shortName = shortName;
     }
@@ -75,6 +75,7 @@ public class TtsActor {
         return gender;
     }
 
+    @SuppressWarnings("unused")
     public void setGender(boolean gender) {
         this.gender = gender;
     }
@@ -89,7 +90,7 @@ public class TtsActor {
         String[] temp = locale.split(tag);
         return new Locale(temp[0], temp[1], gender ? "Female" : "Male");
     }
-
+    @SuppressWarnings("unused")
     public void setLocale(String locale) {
         this.locale = locale;
     }
@@ -98,7 +99,7 @@ public class TtsActor {
     public String getNote() {
         return note;
     }
-
+    @SuppressWarnings("unused")
     public void setNote(String note) {
         this.note = note;
     }

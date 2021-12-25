@@ -81,7 +81,7 @@ class DnsRecordCodec {
         buf.readShort(); // additional
         int len;
         String[] ss;
-        while ((len=(int)buf.readByte())!=0){
+        while ((len= buf.readByte())!=0){
             query.append(buf.readUtf8(len)).append(".");
         }
         query.deleteCharAt(query.length()-1);

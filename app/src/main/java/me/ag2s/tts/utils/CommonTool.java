@@ -12,8 +12,8 @@ import java.util.regex.Pattern;
 
 public class CommonTool {
 
-   static Pattern NoVoicePattern =Pattern.compile("[\\s\\p{C}\\p{P}\\p{Z}\\p{S}]");
-   static BreakIterator br=BreakIterator.getSentenceInstance();
+   static final Pattern NoVoicePattern =Pattern.compile("[\\s\\p{C}\\p{P}\\p{Z}\\p{S}]");
+   static final BreakIterator br=BreakIterator.getSentenceInstance();
 
    public static String getFormatSentence(String txt){
        StringBuilder sb=new StringBuilder();

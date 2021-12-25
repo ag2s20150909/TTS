@@ -3,12 +3,18 @@ package me.ag2s.tts.utils;
 import android.util.Log;
 import android.webkit.WebSettings;
 
+import androidx.annotation.NonNull;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 import me.ag2s.tts.APP;
+import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -18,13 +24,20 @@ import okhttp3.Response;
 
 
 public class HttpTool {
+
+    public interface DownloadCallBack {
+        void onSucces(String path);
+
+        void onError(String err);
+    }
+
     private static final String TAG = HttpTool.class.getSimpleName();
     public static final String HTTPERROR = "error:";
     public static final MediaType JSON = MediaType.get("application/json;charset=UTF-8");
 
 
     public static String httpGet(String url) {
-        OkHttpClient client = APP.getBootClient();
+        OkHttpClient client = APP.getOkHttpClient();
         Request.Builder requestBuilder = new Request.Builder().get().url(url);
         String refer = url.substring(0, url.lastIndexOf("/") + 1);
         requestBuilder.header("Referer", refer);
@@ -46,11 +59,10 @@ public class HttpTool {
     }
 
 
-
     @SuppressWarnings("unused")
-    public static String httpPost(String url,HashMap<String, String> headers, HashMap<String, String> map) {
-        OkHttpClient.Builder httpBuilder = APP.getBootClient().newBuilder();
-        OkHttpClient client = httpBuilder.build();
+    public static String httpPost(String url, HashMap<String, String> headers, HashMap<String, String> map) {
+
+        OkHttpClient client = APP.getOkHttpClient();
         FormBody.Builder params = new FormBody.Builder();
         for (Map.Entry<String, String> entry : map.entrySet()) {
             params.add(entry.getKey(), entry.getValue());
@@ -66,7 +78,7 @@ public class HttpTool {
         for (Map.Entry<String, String> entry : headers.entrySet()) {
             requestBuilder.header(entry.getKey(), entry.getValue());
         }
-        Request request=requestBuilder.build();
+        Request request = requestBuilder.build();
 
         try {
             Response response = client.newCall(request).execute();
@@ -81,12 +93,39 @@ public class HttpTool {
 
     }
 
-    @SuppressWarnings("unused")
-    public static String httpPostJson(String url, HashMap<String, String> headers,String json) {
-        OkHttpClient.Builder httpBuilder = APP.getBootClient().newBuilder();
-        OkHttpClient client = httpBuilder.build();
+    public static void downLoadFile(String url, String path, DownloadCallBack cb) {
+        OkHttpClient client = APP.getOkHttpClient();
+        Request request = new Request.Builder().url(url).build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                e.printStackTrace();
+                cb.onError(e.getLocalizedMessage());
+            }
 
-        RequestBody body=RequestBody.create(json, JSON);
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+
+                try (FileOutputStream fos = new FileOutputStream(path)) {
+                    fos.write(response.body().bytes());
+                    fos.flush();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    cb.onError(e.getLocalizedMessage());
+                } finally {
+                    cb.onSucces(path);
+                }
+            }
+
+        });
+    }
+
+    @SuppressWarnings("unused")
+    public static String httpPostJson(String url, HashMap<String, String> headers, String json) {
+
+        OkHttpClient client = APP.getOkHttpClient();
+
+        RequestBody body = RequestBody.create(json, JSON);
         String refer = url.substring(0, url.lastIndexOf("/") + 1);
 
         Request.Builder requestBuilder = new Request.Builder()
@@ -98,7 +137,7 @@ public class HttpTool {
         for (Map.Entry<String, String> entry : headers.entrySet()) {
             requestBuilder.addHeader(entry.getKey(), entry.getValue());
         }
-        Request request=requestBuilder.build();
+        Request request = requestBuilder.build();
 
         try {
             Response response = client.newCall(request).execute();

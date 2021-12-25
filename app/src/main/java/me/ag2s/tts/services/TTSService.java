@@ -1,6 +1,5 @@
 package me.ag2s.tts.services;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.MediaCodec;
@@ -16,14 +15,9 @@ import android.speech.tts.TextToSpeechService;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.franmontiel.persistentcookiejar.PersistentCookieJar;
-import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
-import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -37,8 +31,6 @@ import java.util.Set;
 import me.ag2s.tts.APP;
 import me.ag2s.tts.utils.ByteArrayMediaDataSource;
 import me.ag2s.tts.utils.CommonTool;
-import me.ag2s.tts.utils.OkHttpDns;
-import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -64,14 +56,26 @@ public class TTSService extends TextToSpeechService {
     public static MediaCodec mediaCodec;
     public volatile String currentMime;
 
-    //public final static String[] supportedLanguages = {"zho-CHN", "zho-HKG", "zho-TWN", "eng-IRL", "bul-BGR", "nld-NLD", "lav-LVA", "est-EST", "fra-FRA", "gle-IRL", "ara-SAU", "deu-AUT", "eng-PHL", "fra-CHE", "por-BRA", "eng-GBR", "fin-FIN", "swe-SWE", "ukr-UKR", "ell-GRC", "ces-CZE", "msa-MYS", "tam-IND", "kor-KOR", "slv-SVN", "spa-MEX", "deu-DEU", "eng-CAN", "ita-ITA", "tur-TUR", "deu-CHE", "por-PRT", "tha-THA", "eng-IND", "ara-EGY", "fra-CAN", "hrv-HRV", "hun-HUN", "urd-PAK", "tel-IND", "nob-NOR", "eng-AUS", "jpn-JPN", "heb-ISR", "eng-USA", "ron-ROU", "cym-GBR", "hin-IND", "ind-IDN", "cat-ESP", "mlt-MLT", "rus-RUS", "vie-VNM", "slk-SVK", "nld-BEL", "fra-BEL", "lit-LTU", "dan-DNK"};
-
-    //public final static String[] supportVoiceNames = {"de-DE-KatjaNeural", "en-AU-NatashaNeural", "en-CA-ClaraNeural", "en-GB-MiaNeural", "en-IN-NeerjaNeural", "en-US-AriaNeural", "en-US-GuyNeural", "es-ES-ElviraNeural", "es-MX-DaliaNeural", "fr-CA-SylvieNeural", "fr-FR-DeniseNeural", "hi-IN-SwaraNeural", "it-IT-ElsaNeural", "ja-JP-NanamiNeural", "ko-KR-SunHiNeural", "nl-NL-ColetteNeural", "pl-PL-ZofiaNeural", "pt-BR-FranciscaNeural", "ru-RU-SvetlanaNeural", "tr-TR-EmelNeural", "zh-CN-XiaoxiaoNeural", "zh-CN-YunyangNeural", "zh-HK-HiuGaaiNeural", "zh-TW-HsiaoYuNeural"};
 
     private volatile String[] mCurrentLanguage = null;
 
     private int oldindex = 0;
     SynthesisCallback callback;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        client = APP.getOkHttpClient();
+        sharedPreferences = getApplicationContext().getSharedPreferences("TTS", Context.MODE_PRIVATE);
+
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
     private final WebSocketListener webSocketListener = new WebSocketListener() {
         @Override
         public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
@@ -343,7 +347,7 @@ public class TTSService extends TextToSpeechService {
     public WebSocket getOrCreateWs() {
         if (this.webSocket != null) {
             boolean isSuccess = this.webSocket.send("");
-            if(isSuccess){
+            if (isSuccess) {
                 return this.webSocket;
             }
 
@@ -357,8 +361,8 @@ public class TTSService extends TextToSpeechService {
         sendConfig(this.webSocket, new TtsConfig.Builder(sharedPreferences.getInt(Constants.AUDIO_FORMAT_INDEX, 0)).sentenceBoundaryEnabled(true).build());
         return webSocket;
     }
-
     //发送合成语音配置
+
     private void sendConfig(WebSocket ws, TtsConfig ttsConfig) {
         String msg = "X-Timestamp:+" + getTime() + "\r\n" +
                 "Content-Type:application/json; charset=utf-8\r\n" +
@@ -417,13 +421,12 @@ public class TTSService extends TextToSpeechService {
         //测试词典功能
         //"<phoneme alphabet='sapi' ph='cao 4 ni 3 ma 1' >艹尼M</phoneme>"
         //text = "<![CDATA[" + text + "]]>";
-        text=text.replace("……","<break strength=\"strong\" />");
+        text = text.replace("……", "<break strength=\"strong\" />");
 
-        List<TtsDict> dicts=TtsDictManger.getInstance().getDict();
-        for(TtsDict dict:dicts){
-            text=text.replace(dict.getWorld(),dict.getXML());
+        List<TtsDict> dicts = TtsDictManger.getInstance().getDict();
+        for (TtsDict dict : dicts) {
+            text = text.replace(dict.getWorld(), dict.getXML());
         }
-
 
 
         //text=CommonTool.encodeHtml(text);
@@ -445,7 +448,7 @@ public class TTSService extends TextToSpeechService {
         String time = getTime();
         Locale locale = Locale.getDefault();
         //&& request.getLanguage().equals(locale.getISO3Language())
-        if (sharedPreferences.getBoolean(Constants.USE_CUSTOM_VOICE, false)) {
+        if (sharedPreferences.getBoolean(Constants.USE_CUSTOM_VOICE, true)) {
             name = sharedPreferences.getString(Constants.CUSTOM_VOICE, "zh-CN-XiaoxiaoNeural");
         }
 
@@ -455,11 +458,10 @@ public class TTSService extends TextToSpeechService {
         String xml = locale.getLanguage() + "-" + locale.getCountry();
 
 
-
         Log.d(TAG, "SSS:" + name);
         Log.e(TAG, "SSS:" + text);
 
-        String sb=CommonTool.getSSML(text,RequestId,time,name,style,styleDegreeString,pitch,rate,volume,xml);
+        String sb = CommonTool.getSSML(text, RequestId, time, name, style, styleDegreeString, pitch, rate, volume, xml);
         Log.e(TAG, "SSS:" + sb);
         callback.start(format.HZ,
                 format.BitRate, 1 /* Number of channels. */);
@@ -470,51 +472,6 @@ public class TTSService extends TextToSpeechService {
             oldindex = index;
         }
         webSocket.send(sb);
-
-
-    }
-
-    public OkHttpDns getDNS() {
-        ArrayList<String> whitelist = new ArrayList<>();
-
-        return new OkHttpDns.Builder().client(
-                APP.getBootClient()
-                        .newBuilder()
-                        .cache(getCache("doh", 1024 * 1024 * 100))
-                        //.addNetworkInterceptor(new CacheInterceptor())
-                        .build()
-        )
-
-                .url(HttpUrl.get("https://dns.alidns.com/dns-query"))//30ms
-                .wurl(HttpUrl.get("https://1.1.1.1/dns-query"))
-                .whitelist(whitelist)
-                .includeIPv6(true)
-                .build();
-    }
-
-    public okhttp3.Cache getCache(String name, int maxSize) {
-        File file = new File(getExternalCacheDir(), name);
-        if (!file.exists()) {
-            boolean mkdirs = file.mkdirs();
-            if (!mkdirs) {
-                Log.e(TAG, file.getAbsolutePath() + " mkdirs was not successful.");
-            }
-        }
-        return new okhttp3.Cache(file, maxSize);
-    }
-
-
-    @SuppressLint("InvalidWakeLockTag")
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        client = APP.getBootClient().newBuilder()
-                .cookieJar(new PersistentCookieJar(new SetCookieCache(),
-                        new SharedPrefsCookiePersistor(getApplicationContext())))
-                //.pingInterval(40, TimeUnit.SECONDS) // 设置 PING 帧发送间隔
-                .dns(getDNS())
-                .build();
-        sharedPreferences = getApplicationContext().getSharedPreferences("TTS", Context.MODE_PRIVATE);
 
 
     }
@@ -630,9 +587,9 @@ public class TTSService extends TextToSpeechService {
      */
     @Override
     protected int onLoadLanguage(String _lang, String _country, String _variant) {
-        String lang=_lang==null?"":_lang;
-        String country=_country==null?"":_country;
-        String variant=_variant==null?"":_variant;
+        String lang = _lang == null ? "" : _lang;
+        String country = _country == null ? "" : _country;
+        String variant = _variant == null ? "" : _variant;
         int result = onIsLanguageAvailable(lang, country, variant);
         if (result == TextToSpeech.LANG_COUNTRY_AVAILABLE || TextToSpeech.LANG_AVAILABLE == result || result == TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE) {
             mCurrentLanguage = new String[]{lang, country, variant};
@@ -657,7 +614,7 @@ public class TTSService extends TextToSpeechService {
      * @param callback 合成callback SynthesisCallback
      */
     @Override
-    protected synchronized void onSynthesizeText(SynthesisRequest request, SynthesisCallback callback) {
+    protected void onSynthesizeText(SynthesisRequest request, SynthesisCallback callback) {
 
 
         int load = onLoadLanguage(request.getLanguage(), request.getCountry(),
@@ -674,28 +631,25 @@ public class TTSService extends TextToSpeechService {
         //使用System.nanoTime()来保证获得的是精准的时间间隔
         long startTime = SystemClock.elapsedRealtime();
         sendText(request, this.callback);
-
-       while (isSynthesizing) {
-
-            try {
-                this.wait(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            long time =  SystemClock.elapsedRealtime() - startTime;
-            //超时50秒后跳过
-            if (time > 50000) {
-                callback.error(TextToSpeech.ERROR_NETWORK_TIMEOUT);
-                isSynthesizing = false;
-                callback.done();
+        synchronized (this) {
+            while (isSynthesizing) {
+                try {
+                    this.wait(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                long time = SystemClock.elapsedRealtime() - startTime;
+                //超时50秒后跳过
+                if (time > 50000) {
+                    callback.error(TextToSpeech.ERROR_NETWORK_TIMEOUT);
+                    isSynthesizing = false;
+                    callback.done();
+                }
             }
         }
 
 
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
+
 }

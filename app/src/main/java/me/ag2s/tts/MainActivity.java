@@ -50,13 +50,13 @@ import me.ag2s.tts.services.TtsOutputFormat;
 import me.ag2s.tts.services.TtsStyle;
 import me.ag2s.tts.services.TtsStyleManger;
 import me.ag2s.tts.services.TtsVoiceSample;
+import me.ag2s.tts.utils.ApkInstall;
 import me.ag2s.tts.utils.HttpTool;
 
 
 public class MainActivity extends Activity implements View.OnClickListener {
     private static final String TAG = "CheckVoiceData";
     private static final AtomicInteger mNextRequestId = new AtomicInteger(0);
-//    static ExecutorService executor = Executors.newSingleThreadExecutor();
     TextView tv_styleDegree;
     public SharedPreferences sharedPreferences;
 
@@ -150,7 +150,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             editor.apply();
         });
 
-        boolean isFChecked = sharedPreferences.getBoolean(Constants.USE_CUSTOM_VOICE, false);
+        boolean isFChecked = sharedPreferences.getBoolean(Constants.USE_CUSTOM_VOICE, true);
         aSwitch.setChecked(isFChecked);
         //gv.setVisibility(isFChecked ? View.VISIBLE : View.INVISIBLE);
         aSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -206,7 +206,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 bundle.putString("language", locale.getISO3Language());
                 bundle.putString("country", locale.getISO3Country());
                 bundle.putString("variant", item.getGender() ? "Female" : "Male");
-                bundle.putString("utteranceId","Sample");
+                bundle.putString("utteranceId", "Sample");
                 textToSpeech.speak(TtsVoiceSample.getByLocate(this, locale), TextToSpeech.QUEUE_FLUSH, bundle, MainActivity.class.getName() + mNextRequestId.getAndIncrement());
             } else {
                 Toast.makeText(MainActivity.this, "" + item.getShortName(), Toast.LENGTH_SHORT).show();
@@ -278,7 +278,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             case Menu.FIRST + 2:
                 killBATTERY();
                 break;
-            case Menu.FIRST +3 :
+            case Menu.FIRST + 3:
                 TtsDictManger.getInstance().updateDict();
                 break;
             default:
@@ -298,7 +298,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         return true;
     }
 
-    public void checkUpdate() {
+    private void checkUpdate() {
         new Thread(() -> {
 
             try {
@@ -327,15 +327,26 @@ public class MainActivity extends Activity implements View.OnClickListener {
         try {
             String url = "https://cdn.jsdelivr.net/gh/ag2s20150909/TTS@master/release/" + appName;
 
-
             runOnUiThread(() -> new AlertDialog.Builder(MainActivity.this)
                     .setTitle("有新版本")
                     .setMessage("发现新版本:\n" + appName + "\n如需更新，点击确定，将跳转到浏览器下载。如不想更新，点击取消，将不再自动检查更新，直到你清除应用数据。你可以到右上角菜单手动检查更新。")
                     .setPositiveButton("确定", (dialog, which) -> {
-                        Intent intent = new Intent(Intent.ACTION_VIEW);
-                        intent.setData(Uri.parse(url));
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
+                        HttpTool.downLoadFile(url, getExternalCacheDir().getAbsolutePath() + "/" + appName, new HttpTool.DownloadCallBack() {
+                            @Override
+                            public void onSucces(String path) {
+                                new ApkInstall(getApplicationContext()).installAPK(path);
+                            }
+
+                            @Override
+                            public void onError(String err) {
+                                Intent intent = new Intent(Intent.ACTION_VIEW);
+                                intent.setData(Uri.parse(url));
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                            }
+                        });
+
+
                     })
                     .setNegativeButton("取消", (dialog, which) -> {
                         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -347,7 +358,27 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
     }
 
-    public void setTTS() {
+//    private void QueryApk() {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            if (!getPackageManager().canRequestPackageInstalls()) {
+//                startActivityForResult(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES)
+//                        .setData(Uri.parse(String.format("package:%s", getPackageName()))), 1);
+//            }
+//        }
+//
+//        //Storage Permission
+//
+//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+//        }
+//
+//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+//        }
+//    }
+
+
+    private void setTTS() {
         Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
         intent.setAction("com.android.settings.TTS_SETTINGS");
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -355,7 +386,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     @SuppressLint("BatteryLife")
-    public void killBATTERY() {
+    private void killBATTERY() {
         Intent intent = new Intent();
         String packageName = getPackageName();
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -372,8 +403,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
 
-
-
     @SuppressLint("NonConstantResourceId")
     @Override
     public void onClick(View v) {
@@ -386,7 +415,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
         }
     }
-
 
 
 }
