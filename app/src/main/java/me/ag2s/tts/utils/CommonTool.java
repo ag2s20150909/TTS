@@ -1,5 +1,7 @@
 package me.ag2s.tts.utils;
 
+import android.util.Log;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.math.BigDecimal;
@@ -12,43 +14,70 @@ import java.util.regex.Pattern;
 
 public class CommonTool {
 
-   static final Pattern NoVoicePattern =Pattern.compile("[\\s\\p{C}\\p{P}\\p{Z}\\p{S}]");
-   static final BreakIterator br=BreakIterator.getSentenceInstance();
+    static final Pattern NoVoicePattern = Pattern.compile("[\\s\\p{C}\\p{P}\\p{Z}\\p{S}]");
+    public static final Pattern EmptyPattern = Pattern.compile("\\s*");
+    static final BreakIterator br = BreakIterator.getSentenceInstance();
 
-   public static String getFormatSentence(String txt){
-       StringBuilder sb=new StringBuilder();
-       br.setText(txt);
-       int start=br.first();
-       for (int end = br.next() ; end != BreakIterator.DONE; start=end,end=br.next()) {
-           //Log.e(TAG,text.substring(start,end));
-           sb.append("<p>").append(txt.substring(start,end)).append("</p>");
-       }
-       return sb.toString();
-   }
+    public static StringBuilder getFormatSentence(String txt) {
+        StringBuilder sb=new StringBuilder(txt.length());
+        br.setText(txt);
+        int start = br.first();
+        for (int end = br.next(); end != BreakIterator.DONE; start = end, end = br.next()) {
+            //Log.e(TAG,text.substring(start,end));
+//            sb = sb.insert(start, "<p>");
+//            sb = sb.insert(end, "</p>");
+            sb.append("<p>").append(txt.substring(start,end)).append("</p>");
+        }
+        return sb;
+    }
 
-   public static String getSSML(String text,String id,String time,String name,String style,String styleDegree,int pitch,int rate,int volume,String lang){
+    public static String getSSML(StringBuilder text, String id, String time, String name, String style, String styleDegree, int pitch, int rate, int volume, String lang) {
 
-       String rateString = rate >= 0 ? "+" + rate + "%" : rate + "%";
-       String pitchString = pitch >= 0 ? "+" + pitch + "Hz" : pitch + "Hz";
-       text=getFormatSentence(text);
+        String rateString = rate >= 0 ? "+" + rate + "%" : rate + "%";
+        String pitchString = pitch >= 0 ? "+" + pitch + "Hz" : pitch + "Hz";
+        Log.e("TXT", text.toString());
 
-       return "X-RequestId:" + id + "\r\n" +
-               "Content-Type:application/ssml+xml\r\n" +
-               "X-Timestamp:" + time + "Z\r\n" +
+        return "X-RequestId:" + id + "\r\n" +
+                "Content-Type:application/ssml+xml\r\n" +
+                "X-Timestamp:" + time + "Z\r\n" +
 
-               "Path:ssml\r\n\r\n" +
-               "<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xmlns:mstts=\"https://www.w3.org/2001/mstts\" xml:lang=\"" + lang + "\">" +
-               "<voice  name=\"" + name + "\">" +
-               "<prosody pitch=\"" + pitchString + "\" " +
-               "rate =\"" + rateString + "\" " +
-               "volume=\"" + volume + "\">" +
-               "<mstts:express-as  style=\"" + style + "\" styledegree=\"" + styleDegree + "\" >" + text + "</mstts:express-as>" +
-               "</prosody></voice></speak>";
-   }
+                "Path:ssml\r\n\r\n" +
+                "<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xmlns:mstts=\"https://www.w3.org/2001/mstts\" xml:lang=\"" + lang + "\">" +
+                "<voice  name=\"" + name + "\">" +
+                "<prosody pitch=\"" + pitchString + "\" " +
+                "rate =\"" + rateString + "\" " +
+                "volume=\"" + volume + "\">" +
+                "<mstts:express-as  style=\"" + style + "\" styledegree=\"" + styleDegree + "\" >" + getFormatSentence(text.toString()) + "</mstts:express-as>" +
+                "</prosody></voice></speak>";
+    }
 
 
-    public static boolean isNoVoice(String string){
-       return NoVoicePattern.matcher(string).replaceAll("").isEmpty();
+    public static boolean isNoVoice(String string) {
+        return NoVoicePattern.matcher(string).replaceAll("").isEmpty();
+    }
+
+    /**
+     * 移除空格
+     * @param sb
+     */
+    public static void removeBlankSpace(StringBuilder sb) {
+        int j = 0;
+        for (int i = 0; i < sb.length(); i++) {
+            if (!(Character.isWhitespace(sb.charAt(i))||sb.charAt(i)== '　')) {
+                sb.setCharAt(j++, sb.charAt(i));
+            }
+        }
+        sb.delete(j, sb.length());
+    }
+
+
+    public static void replaceAll(StringBuilder builder, String from, String to) {
+        int index = builder.indexOf(from);
+        while (index != -1) {
+            builder.replace(index, index + from.length(), to);
+            index += to.length(); // Move to the end of the replacement
+            index = builder.indexOf(from, index);
+        }
     }
 
 

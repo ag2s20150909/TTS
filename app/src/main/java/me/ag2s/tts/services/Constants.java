@@ -1,15 +1,45 @@
 package me.ag2s.tts.services;
 
 public class Constants {
+    /**
+     * 是否使用自定义语音
+     */
     public static final String USE_CUSTOM_VOICE = "use_custom_voice";
+    /**
+     * 自定义语音的名称
+     */
     public static final String CUSTOM_VOICE = "custom_voice";
+    /**
+     * 自定义语音的index
+     */
     public static final String CUSTOM_VOICE_INDEX = "custom_voice_index";
+    /**
+     * 语音的风格
+     */
     public static final String VOICE_STYLE = "voice_style";
+    /**
+     * 语音的风格的强度
+     */
     public static final String VOICE_STYLE_DEGREE = "voice_style_degree";
+    /**
+     * 语音的风格index
+     */
     public static final String VOICE_STYLE_INDEX = "voice_style_index";
+    /**
+     * 是否动重连WS
+     */
     public static final String USE_AUTO_RETRY = "use_auto_retry";
+    /**
+     * 是否检查更新
+     */
     public static final String USE_AUTO_UPDATE = "use_auto_update";
+    /**
+     * 格式index
+     */
     public static final String AUDIO_FORMAT_INDEX = "audio_format_index";
+    /**
+     * 音量
+     */
     public static final String VOICE_VOLUME = "voice_volume";
 
 

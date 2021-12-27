@@ -69,6 +69,9 @@ public class TtsFormatManger {
     public List<TtsOutputFormat> getFormats() {
         return formats;
     }
+    public int size() {
+        return formats.size();
+    }
 
     public TtsOutputFormat getFormat(int index) {
         if (index > formats.size() - 1 || index < 0) {

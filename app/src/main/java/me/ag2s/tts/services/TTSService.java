@@ -6,7 +6,6 @@ import android.media.MediaCodec;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.SystemClock;
 import android.speech.tts.SynthesisCallback;
 import android.speech.tts.SynthesisRequest;
@@ -58,6 +57,7 @@ public class TTSService extends TextToSpeechService {
 
 
     private volatile String[] mCurrentLanguage = null;
+
 
     private int oldindex = 0;
     SynthesisCallback callback;
@@ -389,50 +389,33 @@ public class TTSService extends TextToSpeechService {
      * @param request 需要合成的txt
      */
     public void sendText(SynthesisRequest request, SynthesisCallback callback) {
+        //设置发送的音质
         int index = sharedPreferences.getInt(Constants.AUDIO_FORMAT_INDEX, 0);
         TtsConfig ttsConfig = new TtsConfig.Builder(index).build();
         TtsOutputFormat format = ttsConfig.getFormat();
         currentFormat = format;
 
-        Bundle bundle = request.getParams();
-        if (bundle != null) {
-            Set<String> keySet = bundle.keySet();
-            for (String key : keySet) {
-                Object value = bundle.get(key);
-                Log.e(TAG, "sendText:" + key + ":" + value.toString());
-            }
-        }
 
-        String text = CommonTool.FixTrim(request.getCharSequenceText().toString());
-        Log.d(TAG, "源：" + text);
-        //替换一些会导致不返回数据的特殊字符
-        //长度为0，直接跳过。
-        if (CommonTool.isNoVoice(text)) {
+        //设置发送文本内容
+
+        StringBuilder sb = new StringBuilder(request.getCharSequenceText());
+        Log.d(TAG, "源：" + sb);
+        //移除空格
+        CommonTool.removeBlankSpace(sb);
+        //判断是否全是不发声字符，如果是，直接跳过
+        if (CommonTool.isNoVoice(sb.toString())) {
             callback.start(format.HZ,
                     format.BitRate, 1 /* Number of channels. */);
             callback.done();
             isSynthesizing = false;
             return;
         }
-
-        text = text.replace("]]>", "");
-        //"<![CDATA[" "]]>"
-
-        //测试词典功能
-        //"<phoneme alphabet='sapi' ph='cao 4 ni 3 ma 1' >艹尼M</phoneme>"
-        //text = "<![CDATA[" + text + "]]>";
-        text = text.replace("……", "<break strength=\"strong\" />");
-
+        Log.d(TAG, "源2：" + sb);
+        //校正发音
         List<TtsDict> dicts = TtsDictManger.getInstance().getDict();
         for (TtsDict dict : dicts) {
-            text = text.replace(dict.getWorld(), dict.getXML());
+            CommonTool.replaceAll(sb, dict.getWorld(), dict.getXML());
         }
-
-
-        //text=CommonTool.encodeHtml(text);
-        Log.d(TAG, "源：" + text);
-        Log.d(TAG, "源：" + currentFormat.toString());
-
 
         int pitch = request.getPitch() - 100;
         int rate = request.getSpeechRate() - 100;
@@ -452,17 +435,11 @@ public class TTSService extends TextToSpeechService {
             name = sharedPreferences.getString(Constants.CUSTOM_VOICE, "zh-CN-XiaoxiaoNeural");
         }
 
-        String RequestId = CommonTool.getMD5String(text + time + request.getCallerUid());
+        String RequestId = CommonTool.getMD5String(sb.toString() + time + request.getCallerUid());
 
 
         String xml = locale.getLanguage() + "-" + locale.getCountry();
-
-
-        Log.d(TAG, "SSS:" + name);
-        Log.e(TAG, "SSS:" + text);
-
-        String sb = CommonTool.getSSML(text, RequestId, time, name, style, styleDegreeString, pitch, rate, volume, xml);
-        Log.e(TAG, "SSS:" + sb);
+        String txt = CommonTool.getSSML(sb, RequestId, time, name, style, styleDegreeString, pitch, rate, volume, xml);
         callback.start(format.HZ,
                 format.BitRate, 1 /* Number of channels. */);
 
@@ -471,7 +448,7 @@ public class TTSService extends TextToSpeechService {
             sendConfig(webSocket, ttsConfig);
             oldindex = index;
         }
-        webSocket.send(sb);
+        webSocket.send(txt);
 
 
     }
