@@ -8,28 +8,27 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.text.BreakIterator;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
 public class CommonTool {
 
     static final Pattern NoVoicePattern = Pattern.compile("[\\s\\p{C}\\p{P}\\p{Z}\\p{S}]");
-    public static final Pattern EmptyPattern = Pattern.compile("\\s*");
-    static final BreakIterator br = BreakIterator.getSentenceInstance();
+//    static final java.text.BreakIterator br = java.text.BreakIterator.getSentenceInstance();
 
-    public static StringBuilder getFormatSentence(String txt) {
-        StringBuilder sb=new StringBuilder(txt.length());
-        br.setText(txt);
-        int start = br.first();
-        for (int end = br.next(); end != BreakIterator.DONE; start = end, end = br.next()) {
-            //Log.e(TAG,text.substring(start,end));
-//            sb = sb.insert(start, "<p>");
-//            sb = sb.insert(end, "</p>");
-            sb.append("<p>").append(txt.substring(start,end)).append("</p>");
-        }
-        return sb;
-    }
+
+//    public static StringBuilder getFormatSentence(String txt) {
+//
+//        StringBuilder sb = new StringBuilder(txt.length());
+//
+//        br.setText(txt);
+//        int start = br.first();
+//        for (int end = br.next(); end != BreakIterator.DONE; start = end, end = br.next()) {
+//            sb.append("<p>").append(txt.substring(start, end)).append("</p>");
+//        }
+//
+//        return sb;
+//    }
 
     public static String getSSML(StringBuilder text, String id, String time, String name, String style, String styleDegree, int pitch, int rate, int volume, String lang) {
 
@@ -47,7 +46,7 @@ public class CommonTool {
                 "<prosody pitch=\"" + pitchString + "\" " +
                 "rate =\"" + rateString + "\" " +
                 "volume=\"" + volume + "\">" +
-                "<mstts:express-as  style=\"" + style + "\" styledegree=\"" + styleDegree + "\" >" + getFormatSentence(text.toString()) + "</mstts:express-as>" +
+                "<mstts:express-as  style=\"" + style + "\" styledegree=\"" + styleDegree + "\" >" + text.toString() + "</mstts:express-as>" +
                 "</prosody></voice></speak>";
     }
 
@@ -57,17 +56,47 @@ public class CommonTool {
     }
 
     /**
-     * 移除空格
+     * 移除所有空格
+     *
      * @param sb
      */
+    @SuppressWarnings("unused")
     public static void removeBlankSpace(StringBuilder sb) {
         int j = 0;
         for (int i = 0; i < sb.length(); i++) {
-            if (!(Character.isWhitespace(sb.charAt(i))||sb.charAt(i)== '　')) {
+            if (!(Character.isWhitespace(sb.charAt(i)) || sb.charAt(i) == '　')) {
                 sb.setCharAt(j++, sb.charAt(i));
             }
         }
         sb.delete(j, sb.length());
+    }
+
+    /**
+     * 移除首尾空格(包含中文空格)
+     *
+     * @param sb
+     */
+    public static void Trim(StringBuilder sb) {
+        if (sb == null || sb.length() == 0) return;
+        //去除前面的空格
+        int st = 0;
+        while (Character.isWhitespace(sb.charAt(st)) || sb.charAt(st) == '　') {
+            st++;
+        }
+        if(st>0){
+            sb.delete(0,st);
+        }
+
+
+        //去除后面的空格
+        int ed = sb.length();
+        while (Character.isWhitespace(sb.charAt(ed-1)) || sb.charAt(ed-1) == '　'){
+            ed--;
+        }
+        if(ed<sb.length()){
+            sb.delete(ed,sb.length());
+        }
+
     }
 
 

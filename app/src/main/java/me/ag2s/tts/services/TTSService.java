@@ -400,8 +400,10 @@ public class TTSService extends TextToSpeechService {
 
         StringBuilder sb = new StringBuilder(request.getCharSequenceText());
         Log.d(TAG, "源：" + sb);
+        CommonTool.replaceAll(sb,">","");
+        CommonTool.replaceAll(sb,"<","");
         //移除空格
-        CommonTool.removeBlankSpace(sb);
+        CommonTool.Trim(sb);
         //判断是否全是不发声字符，如果是，直接跳过
         if (CommonTool.isNoVoice(sb.toString())) {
             callback.start(format.HZ,
@@ -538,9 +540,9 @@ public class TTSService extends TextToSpeechService {
     @Override
     public String onGetDefaultVoiceNameFor(String lang, String country, String variant) {
         String name = "zh-CN-XiaoxiaoNeural";
-        if (variant.isEmpty()) {
-            variant = "Female";
-        }
+//        if (variant.isEmpty()) {
+//            variant = "Female";
+//        }
         List<String> names = getVoiceNames(lang, country, variant);
         if (names.size() > 0) {
             name = names.get(0);
