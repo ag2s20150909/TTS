@@ -8,33 +8,73 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import me.ag2s.tts.services.TtsDict;
+import me.ag2s.tts.services.TtsDictManger;
 
 public class CommonTool {
 
     static final Pattern NoVoicePattern = Pattern.compile("[\\s\\p{C}\\p{P}\\p{Z}\\p{S}]");
-//    static final java.text.BreakIterator br = java.text.BreakIterator.getSentenceInstance();
+
+    /**
+     * 把常用的影响分句的重复符号合并
+     */
+    static final Pattern p0=Pattern.compile("([\\s　！。？?])+");
+    /**
+     * 单字符断句符,排除后面有引号的情况
+     */
+    static final Pattern p1=Pattern.compile("([;。：！？?])([^”’])");
+    /**
+     * 中英文省略号处理
+     */
+    static final Pattern p2=Pattern.compile("(\\.{6}|…{2})([^”’])");
+    /**
+     * 多字符断句符，后面有引号的的情况
+     */
+    static final Pattern p3=Pattern.compile("([。！？?][”’])([^，。！？?])");
 
 
-//    public static StringBuilder getFormatSentence(String txt) {
-//
-//        StringBuilder sb = new StringBuilder(txt.length());
-//
-//        br.setText(txt);
-//        int start = br.first();
-//        for (int end = br.next(); end != BreakIterator.DONE; start = end, end = br.next()) {
-//            sb.append("<p>").append(txt.substring(start, end)).append("</p>");
-//        }
-//
-//        return sb;
-//    }
+    /**
+     * 修复在小说中“重”作为量词时(读chong 2)的错误读音。这在修仙类小说中很常见.
+     */
+    static final Pattern p4=Pattern.compile("重(?=[一二三四五六七八九十])|(?<=[一二三四五六七八九十])重");
+
+
+    /**
+     * 得到分句后格式化的内容
+     * @param txt String
+     * @return String
+     */
+    public static String getFormatSentence(String txt) {
+        txt=p0.matcher(txt).replaceAll("$1");//把常用的影响分句的重复符号合并
+        txt=p1.matcher(txt).replaceAll("$1</p><p>$2");//单字符断句符,排除后面有引号的情况
+        txt=p2.matcher(txt).replaceAll("<break strength='strong' />$2");//中英文省略号停顿处理
+        txt=p3.matcher(txt).replaceAll("$1</p><p>$2");//多字符断句符，后面有引号的的情况
+        txt=p4.matcher(txt).replaceAll("<phoneme alphabet='sapi' ph='chong 2'>重</phoneme>");
+        //修复在小说中“重”作为量词时(读chong 2)的错误读音。这在修仙类小说中很常见.
+
+        StringBuilder sb=new StringBuilder(txt);
+        //自定义校正发音
+        List<TtsDict> dictList = TtsDictManger.getInstance().getDict();
+        for (TtsDict dict : dictList) {
+            CommonTool.replaceAll(sb, dict.getWorld(), dict.getXML());
+        }
+
+        txt="<p>"+sb.toString()+"</p>";
+        Log.e("TXT01", "ED:"+ txt);
+        return txt;
+
+    }
 
     public static String getSSML(StringBuilder text, String id, String time, String name, String style, String styleDegree, int pitch, int rate, int volume, String lang) {
 
         String rateString = rate >= 0 ? "+" + rate + "%" : rate + "%";
         String pitchString = pitch >= 0 ? "+" + pitch + "Hz" : pitch + "Hz";
-        Log.e("TXT", text.toString());
+       // Log.e("TXT", text.toString());
 
         return "X-RequestId:" + id + "\r\n" +
                 "Content-Type:application/ssml+xml\r\n" +
@@ -46,7 +86,7 @@ public class CommonTool {
                 "<prosody pitch=\"" + pitchString + "\" " +
                 "rate =\"" + rateString + "\" " +
                 "volume=\"" + volume + "\">" +
-                "<mstts:express-as  style=\"" + style + "\" styledegree=\"" + styleDegree + "\" >" + text.toString() + "</mstts:express-as>" +
+                "<mstts:express-as  style=\"" + style + "\" styledegree=\"" + styleDegree + "\" >" + getFormatSentence(text.toString()) + "</mstts:express-as>" +
                 "</prosody></voice></speak>";
     }
 
@@ -58,10 +98,10 @@ public class CommonTool {
     /**
      * 移除所有空格
      *
-     * @param sb
+     * @param sb StringBuilder
      */
     @SuppressWarnings("unused")
-    public static void removeBlankSpace(StringBuilder sb) {
+    public static void removeAllBlankSpace(StringBuilder sb) {
         int j = 0;
         for (int i = 0; i < sb.length(); i++) {
             if (!(Character.isWhitespace(sb.charAt(i)) || sb.charAt(i) == '　')) {
@@ -74,7 +114,7 @@ public class CommonTool {
     /**
      * 移除首尾空格(包含中文空格)
      *
-     * @param sb
+     * @param sb StringBuilder
      */
     public static void Trim(StringBuilder sb) {
         if (sb == null || sb.length() == 0) return;
@@ -100,12 +140,34 @@ public class CommonTool {
     }
 
 
-    public static void replaceAll(StringBuilder builder, String from, String to) {
+
+
+
+    public static void replace(StringBuilder builder, String from, String to) {
         int index = builder.indexOf(from);
         while (index != -1) {
             builder.replace(index, index + from.length(), to);
             index += to.length(); // Move to the end of the replacement
             index = builder.indexOf(from, index);
+        }
+    }
+
+    public static void replaceAll(StringBuilder sb, String regex, String replacement) {
+        Pattern pattern = Pattern.compile(regex);
+        Matcher m = pattern.matcher(sb);
+        int start = 0;
+        while (m.find(start)) {
+            sb.replace(m.start(), m.end(), replacement);
+            start = m.start() + replacement.length();
+        }
+    }
+
+    public static void replaceAll(StringBuilder sb, Pattern pattern, String replacement) {
+        Matcher m = pattern.matcher(sb);
+        int start = 0;
+        while (m.find(start)) {
+            sb.replace(m.start(), m.end(), replacement);
+            start = m.start() + replacement.length();
         }
     }
 

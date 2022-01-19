@@ -18,6 +18,7 @@
 
 
     <application
+        android:name=".APP"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -80,8 +81,8 @@
             android:exported="true"
             android:label="@string/app_name"
             android:directBootAware="true"
-            tools:ignore="UnusedAttribute">
-            <intent-filter android:priority="100">
+            tools:ignore="ExportedService,UnusedAttribute">
+            <intent-filter android:priority="1000">
                 <action android:name="android.intent.action.TTS_SERVICE" />
 
                 <category android:name="android.intent.category.DEFAULT" />

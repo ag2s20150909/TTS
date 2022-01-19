@@ -302,11 +302,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
         new Thread(() -> {
 
             try {
-                //String url="https://cdn.staticaly.com/gh/ag2s20150909/TTS/master/release/output-metadata.json";
                 String msg=HttpTool.httpGet("https://purge.jsdelivr.net/gh/ag2s20150909/TTS@master/release/output-metadata.json");
                 Log.e("UPDATE",msg);
-                String url1="https://cdn.jsdelivr.net/gh/ag2s20150909/TTS@master/release/output-metadata.json";
-                JSONObject json = Objects.requireNonNull(new JSONObject(HttpTool.httpGet(url1)).optJSONArray("elements")).optJSONObject(0);
+                String url="https://cdn.jsdelivr.net/gh/ag2s20150909/TTS@master/release/output-metadata.json";
+                JSONObject json = Objects.requireNonNull(new JSONObject(HttpTool.httpGet(url)).optJSONArray("elements")).optJSONObject(0);
                 String fileName = json.optString("outputFile");
                 BigDecimal versionName = new BigDecimal(json.optString("versionName").split("_")[1].trim());
                 PackageManager pm = MainActivity.this.getPackageManager();

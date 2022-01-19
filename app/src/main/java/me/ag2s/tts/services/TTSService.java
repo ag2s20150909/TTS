@@ -1,11 +1,15 @@
 package me.ag2s.tts.services;
 
+import static me.ag2s.tts.APP.getOkHttpClient;
+
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.MediaCodec;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.os.Build;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.speech.tts.SynthesisCallback;
 import android.speech.tts.SynthesisRequest;
@@ -27,7 +31,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import me.ag2s.tts.APP;
 import me.ag2s.tts.utils.ByteArrayMediaDataSource;
 import me.ag2s.tts.utils.CommonTool;
 import okhttp3.OkHttpClient;
@@ -39,6 +42,9 @@ import okio.Buffer;
 import okio.ByteString;
 
 public class TTSService extends TextToSpeechService {
+
+
+    PowerManager.WakeLock mWakeLock;
 
 
     private static final String TAG = TTSService.class.getSimpleName();
@@ -65,16 +71,45 @@ public class TTSService extends TextToSpeechService {
     @Override
     public void onCreate() {
         super.onCreate();
-        client = APP.getOkHttpClient();
+        client = getOkHttpClient();
+        reNewWakeLock();
         sharedPreferences = getApplicationContext().getSharedPreferences("TTS", Context.MODE_PRIVATE);
 
 
     }
 
+    /**
+     * 创建或刷新5分钟的WakeLock
+     */
+    @SuppressLint("InvalidWakeLockTag")
+    private void reNewWakeLock() {
+
+        if (null == mWakeLock) {
+            PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                    "mainLockService");
+        }
+
+        if (null != mWakeLock&&!mWakeLock.isHeld()) {
+            mWakeLock.acquire(60 * 5 * 1000);
+            Log.e(TAG,"刷新WakeLock5分钟");
+        }
+    }
+
+
     @Override
     public void onDestroy() {
         super.onDestroy();
+
     }
+
+    private void releaseWakeLock() {
+        if (null != mWakeLock) {
+            mWakeLock.release();
+            mWakeLock = null;
+        }
+    }
+
 
     private final WebSocketListener webSocketListener = new WebSocketListener() {
         @Override
@@ -154,7 +189,7 @@ public class TTSService extends TextToSpeechService {
                     currentMime = bytes.substring(startIndex, endIndex).utf8();
                     Log.d(TAG, "当前Mime:" + currentMime);
                     if (!currentFormat.needDecode) {
-                        if (currentMime.equals("audio/x-wav") && bytes.lastIndexOf("RIFF".getBytes(StandardCharsets.UTF_8)) != -1) {
+                        if ("audio/x-wav".equals(currentMime) && bytes.lastIndexOf("RIFF".getBytes(StandardCharsets.UTF_8)) != -1) {
                             //去除WAV文件的文件头，解决播放开头时的杂音
                             audioIndex += 44;
                             Log.d(TAG, "移除WAV文件头");
@@ -240,7 +275,7 @@ public class TTSService extends TextToSpeechService {
                 byte[] csd1bytes = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
                 byte[] csd2bytes = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
                 ByteString hd = buf.readByteString();
-                Log.d(TAG, hd.hex());
+                //Log.d(TAG, hd.hex());
                 ByteBuffer csd0 = ByteBuffer.wrap(hd.toByteArray());
                 trackFormat.setByteBuffer("csd-0", csd0);
                 ByteBuffer csd1 = ByteBuffer.wrap(csd1bytes);
@@ -249,9 +284,7 @@ public class TTSService extends TextToSpeechService {
                 trackFormat.setByteBuffer("csd-2", csd2);
 
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                Log.d(TAG, "找到音频流的索引为：" + trackFormat.toString());
-            }
+
             //选择此音轨
             mediaExtractor.selectTrack(audioTrackIndex);
 
@@ -265,8 +298,8 @@ public class TTSService extends TextToSpeechService {
 
             MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
             ByteBuffer inputBuffer;
-            Log.d(TAG, mediaCodec.getInputFormat().toString());
-            Log.d(TAG, mediaCodec.getOutputFormat().toString());
+            //Log.d(TAG, mediaCodec.getInputFormat().toString());
+            //Log.d(TAG, mediaCodec.getOutputFormat().toString());
             while (mediaCodec != null) {
                 //获取可用的inputBuffer，输入参数-1代表一直等到，0代表不等待，10*1000代表10秒超时
                 //超时时间10秒
@@ -394,14 +427,17 @@ public class TTSService extends TextToSpeechService {
         TtsConfig ttsConfig = new TtsConfig.Builder(index).build();
         TtsOutputFormat format = ttsConfig.getFormat();
         currentFormat = format;
+        reNewWakeLock();
 
 
         //设置发送文本内容
 
         StringBuilder sb = new StringBuilder(request.getCharSequenceText());
         Log.d(TAG, "源：" + sb);
-        CommonTool.replaceAll(sb,">","");
-        CommonTool.replaceAll(sb,"<","");
+        // text=text.replace("……","<break strength=\"strong\" />");
+        CommonTool.replaceAll(sb, ">", "");
+        CommonTool.replaceAll(sb, "<", "");
+        //CommonTool.replaceAll(sb,"……","<break strength=\"strong\" />");
         //移除空格
         CommonTool.Trim(sb);
         //判断是否全是不发声字符，如果是，直接跳过
@@ -413,11 +449,7 @@ public class TTSService extends TextToSpeechService {
             return;
         }
         Log.d(TAG, "源2：" + sb);
-        //校正发音
-        List<TtsDict> dicts = TtsDictManger.getInstance().getDict();
-        for (TtsDict dict : dicts) {
-            CommonTool.replaceAll(sb, dict.getWorld(), dict.getXML());
-        }
+
 
         int pitch = request.getPitch() - 100;
         int rate = request.getSpeechRate() - 100;
@@ -613,12 +645,12 @@ public class TTSService extends TextToSpeechService {
         synchronized (this) {
             while (isSynthesizing) {
                 try {
-                    this.wait(10);
+                    this.wait(100);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 long time = SystemClock.elapsedRealtime() - startTime;
-                //超时50秒后跳过
+                //超时50秒后跳过,保证长句不会被跳过
                 if (time > 50000) {
                     callback.error(TextToSpeech.ERROR_NETWORK_TIMEOUT);
                     isSynthesizing = false;

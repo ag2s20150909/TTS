@@ -118,12 +118,7 @@ public class APP extends Application {
         if(isMainThread()){
             Toast.makeText(getContext(),msg,Toast.LENGTH_LONG).show();
         }else {
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getContext(),msg,Toast.LENGTH_LONG).show();
-                }
-            });
+            new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(getContext(),msg,Toast.LENGTH_LONG).show());
         }
     }
 

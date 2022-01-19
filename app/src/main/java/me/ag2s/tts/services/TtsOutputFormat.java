@@ -7,6 +7,9 @@ public class TtsOutputFormat {
    public final String value;
    public final int HZ;
    public final int BitRate;
+    /**
+     * 是否需要解码
+     */
    public boolean needDecode=false;
    public TtsOutputFormat(String name,int hz,int bitRate){
        this.name=name;
