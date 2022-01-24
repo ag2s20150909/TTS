@@ -1,13 +1,12 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
+        google()
+        mavenCentral()
         maven { url "https://jitpack.io" }
-        maven {
-            url 'https://maven.aliyun.com/repository/google/'
-        }
-        maven {
-            url 'https://maven.aliyun.com/repository/central/'
-        }
+        maven { url 'https://plugins.gradle.org/m2/' }
+        //maven { url 'https://maven.aliyun.com/repository/google/' }
+        //maven { url 'https://maven.aliyun.com/repository/central/' }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:7.0.4'
@@ -19,18 +18,13 @@ buildscript {
 
 allprojects {
     repositories {
-        maven { url "https://jitpack.io" }
-        maven {
-            url 'https://maven.aliyun.com/repository/google/'
-        }
-        maven {
-            url 'https://maven.aliyun.com/repository/central/'
-        }
-        maven {
-            url 'https://maven.aliyun.com/repository/public/'
-        }
         google()
         mavenCentral()
+        maven { url "https://jitpack.io" }
+        maven { url 'https://plugins.gradle.org/m2/' }
+        //maven { url 'https://maven.aliyun.com/repository/google/' }
+        //maven { url 'https://maven.aliyun.com/repository/central/' }
+        //maven { url 'https://maven.aliyun.com/repository/public/' }
     }
 }
 
