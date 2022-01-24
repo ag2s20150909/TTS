@@ -1,5 +1,7 @@
 package me.ag2s.tts.services;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +19,7 @@ public class TtsStyleManger {
     private final List<TtsStyle> styles;
 
     private TtsStyleManger() {
-        styles = new ArrayList<>();
+        styles = new ArrayList<>(16);
         styles.add(new TtsStyle("默认", "Default", "默认值"));
         styles.add(new TtsStyle("新闻", "newscast", "以正式专业的语气叙述新闻"));
         styles.add(new TtsStyle("客服", "customerservice", "以友好热情的语气为客户提供支持"));
@@ -37,11 +39,11 @@ public class TtsStyleManger {
 
     }
 
-    public List<TtsStyle> getStyles() {
+    public @NonNull List<TtsStyle> getStyles() {
         return this.styles;
     }
     @SuppressWarnings("unused")
-    public TtsStyle get(int index) {
+    public @NonNull TtsStyle get(int index) {
         if (index>=0&&index < styles.size()) {
             return styles.get(index);
         }

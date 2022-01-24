@@ -8,6 +8,9 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.franmontiel.persistentcookiejar.PersistentCookieJar;
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
@@ -62,7 +65,7 @@ public class APP extends Application {
         return okHttpClient;
     }
 
-    public static InetAddress getByName(String ip){
+    public static @Nullable InetAddress getByName(@NonNull String ip){
         try {
             return InetAddress.getByName(ip);
         } catch (UnknownHostException e) {
@@ -111,6 +114,7 @@ public class APP extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        //Security.insertProviderAt(Conscrypt.newProvider(), 1);
         mContext = this.getApplicationContext();
     }
 

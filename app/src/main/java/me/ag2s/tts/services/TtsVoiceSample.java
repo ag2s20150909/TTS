@@ -3,15 +3,16 @@ package me.ag2s.tts.services;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import java.util.Locale;
 import java.util.MissingResourceException;
 
 import me.ag2s.tts.R;
 
 public class TtsVoiceSample {
-    public static final String zh = "";
 
-    public static String getByLocate(Context context, Locale locale) throws MissingResourceException {
+    public static String getByLocate(@NonNull Context context, @NonNull Locale locale) throws MissingResourceException {
         String language = locale.getISO3Language();
         if (language.equals(new Locale("en").getISO3Language())) {
             return context.getString(R.string.tts_sample_en);

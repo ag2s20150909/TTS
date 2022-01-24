@@ -3,8 +3,8 @@ plugins {
 }
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion "30.0.3"
+    compileSdkVersion 32
+    buildToolsVersion '32.0.0'
     //签名设置
     signingConfigs {
         release {
@@ -24,7 +24,7 @@ android {
     defaultConfig {
         applicationId "me.ag2s.tts"
         minSdkVersion 21
-        targetSdkVersion 31
+        targetSdkVersion 32
         versionCode 1
         versionName "0.2_${releaseTime()}"
 
@@ -108,6 +108,7 @@ dependencies {
     //noinspection GradleDependency
     implementation "com.squareup.okhttp3:okhttp:4.9.3"
     implementation "com.squareup.okhttp3:okhttp-dnsoverhttps:4.9.3"
+    //implementation 'org.conscrypt:conscrypt-android:2.5.2'
 }
 
 static def releaseTime() {

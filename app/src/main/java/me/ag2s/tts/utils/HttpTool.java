@@ -26,13 +26,13 @@ import okhttp3.Response;
 public class HttpTool {
 
     public interface DownloadCallBack {
-        void onSucces(String path);
+        void onSuccess(String path);
 
         void onError(String err);
     }
 
     private static final String TAG = HttpTool.class.getSimpleName();
-    public static final String HTTPERROR = "error:";
+    public static final String HTTP_ERROR = "error:";
     public static final MediaType JSON = MediaType.get("application/json;charset=UTF-8");
 
 
@@ -50,11 +50,11 @@ public class HttpTool {
             if (response.isSuccessful()) {
                 return new String(Objects.requireNonNull(response.body()).bytes(), StandardCharsets.UTF_8);
             } else {
-                Log.e(TAG, HTTPERROR + response.message() + " errorCode:" + response.code());
-                return HTTPERROR + response.message() + " errorCode:" + response.code();
+                Log.e(TAG, HTTP_ERROR + response.message() + " errorCode:" + response.code());
+                return HTTP_ERROR + response.message() + " errorCode:" + response.code();
             }
         } catch (Exception e) {
-            return HTTPERROR + CommonTool.getStackTrace(e);
+            return HTTP_ERROR + CommonTool.getStackTrace(e);
         }
     }
 
@@ -85,10 +85,10 @@ public class HttpTool {
             if (response.isSuccessful()) {
                 return new String(Objects.requireNonNull(response.body()).bytes(), StandardCharsets.UTF_8);
             } else {
-                return HTTPERROR + response.message() + " errorcode:" + response.code();
+                return HTTP_ERROR + response.message() + " errorcode:" + response.code();
             }
         } catch (Exception e) {
-            return HTTPERROR + CommonTool.getStackTrace(e);
+            return HTTP_ERROR + CommonTool.getStackTrace(e);
         }
 
     }
@@ -104,16 +104,16 @@ public class HttpTool {
             }
 
             @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+            public void onResponse(@NonNull Call call, @NonNull Response response) {
 
                 try (FileOutputStream fos = new FileOutputStream(path)) {
-                    fos.write(response.body().bytes());
+                    fos.write(Objects.requireNonNull(response.body()).bytes());
                     fos.flush();
                 } catch (Exception e) {
                     e.printStackTrace();
                     cb.onError(e.getLocalizedMessage());
                 } finally {
-                    cb.onSucces(path);
+                    cb.onSuccess(path);
                 }
             }
 
@@ -144,17 +144,17 @@ public class HttpTool {
             if (response.isSuccessful()) {
                 return new String(Objects.requireNonNull(response.body()).bytes(), StandardCharsets.UTF_8);
             } else {
-                return HTTPERROR + response.message() + " errorcode:" + response.code();
+                return HTTP_ERROR + response.message() + " errorcode:" + response.code();
             }
         } catch (Exception e) {
-            return HTTPERROR + CommonTool.getStackTrace(e);
+            return HTTP_ERROR + CommonTool.getStackTrace(e);
         }
 
     }
 
 
-    public static final String PcUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit" + WebSettings.getDefaultUserAgent(APP.getContext()).replaceAll("Mozilla/5.0.*?AppleWebKit", "").replace("Mobile Safari", "Safari");
-    public static final String UA = "Mozilla/5.0 (Linux; Android 11; SM-A7160 Build/RP1A.200720.012; wv) AppleWebKit" + WebSettings.getDefaultUserAgent(APP.getContext()).replaceAll("Mozilla/5.0.*?AppleWebKit", "");
+    // --Commented out by Inspection (2022/1/24 22:32):public static final String PcUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36";
+    public static final String UA = "Mozilla/5.0 (Linux; Android 12; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.0.0 Mobile Safari/537.36";
 
 
 }

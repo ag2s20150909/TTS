@@ -36,10 +36,10 @@
                 android:text="@string/use_custom_language" />
 
             <Switch
-                android:id="@+id/switch_use_auto_retry"
+                android:id="@+id/switch_use_dict"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/auto_retry" />
+                android:text="@string/use_dict" />
         </LinearLayout>
     </HorizontalScrollView>
 

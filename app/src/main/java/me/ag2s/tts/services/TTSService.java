@@ -1,8 +1,8 @@
 package me.ag2s.tts.services;
 
 import static me.ag2s.tts.APP.getOkHttpClient;
+import static me.ag2s.tts.utils.CommonTool.getTime;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.MediaCodec;
@@ -21,11 +21,10 @@ import android.util.Log;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -65,7 +64,7 @@ public class TTSService extends TextToSpeechService {
     private volatile String[] mCurrentLanguage = null;
 
 
-    private int oldindex = 0;
+    private int oldFormatIndex = 0;
     SynthesisCallback callback;
 
     @Override
@@ -81,18 +80,28 @@ public class TTSService extends TextToSpeechService {
     /**
      * 创建或刷新5分钟的WakeLock
      */
-    @SuppressLint("InvalidWakeLockTag")
     private void reNewWakeLock() {
 
         if (null == mWakeLock) {
             PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
             mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
-                    "mainLockService");
+                    "TTS:ttsTag");
         }
 
         if (null != mWakeLock&&!mWakeLock.isHeld()) {
             mWakeLock.acquire(60 * 5 * 1000);
             Log.e(TAG,"刷新WakeLock5分钟");
+        }
+    }
+
+    /**
+     * 释放WakeLock
+     */
+    @SuppressWarnings("unused")
+    private void releaseWakeLock() {
+        if (null != mWakeLock) {
+            mWakeLock.release();
+            mWakeLock = null;
         }
     }
 
@@ -103,12 +112,7 @@ public class TTSService extends TextToSpeechService {
 
     }
 
-    private void releaseWakeLock() {
-        if (null != mWakeLock) {
-            mWakeLock.release();
-            mWakeLock = null;
-        }
-    }
+
 
 
     private final WebSocketListener webSocketListener = new WebSocketListener() {
@@ -134,11 +138,6 @@ public class TTSService extends TextToSpeechService {
             TTSService.this.webSocket = null;
             callback.done();
             isSynthesizing = false;
-
-            if (sharedPreferences.getBoolean(Constants.USE_AUTO_RETRY, false)) {
-                Log.d(TAG, "AAAA:使用自动重试。");
-                TTSService.this.webSocket = getOrCreateWs();
-            }
 
         }
 
@@ -298,8 +297,7 @@ public class TTSService extends TextToSpeechService {
 
             MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
             ByteBuffer inputBuffer;
-            //Log.d(TAG, mediaCodec.getInputFormat().toString());
-            //Log.d(TAG, mediaCodec.getOutputFormat().toString());
+
             while (mediaCodec != null) {
                 //获取可用的inputBuffer，输入参数-1代表一直等到，0代表不等待，10*1000代表10秒超时
                 //超时时间10秒
@@ -405,16 +403,7 @@ public class TTSService extends TextToSpeechService {
         ws.send(msg);
     }
 
-    /**
-     * 获取时间戳
-     *
-     * @return String time
-     */
-    public String getTime() {
-        SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ss 'GMT'Z (中国标准时间)", Locale.ENGLISH);
-        Date date = new Date();
-        return sdf.format(date);
-    }
+
 
     /**
      * 发送合成text请求
@@ -428,59 +417,34 @@ public class TTSService extends TextToSpeechService {
         TtsOutputFormat format = ttsConfig.getFormat();
         currentFormat = format;
         reNewWakeLock();
-
-
-        //设置发送文本内容
-
-        StringBuilder sb = new StringBuilder(request.getCharSequenceText());
-        Log.d(TAG, "源：" + sb);
-        // text=text.replace("……","<break strength=\"strong\" />");
-        CommonTool.replaceAll(sb, ">", "");
-        CommonTool.replaceAll(sb, "<", "");
-        //CommonTool.replaceAll(sb,"……","<break strength=\"strong\" />");
-        //移除空格
-        CommonTool.Trim(sb);
         //判断是否全是不发声字符，如果是，直接跳过
-        if (CommonTool.isNoVoice(sb.toString())) {
+        if (CommonTool.isNoVoice(request.getCharSequenceText())) {
             callback.start(format.HZ,
                     format.BitRate, 1 /* Number of channels. */);
             callback.done();
             isSynthesizing = false;
             return;
         }
-        Log.d(TAG, "源2：" + sb);
-
-
-        int pitch = request.getPitch() - 100;
-        int rate = request.getSpeechRate() - 100;
-        //Log.e(TAG, "速度" + rate);
-
-        int volume = sharedPreferences.getInt(Constants.VOICE_VOLUME, 100);
-
-
-        String style = sharedPreferences.getString(Constants.VOICE_STYLE, "cheerful");
-        String styleDegreeString = CommonTool.div(sharedPreferences.getInt(Constants.VOICE_STYLE_DEGREE, 100), 100, 2) + "";
 
         String name = request.getVoiceName();
-        String time = getTime();
-        Locale locale = Locale.getDefault();
-        //&& request.getLanguage().equals(locale.getISO3Language())
         if (sharedPreferences.getBoolean(Constants.USE_CUSTOM_VOICE, true)) {
             name = sharedPreferences.getString(Constants.CUSTOM_VOICE, "zh-CN-XiaoxiaoNeural");
         }
+        int styleIndex=sharedPreferences.getInt(Constants.VOICE_STYLE_INDEX,0);
+        TtsStyle ttsStyle = TtsStyleManger.getInstance().get(styleIndex);
+        ttsStyle.setStyleDegree(new BigDecimal(sharedPreferences.getInt(Constants.VOICE_STYLE_DEGREE, 100)));
+        ttsStyle.setVolume(sharedPreferences.getInt(Constants.VOICE_VOLUME, 100));
+        boolean useDict = sharedPreferences.getBoolean(Constants.USE_DICT, false);
+        SSML ssml=new SSML(request,name, ttsStyle,useDict);
 
-        String RequestId = CommonTool.getMD5String(sb.toString() + time + request.getCallerUid());
-
-
-        String xml = locale.getLanguage() + "-" + locale.getCountry();
-        String txt = CommonTool.getSSML(sb, RequestId, time, name, style, styleDegreeString, pitch, rate, volume, xml);
+        String txt=ssml.toString();
         callback.start(format.HZ,
                 format.BitRate, 1 /* Number of channels. */);
 
         webSocket = getOrCreateWs();
-        if (oldindex != index) {
+        if (oldFormatIndex != index) {
             sendConfig(webSocket, ttsConfig);
-            oldindex = index;
+            oldFormatIndex = index;
         }
         webSocket.send(txt);
 
@@ -572,14 +536,13 @@ public class TTSService extends TextToSpeechService {
     @Override
     public String onGetDefaultVoiceNameFor(String lang, String country, String variant) {
         String name = "zh-CN-XiaoxiaoNeural";
-//        if (variant.isEmpty()) {
-//            variant = "Female";
-//        }
+        if (variant.isEmpty()) {
+            variant = "Female";
+        }
         List<String> names = getVoiceNames(lang, country, variant);
         if (names.size() > 0) {
             name = names.get(0);
         }
-        //name="zh-cn-XiaoyouNeural";
 
         return name;
     }

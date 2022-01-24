@@ -27,9 +27,12 @@ public class TtsDict implements Comparable<TtsDict> {
 
     @Override
     public int compareTo(TtsDict o) {
+
         if(this.world.length()!=o.world.length()){
+            //长的词排在前面
             return o.world.length()-this.world.length();
         }else {
+            //长度相同自然排序
             return this.world.compareTo(o.world);
         }
 

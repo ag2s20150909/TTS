@@ -13,10 +13,7 @@ public class Constants {
      * 自定义语音的index
      */
     public static final String CUSTOM_VOICE_INDEX = "custom_voice_index";
-    /**
-     * 语音的风格
-     */
-    public static final String VOICE_STYLE = "voice_style";
+
     /**
      * 语音的风格的强度
      */
@@ -25,10 +22,11 @@ public class Constants {
      * 语音的风格index
      */
     public static final String VOICE_STYLE_INDEX = "voice_style_index";
+
     /**
-     * 是否动重连WS
+     * 是否使用词典
      */
-    public static final String USE_AUTO_RETRY = "use_auto_retry";
+    public static final String USE_DICT = "use_dict";
     /**
      * 是否检查更新
      */
@@ -51,7 +49,7 @@ public class Constants {
 
 
     public static final String EDGE_ORIGIN = "chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold";
-    public static final String EDGE_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36 Edg/97.0.1072.62";
+    public static final String EDGE_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36 Edg/97.0.1072.69";
     public static final String EDGE_URL = "https://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EAFF4E9FB37E23D68491D6F4";
 
 }

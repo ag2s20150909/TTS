@@ -8,6 +8,7 @@ import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
 
 import java.io.File;
@@ -17,11 +18,11 @@ import me.ag2s.tts.BuildConfig;
 public class ApkInstall {
     final Context context;
 
-    public ApkInstall(Context context) {
+    public ApkInstall(@NonNull Context context) {
         this.context = context;
     }
 
-    public void installAPK(String apkPath) {
+    public void installAPK(@NonNull String apkPath) {
 
         File file = new File(apkPath);
         if (file.exists()) {
@@ -40,7 +41,7 @@ public class ApkInstall {
         }
     }
 
-    private Uri uriFromFile(Context context, File file) {
+    private Uri uriFromFile(@NonNull Context context, @NonNull File file) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             return FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", file);
         } else {

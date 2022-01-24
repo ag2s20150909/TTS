@@ -77,7 +77,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         btn_IgnoringBatteryOptimizations.setOnClickListener(this);
         RecyclerView gv = findViewById(R.id.gv);
         Switch aSwitch = findViewById(R.id.switch_use_custom_language);
-        Switch bSwitch = findViewById(R.id.switch_use_auto_retry);
+        Switch swUseDict = findViewById(R.id.switch_use_dict);
         RecyclerView rv_styles = findViewById(R.id.rv_voice_styles);
 
         SeekBar seekBar = findViewById(R.id.tts_style_degree);
@@ -145,7 +145,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         linearLayoutManager.scrollToPositionWithOffset(styleIndex, 0);
         rvadapter.setItemClickListener((position, item) -> {
             SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString(Constants.VOICE_STYLE, item.value);
+            //editor.putString(Constants.VOICE_STYLE, item.value);
             editor.putInt(Constants.VOICE_STYLE_INDEX, position);
             editor.apply();
         });
@@ -160,11 +160,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
             editor.apply();
         });
 
-        boolean useAutoRetry = sharedPreferences.getBoolean(Constants.USE_AUTO_RETRY, false);
-        bSwitch.setChecked(useAutoRetry);
-        bSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        boolean useDict = sharedPreferences.getBoolean(Constants.USE_DICT, false);
+        swUseDict.setChecked(useDict);
+        swUseDict.setOnCheckedChangeListener((buttonView, isChecked) -> {
             SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean(Constants.USE_AUTO_RETRY, isChecked);
+            editor.putBoolean(Constants.USE_DICT, isChecked);
             editor.apply();
         });
 
@@ -269,7 +269,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int aindex = sharedPreferences.getInt(Constants.AUDIO_FORMAT_INDEX, 0);
+        int i = sharedPreferences.getInt(Constants.AUDIO_FORMAT_INDEX, 0);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         switch (item.getItemId()) {
             case Menu.FIRST + 1:
@@ -284,7 +284,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             default:
                 if (item.getGroupId() == 100 && item.getItemId() >= 1000 && item.getItemId() < 1100) {
                     int index = item.getItemId() - 1000;
-                    boolean b = index == aindex;
+                    boolean b = index == i;
                     item.setChecked(b);
                     Toast.makeText(this, TtsFormatManger.getInstance().getFormat(index).value, Toast.LENGTH_LONG).show();
                     editor.putInt(Constants.AUDIO_FORMAT_INDEX, index);
@@ -335,24 +335,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
             runOnUiThread(() -> new AlertDialog.Builder(MainActivity.this)
                     .setTitle("有新版本")
                     .setMessage("发现新版本:\n" + appName + "\n如需更新，点击确定，将跳转到浏览器下载。如不想更新，点击取消，将不再自动检查更新，直到你清除应用数据。你可以到右上角菜单手动检查更新。")
-                    .setPositiveButton("确定", (dialog, which) -> {
-                        HttpTool.downLoadFile(url, getExternalCacheDir().getAbsolutePath() + "/" + appName, new HttpTool.DownloadCallBack() {
-                            @Override
-                            public void onSucces(String path) {
-                                new ApkInstall(getApplicationContext()).installAPK(path);
-                            }
+                    .setPositiveButton("确定", (dialog, which) -> HttpTool.downLoadFile(url, getExternalCacheDir().getAbsolutePath() + "/" + appName, new HttpTool.DownloadCallBack() {
+                        @Override
+                        public void onSuccess(String path) {
+                            new ApkInstall(getApplicationContext()).installAPK(path);
+                        }
 
-                            @Override
-                            public void onError(String err) {
-                                Intent intent = new Intent(Intent.ACTION_VIEW);
-                                intent.setData(Uri.parse(url));
-                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                startActivity(intent);
-                            }
-                        });
-
-
-                    })
+                        @Override
+                        public void onError(String err) {
+                            Intent intent = new Intent(Intent.ACTION_VIEW);
+                            intent.setData(Uri.parse(url));
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+                        }
+                    }))
                     .setNegativeButton("取消", (dialog, which) -> {
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putBoolean(Constants.USE_AUTO_UPDATE, false);

@@ -9,6 +9,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import me.ag2s.tts.APP;
 
@@ -46,7 +47,7 @@ public class TtsDictManger {
         File file = new File(APP.getContext().getExternalFilesDir(""), "dict.txt");
         if (!file.exists()) {
             try {
-                boolean is = file.getParentFile().mkdirs();
+                boolean is = Objects.requireNonNull(file.getParentFile()).mkdirs();
                 if (!is) {
                     Log.e("DICT", "创建文件夹：" + file.getParentFile().getAbsolutePath() + "出错");
                 }
