@@ -25,4 +25,4 @@ jobs:
           git remote set-url --add origin "https://${{ github.actor }}:${{ secrets.ACTIONS_TOKEN }}@github.com/${{ github.repository }}"
           git add --all
           git commit -m "update"
-          git push -u origin master
+          git push -f -u origin release
