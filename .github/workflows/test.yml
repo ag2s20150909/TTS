@@ -26,7 +26,7 @@ jobs:
           git remote set-url --add origin "https://${{ github.actor }}:${{ secrets.ACTIONS_TOKEN }}@github.com/${{ github.repository }}"
           git branch release
           git checkout release
-          git rm –r *
+          git rm –r '*'
           git add */*.apk
           git add */*.json
           git commit -m "update"
