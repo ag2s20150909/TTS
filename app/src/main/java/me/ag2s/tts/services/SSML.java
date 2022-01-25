@@ -1,15 +1,41 @@
 package me.ag2s.tts.services;
 
 import android.speech.tts.SynthesisRequest;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import me.ag2s.tts.utils.CommonTool;
 
 public class SSML {
+
+    /**
+     * 把常用的影响分句的重复符号合并
+     */
+    static final Pattern p0=Pattern.compile("([\\s　！。？?])+");
+    /**
+     * 单字符断句符,排除后面有引号的情况
+     */
+    static final Pattern p1=Pattern.compile("([;。：！？?])([^”’])");
+    /**
+     * 中英文省略号处理
+     */
+    static final Pattern p2=Pattern.compile("(\\.{6}|…{2})([^”’])");
+    /**
+     * 多字符断句符，后面有引号的的情况
+     */
+    static final Pattern p3=Pattern.compile("([。！？?][”’])([^，。！？?])");
+//
+//
+    /**
+     * 修复在小说中“重”作为量词时(读chong 2)的错误读音。这在修仙类小说中很常见.
+     */
+     static final Pattern p4=Pattern.compile("重(?=[一二三四五六七八九十])|(?<=[一二三四五六七八九十])重");
+
 
     /**
      * 指定讲话语言。 目前，讲不同的语言是特定于语音的。
@@ -54,7 +80,7 @@ public class SSML {
         this.style = ttsStyle;
         this.time = CommonTool.getTime();
         this.pitch = (short) (request.getPitch() - 100);
-        this.rate = (short) (request.getSpeechRate() - 100);
+        this.rate = (short) (request.getSpeechRate());
         Locale locale = Locale.getDefault();
         this.lang = locale.getLanguage() + "-" + locale.getCountry();
         this.id = CommonTool.getMD5String(request.getCharSequenceText() + "" + System.currentTimeMillis());
@@ -62,6 +88,8 @@ public class SSML {
         handleContent();
 
     }
+
+
 
 
     /**
@@ -74,13 +102,22 @@ public class SSML {
         CommonTool.replace(content, "'", "&apos;");
         CommonTool.replace(content, ">", "&lt;");
         CommonTool.replace(content, "<", "&gt;");
-        content = new StringBuilder(CommonTool.p4.matcher(content).replaceAll("<phoneme alphabet='sapi' ph='chong 2'>重</phoneme>"));
+        String temp=content.toString();
+        temp=p0.matcher(temp).replaceAll("$1");//把常用的影响分句的重复符号合并
+        temp=p1.matcher(temp).replaceAll("$1</p><p>$2");//单字符断句符,排除后面有引号的情况
+        temp=p2.matcher(temp).replaceAll("<break strength='strong' />$2");//中英文省略号停顿处理
+        temp=p3.matcher(temp).replaceAll("$1</p><p>$2");//多字符断句符，后面有引号的的情况
+        temp=p4.matcher(temp).replaceAll("<phoneme alphabet='sapi' ph='chong 2'>重</phoneme>");
+
+        content = new StringBuilder(temp);
+        Log.e("ss",content.toString());
         if (useDict) {
             List<TtsDict> dictList = TtsDictManger.getInstance().getDict();
             for (TtsDict dict : dictList) {
                 CommonTool.replace(content, dict.getWorld(), dict.getXML());
             }
         }
+        System.gc();
 
     }
 
@@ -88,7 +125,7 @@ public class SSML {
     @NonNull
     @Override
     public String toString() {
-        String rateString = rate >= 0 ? "+" + rate + "%" : rate + "%";
+        String rateString = ""+CommonTool.div(rate,100.0,2)+""; //>= 0 ? "+" + rate + "%" : rate + "%";
         String pitchString = pitch >= 0 ? "+" + pitch + "Hz" : pitch + "Hz";
         return "X-RequestId:" + id + "\r\n" +
                 "Content-Type:application/ssml+xml\r\n" +
@@ -101,7 +138,7 @@ public class SSML {
                 "<prosody pitch=\"" + pitchString + "\" " +
                 "rate =\"" + rateString + "\" " +
                 "volume=\"" + style.getVolume() + "\">" +
-                "<mstts:express-as  style=\"" + style.value + "\" styledegree=\"" + style.getStyleDegree() + "\" >" + content.toString() + "</mstts:express-as>" +
+                "<mstts:express-as  style=\"" + style.value + "\" styledegree=\"" + style.getStyleDegree() + "\" ><p>" + content.toString() + "</p></mstts:express-as>" +
                 "</prosody></lang></voice></speak>";
     }
 }

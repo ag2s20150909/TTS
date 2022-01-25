@@ -4,14 +4,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 
 /**
  * TTS的说话风格
  */
 public class TtsStyle {
 
-    public static final BigDecimal DEFAULT_DEGREE =new BigDecimal(BigInteger.valueOf(100),2);
+    public static final BigDecimal DEFAULT_DEGREE =new BigDecimal("100.00");
     /**
      * 展示的名称
      */
@@ -21,9 +20,9 @@ public class TtsStyle {
      */
     public final String value;
     /**
-     * 风格的强度(0.00-200.00)
+     * 风格的强度(0.00-2.00)
      */
-    public BigDecimal styleDegree= DEFAULT_DEGREE;
+    private BigDecimal styleDegree= DEFAULT_DEGREE;
     /**
      * 音量（1-100）
      */
@@ -47,8 +46,8 @@ public class TtsStyle {
         this.volume = (byte) volume;
     }
 
-    public void setStyleDegree(BigDecimal styleDegree) {
-        this.styleDegree=styleDegree;
+    public void setStyleDegree(int styleDegree) {
+        this.styleDegree=new BigDecimal(styleDegree+".00");
     }
     public String getStyleDegree() {
         return styleDegree.divide(DEFAULT_DEGREE,2,BigDecimal.ROUND_HALF_UP).toString();

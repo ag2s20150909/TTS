@@ -3,6 +3,7 @@ package me.ag2s.tts;
 import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -18,6 +19,7 @@ import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersisto
 import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.HttpUrl;
@@ -31,6 +33,8 @@ public class APP extends Application {
      */
     @SuppressLint("StaticFieldLeak")
     private static Context mContext;
+
+    public static SharedPreferences preferences;
 
     /**
      * 用于DoH的@see:okhttp3.OkHttpClient
@@ -63,6 +67,99 @@ public class APP extends Application {
             }
         }
         return okHttpClient;
+    }
+
+
+
+    public static  void putString(String key, @Nullable String value) {
+        SharedPreferences.Editor editor=getSharedPreferences().edit();
+        editor.putString(key, value);
+        editor.apply();
+
+    }
+
+
+    public static  void putStringSet(String key, @Nullable Set<String> values) {
+        SharedPreferences.Editor editor=getSharedPreferences().edit();
+        editor.putStringSet(key, values);
+        editor.apply();
+
+    }
+
+
+    public static  void putInt(String key, int value) {
+        SharedPreferences.Editor editor=getSharedPreferences().edit();
+        editor.putInt(key, value);
+        editor.apply();
+
+    }
+
+
+    public static  void putLong(String key, long value) {
+        SharedPreferences.Editor editor=getSharedPreferences().edit();
+        editor.putLong(key, value);
+        editor.apply();
+    }
+
+
+    public static  void putFloat(String key, float value) {
+        SharedPreferences.Editor editor=getSharedPreferences().edit();
+        editor.putFloat(key, value);
+        editor.apply();
+
+    }
+
+
+    public static void putBoolean(String key, boolean value) {
+        SharedPreferences.Editor editor=getSharedPreferences().edit();
+        editor.putBoolean(key, value);
+        editor.apply();
+
+    }
+
+
+    @Nullable
+    public static  String getString(String key, @Nullable String defValue) {
+        return getSharedPreferences().getString(key, defValue);
+    }
+
+
+    @Nullable
+    public static  Set<String> getStringSet(String key, @Nullable Set<String> defValues) {
+        return getSharedPreferences().getStringSet(key, defValues);
+    }
+
+
+    public static int getInt(String key, int defValue) {
+        return getSharedPreferences().getInt(key, defValue);
+    }
+
+
+    public static long getLong(String key, long defValue) {
+        return getSharedPreferences().getLong(key, defValue);
+    }
+
+    public static float getFloat(String key, float defValue) {
+        return getSharedPreferences().getFloat(key, defValue);
+    }
+
+
+    public static boolean getBoolean(String key, boolean defValue) {
+        return getSharedPreferences().getBoolean(key, defValue);
+    }
+
+
+    public static SharedPreferences getSharedPreferences(){
+        if(preferences==null){
+            synchronized (APP.class){
+                if (preferences==null){
+                    preferences=getContext().getSharedPreferences("TTS",Context.MODE_PRIVATE);
+                    //kv= MMKV.mmkvWithID("TTS", MMKV.MULTI_PROCESS_MODE);
+                }
+
+            }
+        }
+        return preferences;
     }
 
     public static @Nullable InetAddress getByName(@NonNull String ip){

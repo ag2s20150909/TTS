@@ -7,7 +7,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -58,7 +57,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private static final String TAG = "CheckVoiceData";
     private static final AtomicInteger mNextRequestId = new AtomicInteger(0);
     TextView tv_styleDegree;
-    public SharedPreferences sharedPreferences;
+    //public SharedPreferences sharedPreferences;
 
     private Button btn_IgnoringBatteryOptimizations;
     TextToSpeech textToSpeech;
@@ -69,7 +68,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        sharedPreferences = getApplicationContext().getSharedPreferences("TTS", Context.MODE_PRIVATE);
+        //sharedPreferences = getApplicationContext().getSharedPreferences("TTS", Context.MODE_PRIVATE);
         setContentView(R.layout.activity_main);
         Button btn_set_tts = findViewById(R.id.btn_set_tts);
         btn_IgnoringBatteryOptimizations = findViewById(R.id.btn_kill_battery);
@@ -83,12 +82,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
         SeekBar seekBar = findViewById(R.id.tts_style_degree);
         SeekBar volumeBar = findViewById(R.id.tts_voice_volume);
 
-        tv_styleDegree = findViewById(R.id.tts_style_degree_value);
-        int styleIndex = sharedPreferences.getInt(Constants.VOICE_STYLE_INDEX, 0);
+        Button styleDegreeAdd = findViewById(R.id.tts_style_degree_add);
+        Button styleDegreeReduce = findViewById(R.id.tts_style_degree_reduce);
+        styleDegreeAdd.setOnClickListener(this);
+        styleDegreeReduce.setOnClickListener(this);
 
-        styleDegree = sharedPreferences.getInt(Constants.VOICE_STYLE_DEGREE, 100);
-        volumeValue = sharedPreferences.getInt(Constants.VOICE_VOLUME, 100);
-        tv_styleDegree.setText("强度:" + styleDegree + "音量:" + volumeValue);
+        tv_styleDegree = findViewById(R.id.tts_style_degree_value);
+        int styleIndex = APP.getInt(Constants.VOICE_STYLE_INDEX, 0);//sharedPreferences.getInt(Constants.VOICE_STYLE_INDEX, 0);
+
+
+
+        styleDegree = APP.getInt(Constants.VOICE_STYLE_DEGREE, 100);//sharedPreferences.getInt(Constants.VOICE_STYLE_DEGREE, 100);
+        volumeValue = APP.getInt(Constants.VOICE_VOLUME, 100);//sharedPreferences.getInt(Constants.VOICE_VOLUME, 100);
+        //tv_styleDegree.setText("强度:" + styleDegree + "音量:" + volumeValue);
+        updateView();
         seekBar.setProgress(styleDegree);
         volumeBar.setProgress(volumeValue);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -96,10 +103,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 styleDegree = progress;
-                tv_styleDegree.setText("强度:" + styleDegree + "音量:" + volumeValue);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putInt(Constants.VOICE_STYLE_DEGREE, progress);
-                editor.apply();
+                //tv_styleDegree.setText("强度:" + CommonTool.div(styleDegree,100,3) + "音量:" + volumeValue);
+                updateView();
+                APP.putInt(Constants.VOICE_STYLE_DEGREE,progress);
 
             }
 
@@ -117,10 +123,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 volumeValue = progress;
-                tv_styleDegree.setText("强度:" + styleDegree + "音量:" + volumeValue);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putInt(Constants.VOICE_VOLUME, progress);
-                editor.apply();
+                APP.putInt(Constants.VOICE_VOLUME, progress);
+                //tv_styleDegree.setText("强度:" + styleDegree + "音量:" + volumeValue);
+                updateView();
 
             }
 
@@ -143,30 +148,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
         rv_styles.setLayoutManager(linearLayoutManager);
         linearLayoutManager.scrollToPositionWithOffset(styleIndex, 0);
-        rvadapter.setItemClickListener((position, item) -> {
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            //editor.putString(Constants.VOICE_STYLE, item.value);
-            editor.putInt(Constants.VOICE_STYLE_INDEX, position);
-            editor.apply();
-        });
+        rvadapter.setItemClickListener((position, item) -> APP.putInt(Constants.VOICE_STYLE_INDEX, position));
 
-        boolean isFChecked = sharedPreferences.getBoolean(Constants.USE_CUSTOM_VOICE, true);
+        boolean isFChecked = APP.getBoolean(Constants.USE_CUSTOM_VOICE, true);//sharedPreferences.getBoolean(Constants.USE_CUSTOM_VOICE, true);
         aSwitch.setChecked(isFChecked);
         //gv.setVisibility(isFChecked ? View.VISIBLE : View.INVISIBLE);
-        aSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean(Constants.USE_CUSTOM_VOICE, isChecked);
-            //gv.setVisibility(isChecked ? View.VISIBLE : View.INVISIBLE);
-            editor.apply();
-        });
+        aSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> APP.putBoolean(Constants.USE_CUSTOM_VOICE, isChecked));
 
-        boolean useDict = sharedPreferences.getBoolean(Constants.USE_DICT, false);
+        boolean useDict = APP.getBoolean(Constants.USE_DICT, false);
         swUseDict.setChecked(useDict);
-        swUseDict.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean(Constants.USE_DICT, isChecked);
-            editor.apply();
-        });
+        swUseDict.setOnCheckedChangeListener((buttonView, isChecked) -> APP.putBoolean(Constants.USE_DICT, isChecked));
 
 
         textToSpeech = new TextToSpeech(MainActivity.this, status -> {
@@ -186,16 +177,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
         TtsActorAdapter adapter = new TtsActorAdapter(TtsActorManger.getInstance().getActors());
         gv.setAdapter(adapter);
         gv.setLayoutManager(new GridLayoutManager(this, 3));
-        adapter.setSelect(gv, sharedPreferences.getInt(Constants.CUSTOM_VOICE_INDEX, 0));
+        adapter.setSelect(gv,  APP.getInt(Constants.CUSTOM_VOICE_INDEX, 0));
         adapter.setItemClickListener((position, item) -> {
-            boolean origin = sharedPreferences.getBoolean(Constants.USE_CUSTOM_VOICE, false);
+            boolean origin = APP.getBoolean(Constants.USE_CUSTOM_VOICE, true);
 
             if (origin) {
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString(CUSTOM_VOICE, item.getShortName());
-                editor.putInt(Constants.CUSTOM_VOICE_INDEX, position);
-                //adapter.setSelect(gv, position);
-                editor.apply();
+
+                APP.putString(CUSTOM_VOICE, item.getShortName());
+                APP.putInt(Constants.CUSTOM_VOICE_INDEX, position);
+
             }
 
             Locale locale = item.getLocale();
@@ -213,11 +203,19 @@ public class MainActivity extends Activity implements View.OnClickListener {
             }
 
         });
-        if (sharedPreferences.getBoolean(Constants.USE_AUTO_UPDATE, true)) {
+        if (APP.getBoolean(Constants.USE_AUTO_UPDATE, true)) {
             checkUpdate();
         }
 
 
+    }
+
+
+    @SuppressLint("SetTextI18n")
+    private void updateView(){
+        BigDecimal d=new BigDecimal(styleDegree+".00");
+
+        tv_styleDegree.setText("强度:" + d.divide(TtsStyle.DEFAULT_DEGREE,2,BigDecimal.ROUND_HALF_UP) + "音量:" + volumeValue);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -237,6 +235,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
 
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (textToSpeech!=null){
+            textToSpeech.stop();
+            textToSpeech.shutdown();
+        }
     }
 
     @Override
@@ -262,15 +269,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(sharedPreferences.getInt(Constants.AUDIO_FORMAT_INDEX, 0) + 1000).setChecked(true);
+        menu.findItem( APP.getInt(Constants.AUDIO_FORMAT_INDEX, 0) + 1000).setChecked(true);
         return super.onPrepareOptionsMenu(menu);
     }
 
     @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int i = sharedPreferences.getInt(Constants.AUDIO_FORMAT_INDEX, 0);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
+        int i =  APP.getInt(Constants.AUDIO_FORMAT_INDEX, 0);
         switch (item.getItemId()) {
             case Menu.FIRST + 1:
                 checkUpdate();
@@ -287,8 +293,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     boolean b = index == i;
                     item.setChecked(b);
                     Toast.makeText(this, TtsFormatManger.getInstance().getFormat(index).value, Toast.LENGTH_LONG).show();
-                    editor.putInt(Constants.AUDIO_FORMAT_INDEX, index);
-                    editor.apply();
+                    APP.putInt(Constants.AUDIO_FORMAT_INDEX, index);
                 } else {
                     return super.onOptionsItemSelected(item);
                 }
@@ -349,11 +354,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                             startActivity(intent);
                         }
                     }))
-                    .setNegativeButton("取消", (dialog, which) -> {
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putBoolean(Constants.USE_AUTO_UPDATE, false);
-                        editor.apply();
-                    })
+                    .setNegativeButton("取消", (dialog, which) -> APP.putBoolean(Constants.USE_AUTO_UPDATE, false))
                     .create().show());
         } catch (Exception ignored) {
         }
@@ -413,6 +414,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
             case R.id.btn_kill_battery:
                 killBATTERY();
+                break;
+            case R.id.tts_style_degree_add:
+                if(styleDegree<200){
+                    styleDegree++;
+                    updateView();
+                }
+                break;
+            case R.id.tts_style_degree_reduce:
+                if(styleDegree>1){
+                    styleDegree--;
+                    updateView();
+                }
                 break;
         }
     }

@@ -2,6 +2,7 @@ package me.ag2s.tts.utils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -14,28 +15,6 @@ public class CommonTool {
 
     static final Pattern NoVoicePattern = Pattern.compile("[\\s\\p{C}\\p{P}\\p{Z}\\p{S}]");
 
-//    /**
-//     * 把常用的影响分句的重复符号合并
-//     */
-//    static final Pattern p0=Pattern.compile("([\\s　！。？?])+");
-//    /**
-//     * 单字符断句符,排除后面有引号的情况
-//     */
-//    static final Pattern p1=Pattern.compile("([;。：！？?])([^”’])");
-//    /**
-//     * 中英文省略号处理
-//     */
-//    static final Pattern p2=Pattern.compile("(\\.{6}|…{2})([^”’])");
-//    /**
-//     * 多字符断句符，后面有引号的的情况
-//     */
-//    static final Pattern p3=Pattern.compile("([。！？?][”’])([^，。！？?])");
-//
-//
-    /**
-     * 修复在小说中“重”作为量词时(读chong 2)的错误读音。这在修仙类小说中很常见.
-     */
-    public static final Pattern p4=Pattern.compile("重(?=[一二三四五六七八九十])|(?<=[一二三四五六七八九十])重");
 
 
 //    /**
@@ -216,24 +195,24 @@ public class CommonTool {
         return new String(Character.toChars(firstLetter)) + new String(Character.toChars(secondLetter));
     }
 //
-//    /**
-//     * 提供（相对）精确的除法运算。当发生除不尽的情况时，由scale参数指
-//     * 定精度，以后的数字四舍五入。
-//     *
-//     * @param v1    被除数
-//     * @param v2    除数
-//     * @param scale 表示表示需要精确到小数点以后几位。
-//     * @return 两个参数的商
-//     */
-//    public static double div(double v1, double v2, int scale) {
-//        if (scale < 0) {
-//            throw new IllegalArgumentException(
-//                    "The scale must be a positive integer or zero");
-//        }
-//        BigDecimal b1 = new BigDecimal(Double.toString(v1));
-//        BigDecimal b2 = new BigDecimal(Double.toString(v2));
-//        return b1.divide(b2, scale, BigDecimal.ROUND_HALF_UP).doubleValue();
-//    }
+    /**
+     * 提供（相对）精确的除法运算。当发生除不尽的情况时，由scale参数指
+     * 定精度，以后的数字四舍五入。
+     *
+     * @param v1    被除数
+     * @param v2    除数
+     * @param scale 表示表示需要精确到小数点以后几位。
+     * @return 两个参数的商
+     */
+    public static double div(double v1, double v2, int scale) {
+        if (scale < 0) {
+            throw new IllegalArgumentException(
+                    "The scale must be a positive integer or zero");
+        }
+        BigDecimal b1 = new BigDecimal(Double.toString(v1));
+        BigDecimal b2 = new BigDecimal(Double.toString(v2));
+        return b1.divide(b2, scale, BigDecimal.ROUND_HALF_UP).doubleValue();
+    }
 
     /**
      * 对传递过来的字符串进行md5加密

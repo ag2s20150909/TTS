@@ -4,7 +4,6 @@ import static me.ag2s.tts.APP.getOkHttpClient;
 import static me.ag2s.tts.utils.CommonTool.getTime;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.media.MediaCodec;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
@@ -21,7 +20,6 @@ import android.util.Log;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -30,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import me.ag2s.tts.APP;
 import me.ag2s.tts.utils.ByteArrayMediaDataSource;
 import me.ag2s.tts.utils.CommonTool;
 import okhttp3.OkHttpClient;
@@ -49,7 +48,7 @@ public class TTSService extends TextToSpeechService {
     private static final String TAG = TTSService.class.getSimpleName();
 
 
-    public SharedPreferences sharedPreferences;
+    //public volatile SharedPreferences sharedPreferences;
     private OkHttpClient client;
     private WebSocket webSocket;
     private volatile boolean isSynthesizing;
@@ -72,7 +71,7 @@ public class TTSService extends TextToSpeechService {
         super.onCreate();
         client = getOkHttpClient();
         reNewWakeLock();
-        sharedPreferences = getApplicationContext().getSharedPreferences("TTS", Context.MODE_PRIVATE);
+        //sharedPreferences = getApplicationContext().getSharedPreferences("TTS", Context.MODE_PRIVATE);
 
 
     }
@@ -344,6 +343,7 @@ public class TTSService extends TextToSpeechService {
             }
             cb.done();
             isSynthesizing = false;
+            System.gc();
 
         } catch (Exception e) {
             Log.e(TAG, "doDecode", e);
@@ -389,7 +389,7 @@ public class TTSService extends TextToSpeechService {
                 .addHeader("Origin", Constants.EDGE_ORIGIN)
                 .build();
         this.webSocket = client.newWebSocket(request, webSocketListener);
-        sendConfig(this.webSocket, new TtsConfig.Builder(sharedPreferences.getInt(Constants.AUDIO_FORMAT_INDEX, 0)).sentenceBoundaryEnabled(true).build());
+        sendConfig(this.webSocket, new TtsConfig.Builder( APP.getInt(Constants.AUDIO_FORMAT_INDEX, 0)).sentenceBoundaryEnabled(true).build());
         return webSocket;
     }
     //发送合成语音配置
@@ -412,7 +412,7 @@ public class TTSService extends TextToSpeechService {
      */
     public void sendText(SynthesisRequest request, SynthesisCallback callback) {
         //设置发送的音质
-        int index = sharedPreferences.getInt(Constants.AUDIO_FORMAT_INDEX, 0);
+        int index =  APP.getInt(Constants.AUDIO_FORMAT_INDEX, 0);
         TtsConfig ttsConfig = new TtsConfig.Builder(index).build();
         TtsOutputFormat format = ttsConfig.getFormat();
         currentFormat = format;
@@ -427,17 +427,18 @@ public class TTSService extends TextToSpeechService {
         }
 
         String name = request.getVoiceName();
-        if (sharedPreferences.getBoolean(Constants.USE_CUSTOM_VOICE, true)) {
-            name = sharedPreferences.getString(Constants.CUSTOM_VOICE, "zh-CN-XiaoxiaoNeural");
+        if ( APP.getBoolean(Constants.USE_CUSTOM_VOICE, true)) {
+            name =  APP.getString(Constants.CUSTOM_VOICE, "zh-CN-XiaoxiaoNeural");
         }
-        int styleIndex=sharedPreferences.getInt(Constants.VOICE_STYLE_INDEX,0);
+        int styleIndex= APP.getInt(Constants.VOICE_STYLE_INDEX,0);
         TtsStyle ttsStyle = TtsStyleManger.getInstance().get(styleIndex);
-        ttsStyle.setStyleDegree(new BigDecimal(sharedPreferences.getInt(Constants.VOICE_STYLE_DEGREE, 100)));
-        ttsStyle.setVolume(sharedPreferences.getInt(Constants.VOICE_VOLUME, 100));
-        boolean useDict = sharedPreferences.getBoolean(Constants.USE_DICT, false);
+        ttsStyle.setStyleDegree(APP.getInt(Constants.VOICE_STYLE_DEGREE, 100));
+        ttsStyle.setVolume( APP.getInt(Constants.VOICE_VOLUME, 100));
+        boolean useDict =  APP.getBoolean(Constants.USE_DICT, false);
         SSML ssml=new SSML(request,name, ttsStyle,useDict);
 
         String txt=ssml.toString();
+        Log.e(TAG,txt);
         callback.start(format.HZ,
                 format.BitRate, 1 /* Number of channels. */);
 
@@ -604,8 +605,9 @@ public class TTSService extends TextToSpeechService {
         isSynthesizing = true;
         //使用System.nanoTime()来保证获得的是精准的时间间隔
         long startTime = SystemClock.elapsedRealtime();
-        sendText(request, this.callback);
+
         synchronized (this) {
+            sendText(request, this.callback);
             while (isSynthesizing) {
                 try {
                     this.wait(100);
@@ -621,6 +623,7 @@ public class TTSService extends TextToSpeechService {
                 }
             }
         }
+        System.gc();
 
 
     }
