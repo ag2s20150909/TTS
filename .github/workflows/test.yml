@@ -23,6 +23,9 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote set-url --add origin "https://${{ github.actor }}:${{ secrets.ACTIONS_TOKEN }}@github.com/${{ github.repository }}"
-          git add --all
+          git branch release
+          git checkout release
+          git add *.apk
+          git add *.json
           git commit -m "update"
           git push -f -u origin release
