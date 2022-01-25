@@ -307,9 +307,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
         new Thread(() -> {
 
             try {
-                String msg=HttpTool.httpGet("https://purge.jsdelivr.net/gh/ag2s20150909/TTS@master/release/output-metadata.json");
-                Log.e("UPDATE",msg);
-                String url="https://cdn.jsdelivr.net/gh/ag2s20150909/TTS@master/release/output-metadata.json";
+                //String msg=HttpTool.httpGet("https://purge.jsdelivr.net/gh/ag2s20150909/TTS@master/release/output-metadata.json");
+                //Log.e("UPDATE",msg);
+                String url="https://fastly.jsdelivr.net/gh/ag2s20150909/TTS@release/release/output-metadata.json";
                 JSONObject json = Objects.requireNonNull(new JSONObject(HttpTool.httpGet(url)).optJSONArray("elements")).optJSONObject(0);
                 String fileName = json.optString("outputFile");
                 BigDecimal versionName = new BigDecimal(json.optString("versionName").split("_")[1].trim());
@@ -333,9 +333,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private void downLoadAndInstall(String appName) {
         try {
-            //https://cdn.staticaly.com/gh/ag2s20150909/TTS/master/release/TTS_release_v0.2_202112251858.apk
-            String url = "https://cdn.jsdelivr.net/gh/ag2s20150909/TTS@master/release/" + appName;
-            //String url="https://cdn.staticaly.com/gh/ag2s20150909/TTS/master/release/"+appName;
+            String url = "https://fastly.jsdelivr.net/gh/ag2s20150909/TTS@release/release/" + appName;
 
             runOnUiThread(() -> new AlertDialog.Builder(MainActivity.this)
                     .setTitle("有新版本")
