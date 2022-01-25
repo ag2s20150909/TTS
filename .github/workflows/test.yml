@@ -15,6 +15,7 @@ jobs:
           fetch-depth: 0
       - name: Build With Gradle
         run: |
+
           chmod +x gradlew
           ./gradlew assemblerelease --build-cache --parallel --daemon --warning-mode all
       - name: Git Push
@@ -25,6 +26,7 @@ jobs:
           git remote set-url --add origin "https://${{ github.actor }}:${{ secrets.ACTIONS_TOKEN }}@github.com/${{ github.repository }}"
           git branch release
           git checkout release
+          git rm –r *
           git add */*.apk
           git add */*.json
           git commit -m "update"
