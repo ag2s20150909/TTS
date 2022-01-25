@@ -57,7 +57,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private static final String TAG = "CheckVoiceData";
     private static final AtomicInteger mNextRequestId = new AtomicInteger(0);
     TextView tv_styleDegree;
-    //public SharedPreferences sharedPreferences;
+    SeekBar styleDegreeSeekBar;
+    SeekBar volumeBar;
 
     private Button btn_IgnoringBatteryOptimizations;
     TextToSpeech textToSpeech;
@@ -79,8 +80,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         Switch swUseDict = findViewById(R.id.switch_use_dict);
         RecyclerView rv_styles = findViewById(R.id.rv_voice_styles);
 
-        SeekBar seekBar = findViewById(R.id.tts_style_degree);
-        SeekBar volumeBar = findViewById(R.id.tts_voice_volume);
+        styleDegreeSeekBar = findViewById(R.id.tts_style_degree);
+        volumeBar = findViewById(R.id.tts_voice_volume);
 
         Button styleDegreeAdd = findViewById(R.id.tts_style_degree_add);
         Button styleDegreeReduce = findViewById(R.id.tts_style_degree_reduce);
@@ -91,21 +92,19 @@ public class MainActivity extends Activity implements View.OnClickListener {
         int styleIndex = APP.getInt(Constants.VOICE_STYLE_INDEX, 0);//sharedPreferences.getInt(Constants.VOICE_STYLE_INDEX, 0);
 
 
-
         styleDegree = APP.getInt(Constants.VOICE_STYLE_DEGREE, 100);//sharedPreferences.getInt(Constants.VOICE_STYLE_DEGREE, 100);
         volumeValue = APP.getInt(Constants.VOICE_VOLUME, 100);//sharedPreferences.getInt(Constants.VOICE_VOLUME, 100);
-        //tv_styleDegree.setText("强度:" + styleDegree + "音量:" + volumeValue);
+
         updateView();
-        seekBar.setProgress(styleDegree);
+        styleDegreeSeekBar.setProgress(styleDegree);
         volumeBar.setProgress(volumeValue);
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        styleDegreeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @SuppressLint("SetTextI18n")
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 styleDegree = progress;
-                //tv_styleDegree.setText("强度:" + CommonTool.div(styleDegree,100,3) + "音量:" + volumeValue);
                 updateView();
-                APP.putInt(Constants.VOICE_STYLE_DEGREE,progress);
+
 
             }
 
@@ -123,8 +122,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 volumeValue = progress;
-                APP.putInt(Constants.VOICE_VOLUME, progress);
-                //tv_styleDegree.setText("强度:" + styleDegree + "音量:" + volumeValue);
                 updateView();
 
             }
@@ -177,7 +174,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         TtsActorAdapter adapter = new TtsActorAdapter(TtsActorManger.getInstance().getActors());
         gv.setAdapter(adapter);
         gv.setLayoutManager(new GridLayoutManager(this, 3));
-        adapter.setSelect(gv,  APP.getInt(Constants.CUSTOM_VOICE_INDEX, 0));
+        adapter.setSelect(gv, APP.getInt(Constants.CUSTOM_VOICE_INDEX, 0));
         adapter.setItemClickListener((position, item) -> {
             boolean origin = APP.getBoolean(Constants.USE_CUSTOM_VOICE, true);
 
@@ -212,10 +209,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 
     @SuppressLint("SetTextI18n")
-    private void updateView(){
-        BigDecimal d=new BigDecimal(styleDegree+".00");
+    private void updateView() {
 
-        tv_styleDegree.setText("强度:" + d.divide(TtsStyle.DEFAULT_DEGREE,2,BigDecimal.ROUND_HALF_UP) + "音量:" + volumeValue);
+        BigDecimal d = new BigDecimal(styleDegree + ".00");
+        APP.putInt(Constants.VOICE_STYLE_DEGREE, styleDegree);
+        APP.putInt(Constants.VOICE_VOLUME,volumeValue);
+        styleDegreeSeekBar.setProgress(styleDegree);
+
+
+        tv_styleDegree.setText("强度:" + d.divide(TtsStyle.DEFAULT_DEGREE, 2, BigDecimal.ROUND_HALF_UP) + "音量:" + volumeValue);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -240,7 +242,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (textToSpeech!=null){
+        if (textToSpeech != null) {
             textToSpeech.stop();
             textToSpeech.shutdown();
         }
@@ -269,14 +271,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        menu.findItem( APP.getInt(Constants.AUDIO_FORMAT_INDEX, 0) + 1000).setChecked(true);
+        menu.findItem(APP.getInt(Constants.AUDIO_FORMAT_INDEX, 0) + 1000).setChecked(true);
         return super.onPrepareOptionsMenu(menu);
     }
 
     @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int i =  APP.getInt(Constants.AUDIO_FORMAT_INDEX, 0);
+        int i = APP.getInt(Constants.AUDIO_FORMAT_INDEX, 0);
         switch (item.getItemId()) {
             case Menu.FIRST + 1:
                 checkUpdate();
@@ -309,7 +311,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             try {
                 //String msg=HttpTool.httpGet("https://purge.jsdelivr.net/gh/ag2s20150909/TTS@master/release/output-metadata.json");
                 //Log.e("UPDATE",msg);
-                String url="https://fastly.jsdelivr.net/gh/ag2s20150909/TTS@release/release/output-metadata.json";
+                String url = "https://fastly.jsdelivr.net/gh/ag2s20150909/TTS@release/release/output-metadata.json";
                 JSONObject json = Objects.requireNonNull(new JSONObject(HttpTool.httpGet(url)).optJSONArray("elements")).optJSONObject(0);
                 String fileName = json.optString("outputFile");
                 BigDecimal versionName = new BigDecimal(json.optString("versionName").split("_")[1].trim());
@@ -414,13 +416,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 killBATTERY();
                 break;
             case R.id.tts_style_degree_add:
-                if(styleDegree<200){
+                if (styleDegree < 200) {
                     styleDegree++;
                     updateView();
                 }
                 break;
             case R.id.tts_style_degree_reduce:
-                if(styleDegree>1){
+                if (styleDegree > 1) {
                     styleDegree--;
                     updateView();
                 }

@@ -15,7 +15,7 @@ jobs:
           fetch-depth: 0
       - name: Remove old apk
         run: |
-          rm -rf release/*
+          rm -rf ./release/*
       - name: Build With Gradle
         run: |
 
