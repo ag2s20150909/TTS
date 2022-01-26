@@ -1,4 +1,4 @@
-name: Test Build
+name: Build Test
 
 on:
   push:
@@ -18,18 +18,13 @@ jobs:
           rm -rf ./release/*
       - name: Build With Gradle
         run: |
-
           chmod +x gradlew
           ./gradlew assemblerelease --build-cache --parallel --daemon --warning-mode all
-      - name: Git Push
+      - name: Get VerName
         run: |
-          sed -i '/url =/d' ./.git/config
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git remote set-url --add origin "https://${{ github.actor }}:${{ secrets.ACTIONS_TOKEN }}@github.com/${{ github.repository }}"
-          git branch release
-          git checkout release
-          git add */*.apk
-          git add */*.json
-          git commit -m "update"
-          git push -f -u origin release
+          echo "ver_name=$(grep 'versionName' release/output-metadata.json | cut -d\" -f4)" >> $GITHUB_ENV
+      - name: Upload App To Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: TTS_${{ env.ver_name }}
+          path: ${{ github.workspace }}/release/*
