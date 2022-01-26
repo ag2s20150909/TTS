@@ -1,0 +1,55 @@
+name: Build Release
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'CHANGELOG.md'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Remove old apk
+        run: |
+          rm -rf ./release/*
+      - name: Build With Gradle
+        run: |
+          chmod +x gradlew
+          ./gradlew assemblerelease --build-cache --parallel --daemon --warning-mode all
+      - name: Get VerName
+        run: |
+          echo "ver_name=$(grep 'versionName' release/output-metadata.json | cut -d\" -f4)" >> $GITHUB_ENV
+      - name: Upload App To Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: TTS_${{ env.ver_name }}
+          path: ${{ github.workspace }}/release/*
+      - name: Release
+        uses: softprops/action-gh-release@59c3b4891632ff9a897f99a91d7bc557467a3a22
+        with:
+          name: TTS_${{ env.ver_name }}
+          tag_name: ${{ env.ver_name }}
+          body_path: ${{ github.workspace }}/CHANGELOG.md
+          draft: false
+          prerelease: false
+          files: ${{ github.workspace }}/release/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Git Push to release
+        run: |
+          cd ./release
+          git init
+          git checkout -b release
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+          git add *.apk
+          git add *.json
+          git commit -m "${{ env.ver_name }}"
+          git push -f -u origin release
