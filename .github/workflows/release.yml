@@ -53,3 +53,11 @@ jobs:
           git add *.json
           git commit -m "${{ env.ver_name }}"
           git push -f -u origin release
+      - name: Purge Jsdelivr Cache
+        run: |
+          result=$(curl -s https://purge.jsdelivr.net/gh/${{ github.repository }}@release/)
+          if echo $result |grep -q 'success.*true'; then
+            echo "jsdelivr缓存更新成功"
+          else
+            echo $result
+          fi
