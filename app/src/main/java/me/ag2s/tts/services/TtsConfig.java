@@ -6,7 +6,8 @@ import android.util.Log;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("unused")
-public class TtsConfig {
+public class
+TtsConfig {
     private final boolean sentenceBoundaryEnabled;
     @SuppressWarnings("FieldCanBeLocal")
     private final boolean wordBoundaryEnabled;

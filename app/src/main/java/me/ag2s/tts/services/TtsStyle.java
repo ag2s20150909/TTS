@@ -10,7 +10,7 @@ import java.math.BigDecimal;
  */
 public class TtsStyle {
 
-    public static final BigDecimal DEFAULT_DEGREE =new BigDecimal("100.00");
+    public static final short DEFAULT_DEGREE =100;
     /**
      * 展示的名称
      */
@@ -22,7 +22,7 @@ public class TtsStyle {
     /**
      * 风格的强度(0.00-2.00)
      */
-    private BigDecimal styleDegree= DEFAULT_DEGREE;
+    private short styleDegree= DEFAULT_DEGREE;
     /**
      * 音量（1-100）
      */
@@ -47,9 +47,9 @@ public class TtsStyle {
     }
 
     public void setStyleDegree(int styleDegree) {
-        this.styleDegree=new BigDecimal(styleDegree+".00");
+        this.styleDegree= (short) styleDegree;
     }
     public String getStyleDegree() {
-        return styleDegree.divide(DEFAULT_DEGREE,2,BigDecimal.ROUND_HALF_UP).toString();
+        return styleDegree/DEFAULT_DEGREE+"."+styleDegree%DEFAULT_DEGREE;
     }
 }

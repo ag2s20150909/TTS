@@ -6,7 +6,7 @@ public class TtsOutputFormat {
    public final String name;
    public final String value;
    public final int HZ;
-   public final int BitRate;
+   public final byte BitRate;
     /**
      * 是否需要解码
      */
@@ -15,13 +15,13 @@ public class TtsOutputFormat {
        this.name=name;
        this.value=name;
        this.HZ=hz;
-       this.BitRate=bitRate;
+       this.BitRate= (byte) bitRate;
    }
     public TtsOutputFormat(String name,int hz,int bitRate,boolean needDecode){
        this.name=name;
        this.value=name;
         this.HZ=hz;
-        this.BitRate=bitRate;
+        this.BitRate= (byte) bitRate;
        this.needDecode=needDecode;
     }
 

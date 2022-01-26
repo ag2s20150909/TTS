@@ -20,6 +20,7 @@ import android.util.Log;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ import okio.ByteString;
 public class TTSService extends TextToSpeechService {
 
 
-    PowerManager.WakeLock mWakeLock;
+    private PowerManager.WakeLock mWakeLock;
 
 
     private static final String TAG = TTSService.class.getSimpleName();
@@ -56,8 +57,8 @@ public class TTSService extends TextToSpeechService {
     private volatile TtsOutputFormat currentFormat;
     //当前的数据
     private Buffer mData;
-    public static MediaCodec mediaCodec;
-    public volatile String currentMime;
+    private volatile String currentMime;
+    private MediaCodec mediaCodec;
 
 
     private volatile String[] mCurrentLanguage = null;
@@ -218,6 +219,35 @@ public class TTSService extends TextToSpeechService {
     };
 
 
+    private String oldMime;
+
+    /**
+     * 根据mime创建MediaCodec
+     * 当Mime未变化时复用MediaCodec
+     * @param mime mime
+     * @return MediaCodec
+     */
+    private MediaCodec getMediaCodec(String mime){
+        if(mediaCodec==null||!mime.equals(oldMime)){
+            if (mediaCodec!=null){
+                mediaCodec.release();
+                Runtime.getRuntime().gc();
+            }
+            try {
+                mediaCodec = MediaCodec.createDecoderByType(mime);
+                oldMime=mime;
+            } catch (IOException ioException) {
+                //设备无法创建，直接抛出
+               throw new RuntimeException(ioException);
+            }
+        }
+        mediaCodec.reset();
+        return mediaCodec;
+        //private MediaCodec mediaCodec;
+    }
+
+
+
     private void doDecode(SynthesisCallback cb, @SuppressWarnings("unused") TtsOutputFormat format, ByteString data) {
         try {
             MediaExtractor mediaExtractor = new MediaExtractor();
@@ -287,7 +317,8 @@ public class TTSService extends TextToSpeechService {
             mediaExtractor.selectTrack(audioTrackIndex);
 
             //创建解码器
-            mediaCodec = MediaCodec.createDecoderByType(mime);
+            //private MediaCodec mediaCodec;
+            MediaCodec mediaCodec =getMediaCodec(mime) ;//MediaCodec.createDecoderByType(mime);
 
             mediaCodec.configure(trackFormat, null, null, 0);
 
@@ -296,11 +327,11 @@ public class TTSService extends TextToSpeechService {
 
             MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
             ByteBuffer inputBuffer;
-
-            while (mediaCodec != null) {
+            long TIME_OUT_US = 10000;
+            while (true) {
                 //获取可用的inputBuffer，输入参数-1代表一直等到，0代表不等待，10*1000代表10秒超时
                 //超时时间10秒
-                long TIME_OUT_US = 10 * 1000;
+
                 int inputIndex = mediaCodec.dequeueInputBuffer(TIME_OUT_US);
                 if (inputIndex < 0) {
                     break;
@@ -341,14 +372,16 @@ public class TTSService extends TextToSpeechService {
                     outputIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, TIME_OUT_US);
                 }
             }
+            //mediaCodec.stop();
             cb.done();
             isSynthesizing = false;
-            System.gc();
+
 
         } catch (Exception e) {
             Log.e(TAG, "doDecode", e);
             cb.error();
             isSynthesizing = false;
+            Runtime.getRuntime().gc();
         }
     }
 
@@ -389,11 +422,12 @@ public class TTSService extends TextToSpeechService {
                 .addHeader("Origin", Constants.EDGE_ORIGIN)
                 .build();
         this.webSocket = client.newWebSocket(request, webSocketListener);
-        sendConfig(this.webSocket, new TtsConfig.Builder( APP.getInt(Constants.AUDIO_FORMAT_INDEX, 0)).sentenceBoundaryEnabled(true).build());
+        sendConfig(this.webSocket, new TtsConfig.Builder( APP.getInt(Constants.AUDIO_FORMAT_INDEX, 0)).build());
         return webSocket;
     }
-    //发送合成语音配置
-
+    /**
+     *  发送合成语音配置,更改格式需要重新发送
+     */
     private void sendConfig(WebSocket ws, TtsConfig ttsConfig) {
         String msg = "X-Timestamp:+" + getTime() + "\r\n" +
                 "Content-Type:application/json; charset=utf-8\r\n" +
@@ -435,10 +469,8 @@ public class TTSService extends TextToSpeechService {
         ttsStyle.setStyleDegree(APP.getInt(Constants.VOICE_STYLE_DEGREE, 100));
         ttsStyle.setVolume( APP.getInt(Constants.VOICE_VOLUME, 100));
         boolean useDict =  APP.getBoolean(Constants.USE_DICT, false);
-        SSML ssml=new SSML(request,name, ttsStyle,useDict);
-
-        String txt=ssml.toString();
-        Log.e(TAG,txt);
+        SSML ssml=SSML.getInstance(request,name, ttsStyle,useDict);
+        //Log.e(TAG,txt);
         callback.start(format.HZ,
                 format.BitRate, 1 /* Number of channels. */);
 
@@ -447,7 +479,7 @@ public class TTSService extends TextToSpeechService {
             sendConfig(webSocket, ttsConfig);
             oldFormatIndex = index;
         }
-        webSocket.send(txt);
+        webSocket.send(ssml.toString());
 
 
     }
@@ -623,7 +655,8 @@ public class TTSService extends TextToSpeechService {
                 }
             }
         }
-        System.gc();
+
+
 
 
     }

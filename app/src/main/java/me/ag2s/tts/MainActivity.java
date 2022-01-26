@@ -210,14 +210,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     @SuppressLint("SetTextI18n")
     private void updateView() {
-
-        BigDecimal d = new BigDecimal(styleDegree + ".00");
         APP.putInt(Constants.VOICE_STYLE_DEGREE, styleDegree);
         APP.putInt(Constants.VOICE_VOLUME,volumeValue);
         styleDegreeSeekBar.setProgress(styleDegree);
 
 
-        tv_styleDegree.setText("强度:" + d.divide(TtsStyle.DEFAULT_DEGREE, 2, BigDecimal.ROUND_HALF_UP) + "音量:" + volumeValue);
+        tv_styleDegree.setText("强度:" + styleDegree/ TtsStyle.DEFAULT_DEGREE+"."+styleDegree% TtsStyle.DEFAULT_DEGREE + "音量:" + volumeValue);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -239,14 +237,19 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     }
 
+
+
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onStop() {
+        super.onStop();
+
         if (textToSpeech != null) {
             textToSpeech.stop();
             textToSpeech.shutdown();
         }
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -309,9 +312,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         new Thread(() -> {
 
             try {
-                //String msg=HttpTool.httpGet("https://purge.jsdelivr.net/gh/ag2s20150909/TTS@master/release/output-metadata.json");
-                //Log.e("UPDATE",msg);
-                String url = "https://fastly.jsdelivr.net/gh/ag2s20150909/TTS@release/release/output-metadata.json";
+                String url = "https://fastly.jsdelivr.net/gh/ag2s20150909/TTS@release/output-metadata.json";
                 JSONObject json = Objects.requireNonNull(new JSONObject(HttpTool.httpGet(url)).optJSONArray("elements")).optJSONObject(0);
                 String fileName = json.optString("outputFile");
                 BigDecimal versionName = new BigDecimal(json.optString("versionName").split("_")[1].trim());
@@ -335,7 +336,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private void downLoadAndInstall(String appName) {
         try {
-            String url = "https://fastly.jsdelivr.net/gh/ag2s20150909/TTS@release/release/" + appName;
+            String url = "https://fastly.jsdelivr.net/gh/ag2s20150909/TTS@release/" + appName;
 
             runOnUiThread(() -> new AlertDialog.Builder(MainActivity.this)
                     .setTitle("有新版本")

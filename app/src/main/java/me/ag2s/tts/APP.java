@@ -154,7 +154,6 @@ public class APP extends Application {
             synchronized (APP.class){
                 if (preferences==null){
                     preferences=getContext().getSharedPreferences("TTS",Context.MODE_PRIVATE);
-                    //kv= MMKV.mmkvWithID("TTS", MMKV.MULTI_PROCESS_MODE);
                 }
 
             }
