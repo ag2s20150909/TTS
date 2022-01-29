@@ -31,12 +31,11 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.json.JSONObject;
+import org.json.JSONArray;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import me.ag2s.tts.adapters.TtsActorAdapter;
@@ -238,18 +237,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
 
-
     @Override
-    protected void onStop() {
-        super.onStop();
-
+    protected void onDestroy() {
+        super.onDestroy();
         if (textToSpeech != null) {
             textToSpeech.stop();
             textToSpeech.shutdown();
         }
     }
-
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -312,36 +307,43 @@ public class MainActivity extends Activity implements View.OnClickListener {
         new Thread(() -> {
 
             try {
-                String url = "https://fastly.jsdelivr.net/gh/ag2s20150909/TTS@release/output-metadata.json";
-                JSONObject json = Objects.requireNonNull(new JSONObject(HttpTool.httpGet(url)).optJSONArray("elements")).optJSONObject(0);
-                String fileName = json.optString("outputFile");
-                BigDecimal versionName = new BigDecimal(json.optString("versionName").split("_")[1].trim());
+                String url = "https://api.github.com/repos/ag2s20150909/TTS/tags";
+                String s = HttpTool.httpGet(url);
+                Log.e(TAG, s);
+                String tag = new JSONArray(s).getJSONObject(0).getString("name");
+                Log.e(TAG, tag);
+
+
+                BigDecimal versionName = new BigDecimal(tag.split("_")[1].trim());
                 PackageManager pm = MainActivity.this.getPackageManager();
                 PackageInfo pi = pm.getPackageInfo(MainActivity.this.getPackageName(), 0);
                 BigDecimal appVersionName = new BigDecimal(pi.versionName.split("_")[1].trim());
-                Log.d(TAG, appVersionName.toString() + "\n" + versionName.toString());
+                Log.d(TAG, appVersionName + "\n" + versionName);
                 if (appVersionName.compareTo(versionName) < 0) {
                     Log.d(TAG, "需要更新。");
-                    downLoadAndInstall(fileName);
+                    downLoadAndInstall(tag);
                 } else {
-                    //downLoadAndInstall(fileName);
+                    //downLoadAndInstall(tag);
                     Log.d(TAG, "不需要更新。");
                     runOnUiThread(() -> Toast.makeText(MainActivity.this, "不需要更新", Toast.LENGTH_LONG).show());
                 }
             } catch (Exception e) {
+                Log.e(TAG, "", e);
                 e.printStackTrace();
             }
         }).start();
     }
 
-    private void downLoadAndInstall(String appName) {
+    private void downLoadAndInstall(String tag) {
         try {
-            String url = "https://fastly.jsdelivr.net/gh/ag2s20150909/TTS@release/" + appName;
+            //String url = "https://fastly.jsdelivr.net/gh/ag2s20150909/TTS@release/TTS_release_v" + tag+".apk";
+            String downUrl = "https://github.com/ag2s20150909/TTS/releases/download/" + tag + "/TTS_release_v" + tag + ".apk";
 
+            Log.e(TAG, downUrl);
             runOnUiThread(() -> new AlertDialog.Builder(MainActivity.this)
                     .setTitle("有新版本")
-                    .setMessage("发现新版本:\n" + appName + "\n如需更新，点击确定，将跳转到浏览器下载。如不想更新，点击取消，将不再自动检查更新，直到你清除应用数据。你可以到右上角菜单手动检查更新。")
-                    .setPositiveButton("确定", (dialog, which) -> HttpTool.downLoadFile(url, getExternalCacheDir().getAbsolutePath() + "/" + appName, new HttpTool.DownloadCallBack() {
+                    .setMessage("发现新版本:\n" + tag + "\n如需更新，点击确定，将跳转到浏览器下载。如不想更新，点击取消，将不再自动检查更新，直到你清除应用数据。你可以到右上角菜单手动检查更新。")
+                    .setPositiveButton("确定", (dialog, which) -> HttpTool.downLoadFile(downUrl, getExternalCacheDir().getAbsolutePath() + "/TTS_release_v" + tag + ".apk", new HttpTool.DownloadCallBack() {
                         @Override
                         public void onSuccess(String path) {
                             new ApkInstall(getApplicationContext()).installAPK(path);
@@ -350,7 +352,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         @Override
                         public void onError(String err) {
                             Intent intent = new Intent(Intent.ACTION_VIEW);
-                            intent.setData(Uri.parse(url));
+                            intent.setData(Uri.parse(downUrl));
                             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(intent);
                         }

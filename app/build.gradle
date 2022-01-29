@@ -58,22 +58,14 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    dependenciesInfo {
+        includeInApk true
+        includeInBundle false
+    }
 
     android.applicationVariants.all {
         variant ->
-            // 打包完成后复制到的目录
-            // def outputFileDir = "${project.projectDir.absolutePath}/${variant.buildType.name}/${variant.flavorName}/${variant.versionName}"
-            //def today = new Date()
-            def path = ((project.name != "app") ? project.name : rootProject.name.replace(" ", "")) + "_" +
-                    //variant.flavorName + "_" +
-                    variant.buildType.name + "_" +
-                    "v"+variant.versionName + ".apk"
-            variant.outputs.forEach {
 
-                //print(it)
-                //println("buildType=" + it)
-                it.outputFileName = path
-            }
             variant.outputs.all { output ->
                 def buildType = variant.buildType.name
                 println("buildType=" + buildType)
@@ -82,22 +74,37 @@ android {
                     String defaultOutputApkPath =
                             variant.getPackageApplicationProvider().get().outputDirectory.getAsFile().get().getPath() +
                                     File.separator
-
                     println("defaultOutputApkPath=" + defaultOutputApkPath)
-                    //获取项目根目录路径
-                    def projectRootDir = "$rootDir"
-                    println(projectRootDir)
-                    //在项目根目录创建apk文件夹
-                    def outputFileDir = new File(projectRootDir + File.separator, "release")
-                    println("outputFileDir=" + outputFileDir)
+                   //在项目根目录创建apk文件夹
+                    def outputFileDir = new File("$rootDir" + File.separator, "release")
+//                    println("outputFileDir=" + outputFileDir)
                     //设置自定义apk生成路径
                     variant.getPackageApplicationProvider().get().outputDirectory = outputFileDir
                 }
             }
 
+
+            def path = ((project.name != "app") ? project.name : rootProject.name.replace(" ", "")) + "_" +
+                    variant.buildType.name + "_" +
+                    "v"+variant.versionName + ".apk"
+            variant.outputs.forEach {
+
+                it.outputFileName = path
+            }
+
+
     }
 
 
+
+
+}
+
+tasks.whenTaskAdded {task ->
+    //新版的AGP7.1.0修改apk输出路径会导致文件找不到而出错（硬编码？？？），暂时禁用这个task
+    if(task.name.contains("createReleaseApkListingFileRedirect")) {
+        task.enabled = false
+    }
 }
 
 dependencies {

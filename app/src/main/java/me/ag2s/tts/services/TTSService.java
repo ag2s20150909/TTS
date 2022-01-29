@@ -14,6 +14,7 @@ import android.speech.tts.SynthesisCallback;
 import android.speech.tts.SynthesisRequest;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeechService;
+import android.speech.tts.Voice;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -49,16 +50,16 @@ public class TTSService extends TextToSpeechService {
     private static final String TAG = TTSService.class.getSimpleName();
 
 
-    //public volatile SharedPreferences sharedPreferences;
     private OkHttpClient client;
     private WebSocket webSocket;
+    private volatile boolean isDecoding = false;
     private volatile boolean isSynthesizing;
     //当前的生成格式
     private volatile TtsOutputFormat currentFormat;
     //当前的数据
     private Buffer mData;
     private volatile String currentMime;
-    private MediaCodec mediaCodec;
+    private static MediaCodec mediaCodec;
 
 
     private volatile String[] mCurrentLanguage = null;
@@ -72,8 +73,6 @@ public class TTSService extends TextToSpeechService {
         super.onCreate();
         client = getOkHttpClient();
         reNewWakeLock();
-        //sharedPreferences = getApplicationContext().getSharedPreferences("TTS", Context.MODE_PRIVATE);
-
 
     }
 
@@ -84,7 +83,7 @@ public class TTSService extends TextToSpeechService {
 
         if (null == mWakeLock) {
             PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-            mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+            mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE,
                     "TTS:ttsTag");
         }
 
@@ -144,7 +143,7 @@ public class TTSService extends TextToSpeechService {
         @Override
         public void onMessage(@NotNull WebSocket webSocket, @NotNull String text) {
             super.onMessage(webSocket, text);
-            //Log.v(TAG, "onMessage"+text);
+            Log.v(TAG, "onMessage" + text);
             String endTag = "turn.end";
             String startTag = "turn.start";
             int endIndex = text.lastIndexOf(endTag);
@@ -159,6 +158,14 @@ public class TTSService extends TextToSpeechService {
 
                 if (callback != null && !callback.hasFinished()) {
                     if (!currentFormat.needDecode) {
+                        //防止跳过部分
+                        if (isDecoding) {
+                            try {
+                                Thread.sleep(500);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
                         callback.done();
                         isSynthesizing = false;
                     } else {
@@ -179,6 +186,7 @@ public class TTSService extends TextToSpeechService {
             String audioTag = "Path:audio\r\n";
             String startTag = "Content-Type:";
             String endTag = "\r\nX-StreamId";
+            //Log.e(TAG,bytes.utf8());
 
             int audioIndex = bytes.lastIndexOf(audioTag.getBytes(StandardCharsets.UTF_8)) + audioTag.length();
             int startIndex = bytes.lastIndexOf(startTag.getBytes(StandardCharsets.UTF_8)) + startTag.length();
@@ -187,6 +195,9 @@ public class TTSService extends TextToSpeechService {
                 try {
                     currentMime = bytes.substring(startIndex, endIndex).utf8();
                     Log.d(TAG, "当前Mime:" + currentMime);
+                    if (!currentMime.startsWith("audio")) {
+                        return;
+                    }
                     if (!currentFormat.needDecode) {
                         if ("audio/x-wav".equals(currentMime) && bytes.lastIndexOf("RIFF".getBytes(StandardCharsets.UTF_8)) != -1) {
                             //去除WAV文件的文件头，解决播放开头时的杂音
@@ -214,7 +225,7 @@ public class TTSService extends TextToSpeechService {
         @Override
         public void onOpen(@NotNull WebSocket webSocket, @NotNull Response response) {
             super.onOpen(webSocket, response);
-            Log.d(TAG, "onOpen" + response.headers().toString());
+            Log.d(TAG, "onOpen" + response.headers());
         }
     };
 
@@ -238,17 +249,19 @@ public class TTSService extends TextToSpeechService {
                 oldMime=mime;
             } catch (IOException ioException) {
                 //设备无法创建，直接抛出
+                ioException.printStackTrace();
                throw new RuntimeException(ioException);
             }
         }
         mediaCodec.reset();
         return mediaCodec;
-        //private MediaCodec mediaCodec;
     }
 
 
 
+
     private void doDecode(SynthesisCallback cb, @SuppressWarnings("unused") TtsOutputFormat format, ByteString data) {
+        isDecoding = true;
         try {
             MediaExtractor mediaExtractor = new MediaExtractor();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -327,7 +340,7 @@ public class TTSService extends TextToSpeechService {
 
             MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
             ByteBuffer inputBuffer;
-            long TIME_OUT_US = 10000;
+            long TIME_OUT_US = 1000;
             while (true) {
                 //获取可用的inputBuffer，输入参数-1代表一直等到，0代表不等待，10*1000代表10秒超时
                 //超时时间10秒
@@ -372,13 +385,15 @@ public class TTSService extends TextToSpeechService {
                     outputIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, TIME_OUT_US);
                 }
             }
-            //mediaCodec.stop();
+            mediaCodec.stop();
+
+            isDecoding = false;
             cb.done();
             isSynthesizing = false;
 
-
         } catch (Exception e) {
             Log.e(TAG, "doDecode", e);
+            isDecoding = false;
             cb.error();
             isSynthesizing = false;
             Runtime.getRuntime().gc();
@@ -387,6 +402,7 @@ public class TTSService extends TextToSpeechService {
 
 
     private void doUnDecode(SynthesisCallback cb, @SuppressWarnings("unused") TtsOutputFormat format, ByteString data) {
+        isDecoding = true;
         int length = data.toByteArray().length;
         //最大BufferSize
         final int maxBufferSize = cb.getMaxBufferSize();
@@ -396,6 +412,7 @@ public class TTSService extends TextToSpeechService {
             cb.audioAvailable(data.toByteArray(), offset, bytesToWrite);
             offset += bytesToWrite;
         }
+        isDecoding = false;
     }
 
 
@@ -470,7 +487,7 @@ public class TTSService extends TextToSpeechService {
         ttsStyle.setVolume( APP.getInt(Constants.VOICE_VOLUME, 100));
         boolean useDict =  APP.getBoolean(Constants.USE_DICT, false);
         SSML ssml=SSML.getInstance(request,name, ttsStyle,useDict);
-        //Log.e(TAG,txt);
+        Log.e(TAG, ssml.toString());
         callback.start(format.HZ,
                 format.BitRate, 1 /* Number of channels. */);
 
@@ -536,14 +553,22 @@ public class TTSService extends TextToSpeechService {
         return mCurrentLanguage;
     }
 
+    @Override
+    public List<Voice> onGetVoices() {
+        List<android.speech.tts.Voice> voices = new ArrayList<>();
+        for (TtsActor voice : TtsActorManger.getInstance().getActors()) {
+            int quality = Voice.QUALITY_VERY_HIGH;
+            int latency = Voice.LATENCY_NORMAL;
+            Locale locale = voice.getLocale();
+            Set<String> features = onGetFeaturesForLanguage(locale.getLanguage(), locale.getCountry(), locale.getVariant());
+            voices.add(new android.speech.tts.Voice(voice.getShortName(), voice.getLocale(), quality, latency, true, features));
+        }
+        return voices;
+    }
 
     @Override
     protected Set<String> onGetFeaturesForLanguage(String lang, String country, String variant) {
-        HashSet<String> hashSet = new HashSet<>();
-        hashSet.add(lang);
-        hashSet.add(country);
-        hashSet.add(variant);
-        return hashSet;
+        return new HashSet<>();
     }
 
     public List<String> getVoiceNames(String lang, String country, String variant) {
@@ -563,9 +588,26 @@ public class TTSService extends TextToSpeechService {
                 return TextToSpeech.SUCCESS;
             }
         }
+        return TextToSpeech.ERROR;
+    }
+
+    @Override
+    public int onLoadVoice(String voiceName) {
+        TtsActor voice = TtsActorManger.getInstance().getByName(voiceName);
+        if (voice == null) {
+            return TextToSpeech.ERROR;
+        }
         return TextToSpeech.SUCCESS;
     }
 
+    /**
+     * 获取对应地区的默认语音名
+     *
+     * @param lang    语言
+     * @param country 地区
+     * @param variant 分支
+     * @return VoiceName
+     */
     @Override
     public String onGetDefaultVoiceNameFor(String lang, String country, String variant) {
         String name = "zh-CN-XiaoxiaoNeural";
@@ -580,11 +622,6 @@ public class TTSService extends TextToSpeechService {
         return name;
     }
 
-
-    @Override
-    public int onLoadVoice(String voiceName) {
-        return TextToSpeech.SUCCESS;
-    }
 
     /**
      * 设置该语言，并返回是否是否支持该语言。

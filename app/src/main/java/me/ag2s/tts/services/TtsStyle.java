@@ -3,8 +3,6 @@ package me.ag2s.tts.services;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.math.BigDecimal;
-
 /**
  * TTS的说话风格
  */

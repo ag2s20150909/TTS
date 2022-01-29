@@ -3,6 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="me.ag2s.tts">
 
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
@@ -11,23 +16,32 @@
     <!-- 请求忽略电池优化 -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission
         android:name="android.permission.DEVICE_POWER"
         tools:ignore="ProtectedPermissions" />
 
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
 
 
     <application
-        android:hardwareAccelerated="true"
         android:name=".APP"
         android:allowBackup="false"
+        android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.TTS">
+        android:theme="@style/Theme.TTS"
+        tools:ignore="DataExtractionRules"
+        tools:targetApi="s">
 
 
         <!--       获取示例文本。-->
@@ -53,8 +67,8 @@
         <!--       检查语音文件。-->
         <activity
             android:name=".CheckVoiceData"
-            android:exported="true"
             android:directBootAware="true"
+            android:exported="true"
             android:label="CheckVoiceData"
             tools:targetApi="n">
             <intent-filter>
@@ -64,8 +78,7 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:exported="true"
-            android:label="@string/app_name">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -81,9 +94,9 @@
         <service
 
             android:name=".services.TTSService"
+            android:directBootAware="true"
             android:exported="true"
             android:label="@string/app_name"
-            android:directBootAware="true"
             tools:ignore="ExportedService,UnusedAttribute">
             <intent-filter android:priority="1000">
                 <action android:name="android.intent.action.TTS_SERVICE" />

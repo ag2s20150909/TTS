@@ -1,7 +1,6 @@
 package me.ag2s.tts.utils;
 
 import android.util.Log;
-import android.webkit.WebSettings;
 
 import androidx.annotation.NonNull;
 

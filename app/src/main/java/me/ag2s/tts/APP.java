@@ -55,6 +55,7 @@ public class APP extends Application {
                                     getByName("223.6.6.6"),
                                     getByName("2400:3200::1"),
                                     getByName("2400:3200:baba::1"))
+                            //.url(HttpUrl.get("https://dns.google.com/dns-query"))
                             .includeIPv6(true)
                             .build();
                     okHttpClient = bootClient.newBuilder()
@@ -210,7 +211,6 @@ public class APP extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        //Security.insertProviderAt(Conscrypt.newProvider(), 1);
         mContext = this.getApplicationContext();
     }
 

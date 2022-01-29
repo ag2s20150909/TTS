@@ -2,6 +2,9 @@ package me.ag2s.tts.services;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -19,7 +22,6 @@ public class TtsActorManger {
         }
         return instance;
     }
-
 
 
     private final List<TtsActor> actors;
@@ -486,6 +488,7 @@ public class TtsActorManger {
         Log.d(TAG, actors.size() + "");
 
 
+
     }
 
     public List<TtsActor> sortByLocale(List<TtsActor> list, Locale locale) {
@@ -532,6 +535,17 @@ public class TtsActorManger {
             return 0;
         });
         return list;
+    }
+
+    @Nullable
+    public TtsActor getByName(@NonNull String name) {
+        for (TtsActor actor : actors) {
+            if (actor.getShortName().equalsIgnoreCase(name) || actor.getName().equalsIgnoreCase(name)) {
+                return actor;
+            }
+        }
+
+        return null;
     }
 
     /**
