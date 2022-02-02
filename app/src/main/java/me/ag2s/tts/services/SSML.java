@@ -9,7 +9,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
+import me.ag2s.tts.APP;
 import me.ag2s.tts.utils.CommonTool;
+import me.ag2s.tts.utils.GcManger;
 
 public class SSML {
 
@@ -114,28 +116,35 @@ public class SSML {
      * 处理文本
      */
     private void handleContent() {
+        CommonTool.replace(content, "\n", " ");
         CommonTool.Trim(content);
         CommonTool.replace(content, "&", "&amp;");
         CommonTool.replace(content, "\"", "&quot;");
         CommonTool.replace(content, "'", "&apos;");
         CommonTool.replace(content, ">", "&lt;");
         CommonTool.replace(content, "<", "&gt;");
-        String temp = content.toString();
-        temp = p0.matcher(temp).replaceAll("$1");//把常用的影响分句的重复符号合并
-        temp = p1.matcher(temp).replaceAll("$1</p><p>$2");//单字符断句符,排除后面有引号的情况
-        temp = p2.matcher(temp).replaceAll("<break strength='strong' />$2");//中英文省略号停顿处理
-        temp = p3.matcher(temp).replaceAll("$1</p><p>$2");//多字符断句符，后面有引号的的情况
-        temp = p4.matcher(temp).replaceAll("<phoneme alphabet='sapi' ph='chong 2'>重</phoneme>");
+        CommonTool.replace(content, "×", "&times;");
+        CommonTool.replace(content, "÷", "&divde;");
+        //是否分段
+        if (APP.getBoolean(Constants.SPLIT_SENTENCE, false)) {
+            String temp = content.toString();
+            temp = p0.matcher(temp).replaceAll("$1");//把常用的影响分句的重复符号合并
+            temp = p1.matcher(temp).replaceAll("$1</p><p>$2");//单字符断句符,排除后面有引号的情况
+            temp = p2.matcher(temp).replaceAll("<break strength='strong' />$2");//中英文省略号停顿处理
+            temp = p3.matcher(temp).replaceAll("$1</p><p>$2");//多字符断句符，后面有引号的的情况
+            temp = p4.matcher(temp).replaceAll("<phoneme alphabet='sapi' ph='chong 2'>重</phoneme>");
 
-        content = new StringBuilder(temp);
-        //Log.e("ss", content.toString());
+            content = new StringBuilder(temp);
+            GcManger.getInstance().doGC();
+        }
+
         if (useDict) {
             List<TtsDict> dictList = TtsDictManger.getInstance().getDict();
             for (TtsDict dict : dictList) {
                 CommonTool.replace(content, dict.getWorld(), dict.getXML());
             }
         }
-        Runtime.getRuntime().gc();
+
 
     }
 

@@ -19,10 +19,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.SeekBar;
-import android.widget.Switch;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -40,6 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import me.ag2s.tts.adapters.TtsActorAdapter;
 import me.ag2s.tts.adapters.TtsStyleAdapter;
+import me.ag2s.tts.databinding.ActivityMainBinding;
 import me.ag2s.tts.services.Constants;
 import me.ag2s.tts.services.TtsActorManger;
 import me.ag2s.tts.services.TtsDictManger;
@@ -52,14 +50,11 @@ import me.ag2s.tts.utils.ApkInstall;
 import me.ag2s.tts.utils.HttpTool;
 
 
-public class MainActivity extends Activity implements View.OnClickListener {
+public class MainActivity extends Activity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
     private static final String TAG = "CheckVoiceData";
     private static final AtomicInteger mNextRequestId = new AtomicInteger(0);
-    TextView tv_styleDegree;
-    SeekBar styleDegreeSeekBar;
-    SeekBar volumeBar;
+    ActivityMainBinding binding;
 
-    private Button btn_IgnoringBatteryOptimizations;
     TextToSpeech textToSpeech;
     int styleDegree;
     int volumeValue;
@@ -68,26 +63,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //sharedPreferences = getApplicationContext().getSharedPreferences("TTS", Context.MODE_PRIVATE);
-        setContentView(R.layout.activity_main);
-        Button btn_set_tts = findViewById(R.id.btn_set_tts);
-        btn_IgnoringBatteryOptimizations = findViewById(R.id.btn_kill_battery);
-        btn_set_tts.setOnClickListener(this);
-        btn_IgnoringBatteryOptimizations.setOnClickListener(this);
-        RecyclerView gv = findViewById(R.id.gv);
-        Switch aSwitch = findViewById(R.id.switch_use_custom_language);
-        Switch swUseDict = findViewById(R.id.switch_use_dict);
-        RecyclerView rv_styles = findViewById(R.id.rv_voice_styles);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        styleDegreeSeekBar = findViewById(R.id.tts_style_degree);
-        volumeBar = findViewById(R.id.tts_voice_volume);
 
-        Button styleDegreeAdd = findViewById(R.id.tts_style_degree_add);
-        Button styleDegreeReduce = findViewById(R.id.tts_style_degree_reduce);
-        styleDegreeAdd.setOnClickListener(this);
-        styleDegreeReduce.setOnClickListener(this);
+        binding.btnSetTts.setOnClickListener(this);
+        binding.btnKillBattery.setOnClickListener(this);
+        binding.ttsStyleDegreeAdd.setOnClickListener(this);
+        binding.ttsStyleDegreeReduce.setOnClickListener(this);
 
-        tv_styleDegree = findViewById(R.id.tts_style_degree_value);
         int styleIndex = APP.getInt(Constants.VOICE_STYLE_INDEX, 0);//sharedPreferences.getInt(Constants.VOICE_STYLE_INDEX, 0);
 
 
@@ -95,65 +79,31 @@ public class MainActivity extends Activity implements View.OnClickListener {
         volumeValue = APP.getInt(Constants.VOICE_VOLUME, 100);//sharedPreferences.getInt(Constants.VOICE_VOLUME, 100);
 
         updateView();
-        styleDegreeSeekBar.setProgress(styleDegree);
-        volumeBar.setProgress(volumeValue);
-        styleDegreeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @SuppressLint("SetTextI18n")
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                styleDegree = progress;
-                updateView();
+        binding.ttsStyleDegree.setProgress(styleDegree);
+        binding.ttsVoiceVolume.setProgress(volumeValue);
+        binding.ttsStyleDegree.setOnSeekBarChangeListener(this);
+        binding.ttsVoiceVolume.setOnSeekBarChangeListener(this);
 
-
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-        volumeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                volumeValue = progress;
-                updateView();
-
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-
-
-        List<TtsStyle> styles = TtsStyleManger.getInstance().getStyles();
-        TtsStyleAdapter rvadapter = new TtsStyleAdapter(styles);
-        rvadapter.setSelect(styleIndex);
-        rv_styles.setAdapter(rvadapter);
+        TtsStyleAdapter ttsStyleAdapter = new TtsStyleAdapter(TtsStyleManger.getInstance().getStyles());
+        ttsStyleAdapter.setSelect(styleIndex);
+        binding.rvVoiceStyles.setAdapter(ttsStyleAdapter);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
-        rv_styles.setLayoutManager(linearLayoutManager);
+        binding.rvVoiceStyles.setLayoutManager(linearLayoutManager);
         linearLayoutManager.scrollToPositionWithOffset(styleIndex, 0);
-        rvadapter.setItemClickListener((position, item) -> APP.putInt(Constants.VOICE_STYLE_INDEX, position));
+        ttsStyleAdapter.setItemClickListener((position, item) -> APP.putInt(Constants.VOICE_STYLE_INDEX, position));
 
-        boolean isFChecked = APP.getBoolean(Constants.USE_CUSTOM_VOICE, true);//sharedPreferences.getBoolean(Constants.USE_CUSTOM_VOICE, true);
-        aSwitch.setChecked(isFChecked);
-        //gv.setVisibility(isFChecked ? View.VISIBLE : View.INVISIBLE);
-        aSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> APP.putBoolean(Constants.USE_CUSTOM_VOICE, isChecked));
+        boolean useCustomVoice = APP.getBoolean(Constants.USE_CUSTOM_VOICE, true);//sharedPreferences.getBoolean(Constants.USE_CUSTOM_VOICE, true);
+        binding.switchUseCustomVoice.setChecked(useCustomVoice);
+        binding.switchUseCustomVoice.setOnCheckedChangeListener((buttonView, isChecked) -> APP.putBoolean(Constants.USE_CUSTOM_VOICE, isChecked));
+
+        boolean useSplitSentence = APP.getBoolean(Constants.SPLIT_SENTENCE, false);//sharedPreferences.getBoolean(Constants.USE_CUSTOM_VOICE, true);
+        binding.switchUseSplitSentence.setChecked(useSplitSentence);
+        binding.switchUseSplitSentence.setOnCheckedChangeListener((buttonView, isChecked) -> APP.putBoolean(Constants.SPLIT_SENTENCE, isChecked));
+
 
         boolean useDict = APP.getBoolean(Constants.USE_DICT, false);
-        swUseDict.setChecked(useDict);
-        swUseDict.setOnCheckedChangeListener((buttonView, isChecked) -> APP.putBoolean(Constants.USE_DICT, isChecked));
+        binding.switchUseDict.setChecked(useDict);
+        binding.switchUseDict.setOnCheckedChangeListener((buttonView, isChecked) -> APP.putBoolean(Constants.USE_DICT, isChecked));
 
 
         textToSpeech = new TextToSpeech(MainActivity.this, status -> {
@@ -170,11 +120,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }, this.getPackageName());
 
 
-        TtsActorAdapter adapter = new TtsActorAdapter(TtsActorManger.getInstance().getActors());
-        gv.setAdapter(adapter);
-        gv.setLayoutManager(new GridLayoutManager(this, 3));
-        adapter.setSelect(gv, APP.getInt(Constants.CUSTOM_VOICE_INDEX, 0));
-        adapter.setItemClickListener((position, item) -> {
+        TtsActorAdapter actorAdapter = new TtsActorAdapter(TtsActorManger.getInstance().getActors());
+        binding.rvVoiceActors.setAdapter(actorAdapter);
+        binding.rvVoiceActors.setVisibility(View.VISIBLE);
+        binding.rvVoiceActors.setLayoutManager(new GridLayoutManager(this, 3));
+        actorAdapter.setSelect(binding.rvVoiceActors, APP.getInt(Constants.CUSTOM_VOICE_INDEX, 0));
+        actorAdapter.setItemClickListener((position, item) -> {
             boolean origin = APP.getBoolean(Constants.USE_CUSTOM_VOICE, true);
 
             if (origin) {
@@ -188,6 +139,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
             if (!textToSpeech.isSpeaking()) {
                 Bundle bundle = new Bundle();
+                bundle.putString(CUSTOM_VOICE, item.getShortName());
+                bundle.putInt(Constants.CUSTOM_VOICE_INDEX, position);
                 bundle.putString("voiceName", item.getShortName());
                 bundle.putString("language", locale.getISO3Language());
                 bundle.putString("country", locale.getISO3Country());
@@ -199,6 +152,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
             }
 
         });
+
+
         if (APP.getBoolean(Constants.USE_AUTO_UPDATE, true)) {
             checkUpdate();
         }
@@ -210,11 +165,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @SuppressLint("SetTextI18n")
     private void updateView() {
         APP.putInt(Constants.VOICE_STYLE_DEGREE, styleDegree);
-        APP.putInt(Constants.VOICE_VOLUME,volumeValue);
-        styleDegreeSeekBar.setProgress(styleDegree);
-
-
-        tv_styleDegree.setText("强度:" + styleDegree/ TtsStyle.DEFAULT_DEGREE+"."+styleDegree% TtsStyle.DEFAULT_DEGREE + "音量:" + volumeValue);
+        APP.putInt(Constants.VOICE_VOLUME, volumeValue);
+        binding.ttsStyleDegree.setProgress(styleDegree);
+        binding.ttsStyleDegreeValue.setText("强度:" + styleDegree / TtsStyle.DEFAULT_DEGREE + "." + styleDegree % TtsStyle.DEFAULT_DEGREE + "音量:" + volumeValue);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -227,9 +180,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
             PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
             boolean i = powerManager.isIgnoringBatteryOptimizations(this.getPackageName());
             if (i) {
-                btn_IgnoringBatteryOptimizations.setVisibility(View.GONE);
+                binding.btnKillBattery.setVisibility(View.GONE);
             } else {
-                btn_IgnoringBatteryOptimizations.setVisibility(View.VISIBLE);
+                binding.btnKillBattery.setVisibility(View.VISIBLE);
             }
         }
 
@@ -408,30 +361,47 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
 
-    @SuppressLint("NonConstantResourceId")
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.btn_set_tts:
-                setTTS();
-                break;
-            case R.id.btn_kill_battery:
-                killBATTERY();
-                break;
-            case R.id.tts_style_degree_add:
-                if (styleDegree < 200) {
-                    styleDegree++;
-                    updateView();
-                }
-                break;
-            case R.id.tts_style_degree_reduce:
-                if (styleDegree > 1) {
-                    styleDegree--;
-                    updateView();
-                }
-                break;
+        int id = v.getId();
+        if (id == binding.btnSetTts.getId()) {
+            setTTS();
+        } else if (id == binding.btnKillBattery.getId()) {
+            killBATTERY();
+        } else if (id == binding.ttsStyleDegreeAdd.getId()) {
+            if (styleDegree < 200) {
+                styleDegree++;
+                updateView();
+            }
+        } else if (id == binding.ttsStyleDegreeReduce.getId()) {
+            if (styleDegree > 1) {
+                styleDegree--;
+                updateView();
+            }
         }
+
     }
 
 
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        int id = seekBar.getId();
+        if (id == binding.ttsStyleDegree.getId()) {
+            styleDegree = progress;
+            updateView();
+        } else if (id == binding.ttsVoiceVolume.getId()) {
+            volumeValue = progress;
+            updateView();
+        }
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+
+    }
 }

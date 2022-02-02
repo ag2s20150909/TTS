@@ -28,10 +28,10 @@ public class TtsFormatManger {
         this.formats.add(new TtsOutputFormat("raw-8khz-8bit-mono-mulaw", 8000, AudioFormat.ENCODING_PCM_8BIT));
         this.formats.add(new TtsOutputFormat("raw-8khz-8bit-mono-alaw", 8000, AudioFormat.ENCODING_PCM_8BIT));
 
-        /*       this.formats.add(new TtsOutputFormat("raw-24khz-16bit-mono-truesilk",24000,AudioFormat.ENCODING_PCM_16BIT));//audio/SILK
-         *       this.formats.add(new TtsOutputFormat("audio-16khz-16kbps-mono-siren", 16000, AudioFormat.ENCODING_PCM_16BIT, true));
+        //audio/SILK; samplerate=24000
+        //this.formats.add(new TtsOutputFormat("raw-24khz-16bit-mono-truesilk", 24000, AudioFormat.ENCODING_PCM_16BIT));//audio/SILK
+        //this.formats.add(new TtsOutputFormat("audio-16khz-16kbps-mono-siren", 16000, AudioFormat.ENCODING_PCM_16BIT, true));
 
-         */
 
         this.formats.add(new TtsOutputFormat("audio-16khz-32kbitrate-mono-mp3", 16000, AudioFormat.ENCODING_PCM_16BIT, true));
         this.formats.add(new TtsOutputFormat("audio-16khz-64kbitrate-mono-mp3", 16000, AudioFormat.ENCODING_PCM_16BIT, true));

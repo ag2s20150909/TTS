@@ -3,8 +3,8 @@ plugins {
 }
 
 android {
-    compileSdkVersion 32
-    buildToolsVersion '32.0.0'
+    compileSdkVersion 31
+    buildToolsVersion '31.0.0'
     //签名设置
     signingConfigs {
         release {
@@ -24,7 +24,7 @@ android {
     defaultConfig {
         applicationId "me.ag2s.tts"
         minSdkVersion 21
-        targetSdkVersion 32
+        targetSdk 31
         versionCode 1
         versionName "0.2_${releaseTime()}"
 
@@ -51,6 +51,9 @@ android {
         }
     }
 
+    buildFeatures {
+        viewBinding true
+    }
 
 
 
@@ -115,6 +118,7 @@ dependencies {
     //An HTTP & HTTP/2 client for Android and Java applications.
     //noinspection GradleDependency
     implementation "com.squareup.okhttp3:okhttp:4.9.3"
+    //noinspection GradleDependency
     implementation "com.squareup.okhttp3:okhttp-dnsoverhttps:4.9.3"
 }
 

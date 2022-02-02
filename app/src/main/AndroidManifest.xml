@@ -92,7 +92,6 @@
         </activity>
 
         <service
-
             android:name=".services.TTSService"
             android:directBootAware="true"
             android:exported="true"

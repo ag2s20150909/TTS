@@ -1,0 +1,35 @@
+package me.ag2s.tts.utils;
+
+import android.os.SystemClock;
+
+public class GcManger {
+    private static GcManger instance;
+    public long last = 0;
+
+    private GcManger() {
+    }
+
+    public static GcManger getInstance() {
+        if (instance == null) {
+            synchronized (GcManger.class) {
+                if (instance == null) {
+                    instance = new GcManger();
+                }
+            }
+        }
+        return instance;
+    }
+
+    /**
+     * 避免频繁GC
+     */
+    public void doGC() {
+        synchronized (this) {
+            if (SystemClock.elapsedRealtime() - last > 1000) {
+                Runtime.getRuntime().gc();
+                last = SystemClock.elapsedRealtime();
+            }
+        }
+
+    }
+}

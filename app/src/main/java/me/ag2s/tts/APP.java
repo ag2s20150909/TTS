@@ -20,7 +20,6 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -61,7 +60,7 @@ public class APP extends Application {
                     okHttpClient = bootClient.newBuilder()
                             .cookieJar(new PersistentCookieJar(new SetCookieCache(),
                                     new SharedPrefsCookiePersistor(getContext())))
-                            .pingInterval(40, TimeUnit.SECONDS) // 设置 PING 帧发送间隔
+                            //.pingInterval(40, TimeUnit.SECONDS) // 设置 PING 帧发送间隔
                             .dns(dns)
                             .build();
                 }

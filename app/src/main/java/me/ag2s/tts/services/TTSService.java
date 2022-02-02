@@ -8,6 +8,7 @@ import android.media.MediaCodec;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.speech.tts.SynthesisCallback;
@@ -33,6 +34,7 @@ import java.util.Set;
 import me.ag2s.tts.APP;
 import me.ag2s.tts.utils.ByteArrayMediaDataSource;
 import me.ag2s.tts.utils.CommonTool;
+import me.ag2s.tts.utils.GcManger;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -76,51 +78,15 @@ public class TTSService extends TextToSpeechService {
 
     }
 
-    /**
-     * 创建或刷新5分钟的WakeLock
-     */
-    private void reNewWakeLock() {
-
-        if (null == mWakeLock) {
-            PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-            mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE,
-                    "TTS:ttsTag");
-        }
-
-        if (null != mWakeLock&&!mWakeLock.isHeld()) {
-            mWakeLock.acquire(60 * 5 * 1000);
-            Log.e(TAG,"刷新WakeLock5分钟");
-        }
-    }
-
-    /**
-     * 释放WakeLock
-     */
-    @SuppressWarnings("unused")
-    private void releaseWakeLock() {
-        if (null != mWakeLock) {
-            mWakeLock.release();
-            mWakeLock = null;
-        }
-    }
-
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-    }
-
-
-
-
     private final WebSocketListener webSocketListener = new WebSocketListener() {
         @Override
         public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
             super.onClosed(webSocket, code, reason);
-            Log.v(TAG, "onClosed" + reason);
+            Log.e(TAG, "onClosed" + reason);
             TTSService.this.webSocket = null;
-            callback.done();
+            if (!callback.hasFinished()) {
+                callback.done();
+            }
             isSynthesizing = false;
         }
 
@@ -133,9 +99,12 @@ public class TTSService extends TextToSpeechService {
         @Override
         public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @Nullable Response response) {
             super.onFailure(webSocket, t, response);
-            Log.v(TAG, "onFailure", t);
+            Log.e(TAG, "onFailure", t);
             TTSService.this.webSocket = null;
-            callback.done();
+            if (!callback.hasFinished()) {
+                callback.done();
+            }
+
             isSynthesizing = false;
 
         }
@@ -194,7 +163,7 @@ public class TTSService extends TextToSpeechService {
             if (audioIndex != -1 && callback != null) {
                 try {
                     currentMime = bytes.substring(startIndex, endIndex).utf8();
-                    Log.d(TAG, "当前Mime:" + currentMime);
+                    Log.v(TAG, "当前Mime:" + currentMime);
                     if (!currentMime.startsWith("audio")) {
                         return;
                     }
@@ -229,24 +198,62 @@ public class TTSService extends TextToSpeechService {
         }
     };
 
+    /**
+     * 释放WakeLock
+     */
+    @SuppressWarnings("unused")
+    private void releaseWakeLock() {
+        if (null != mWakeLock) {
+            mWakeLock.release();
+            mWakeLock = null;
+        }
+    }
+
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+    }
+
+    /**
+     * 创建或刷新5分钟的WakeLock
+     */
+    private void reNewWakeLock() {
+
+        if (null == mWakeLock) {
+            PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE,
+                    "TTS:ttsTag");
+        }
+
+        if (null != mWakeLock && !mWakeLock.isHeld()) {
+            mWakeLock.acquire(60 * 5 * 1000);
+            GcManger.getInstance().doGC();
+            Log.e(TAG, "刷新WakeLock5分钟");
+        }
+    }
+
 
     private String oldMime;
 
     /**
      * 根据mime创建MediaCodec
      * 当Mime未变化时复用MediaCodec
+     *
      * @param mime mime
      * @return MediaCodec
      */
-    private MediaCodec getMediaCodec(String mime){
-        if(mediaCodec==null||!mime.equals(oldMime)){
-            if (mediaCodec!=null){
+    private MediaCodec getMediaCodec(String mime, MediaFormat mediaFormat) {
+        if (mediaCodec == null || !mime.equals(oldMime)) {
+            if (mediaCodec != null) {
                 mediaCodec.release();
                 Runtime.getRuntime().gc();
             }
             try {
                 mediaCodec = MediaCodec.createDecoderByType(mime);
-                oldMime=mime;
+
+                oldMime = mime;
             } catch (IOException ioException) {
                 //设备无法创建，直接抛出
                 ioException.printStackTrace();
@@ -254,13 +261,12 @@ public class TTSService extends TextToSpeechService {
             }
         }
         mediaCodec.reset();
+        mediaCodec.configure(mediaFormat, null, null, 0);
         return mediaCodec;
     }
 
 
-
-
-    private void doDecode(SynthesisCallback cb, @SuppressWarnings("unused") TtsOutputFormat format, ByteString data) {
+    private synchronized void doDecode(SynthesisCallback cb, @SuppressWarnings("unused") TtsOutputFormat format, ByteString data) {
         isDecoding = true;
         try {
             MediaExtractor mediaExtractor = new MediaExtractor();
@@ -278,10 +284,11 @@ public class TTSService extends TextToSpeechService {
             for (int i = 0; i < mediaExtractor.getTrackCount(); i++) {
                 trackFormat = mediaExtractor.getTrackFormat(i);
                 mime = trackFormat.getString(MediaFormat.KEY_MIME);
+
                 if (!TextUtils.isEmpty(mime) && mime.startsWith("audio")) {
                     audioTrackIndex = i;
                     Log.d(TAG, "找到音频流的索引为：" + audioTrackIndex);
-                    Log.d(TAG, "找到音频流的索引为：" + mime);
+                    Log.d(TAG, "找到音频流的mime为：" + mime);
                     break;
                 }
             }
@@ -295,6 +302,8 @@ public class TTSService extends TextToSpeechService {
             //opus的音频必须设置这个才能正确的解码
             if ("audio/opus".equals(mime)) {
                 Log.d(TAG, data.substring(0, 4).utf8());
+
+
                 Buffer buf = new Buffer();
                 // Magic Signature：固定头，占8个字节，为字符串OpusHead
                 buf.write("OpusHead".getBytes(StandardCharsets.UTF_8));
@@ -316,7 +325,10 @@ public class TTSService extends TextToSpeechService {
                 byte[] csd1bytes = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
                 byte[] csd2bytes = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
                 ByteString hd = buf.readByteString();
-                //Log.d(TAG, hd.hex());
+                Log.e(TAG, ByteString.of(trackFormat.getByteBuffer("csd-0")).hex());
+                Log.e(TAG, ByteString.of(trackFormat.getByteBuffer("csd-1")).hex());
+                Log.e(TAG, ByteString.of(trackFormat.getByteBuffer("csd-2")).hex());
+                Log.e(TAG, hd.hex());
                 ByteBuffer csd0 = ByteBuffer.wrap(hd.toByteArray());
                 trackFormat.setByteBuffer("csd-0", csd0);
                 ByteBuffer csd1 = ByteBuffer.wrap(csd1bytes);
@@ -330,10 +342,9 @@ public class TTSService extends TextToSpeechService {
             mediaExtractor.selectTrack(audioTrackIndex);
 
             //创建解码器
-            //private MediaCodec mediaCodec;
-            MediaCodec mediaCodec =getMediaCodec(mime) ;//MediaCodec.createDecoderByType(mime);
+            MediaCodec mediaCodec = getMediaCodec(mime, trackFormat);//MediaCodec.createDecoderByType(mime);
 
-            mediaCodec.configure(trackFormat, null, null, 0);
+            //mediaCodec.configure(trackFormat, null, null, 0);
 
 
             mediaCodec.start();
@@ -396,12 +407,12 @@ public class TTSService extends TextToSpeechService {
             isDecoding = false;
             cb.error();
             isSynthesizing = false;
-            Runtime.getRuntime().gc();
+            GcManger.getInstance().doGC();
         }
     }
 
 
-    private void doUnDecode(SynthesisCallback cb, @SuppressWarnings("unused") TtsOutputFormat format, ByteString data) {
+    private synchronized void doUnDecode(SynthesisCallback cb, @SuppressWarnings("unused") TtsOutputFormat format, ByteString data) {
         isDecoding = true;
         int length = data.toByteArray().length;
         //最大BufferSize
@@ -455,15 +466,24 @@ public class TTSService extends TextToSpeechService {
     }
 
 
-
     /**
      * 发送合成text请求
      *
      * @param request 需要合成的txt
      */
-    public void sendText(SynthesisRequest request, SynthesisCallback callback) {
+    public synchronized void sendText(SynthesisRequest request, SynthesisCallback callback) {
+
+        Bundle bundle = request.getParams();
+        Set<String> keySet = bundle.keySet();
+        if (bundle.containsKey(Constants.USE_CUSTOM_VOICE)) {
+            APP.putBoolean(Constants.USE_CUSTOM_VOICE, bundle.getBoolean(Constants.USE_CUSTOM_VOICE));
+        }
+        for (String key : keySet) {
+            Log.e(TAG, key + "__" + bundle.get(key));
+        }
+
         //设置发送的音质
-        int index =  APP.getInt(Constants.AUDIO_FORMAT_INDEX, 0);
+        int index = APP.getInt(Constants.AUDIO_FORMAT_INDEX, 0);
         TtsConfig ttsConfig = new TtsConfig.Builder(index).build();
         TtsOutputFormat format = ttsConfig.getFormat();
         currentFormat = format;
@@ -487,7 +507,7 @@ public class TTSService extends TextToSpeechService {
         ttsStyle.setVolume( APP.getInt(Constants.VOICE_VOLUME, 100));
         boolean useDict =  APP.getBoolean(Constants.USE_DICT, false);
         SSML ssml=SSML.getInstance(request,name, ttsStyle,useDict);
-        Log.e(TAG, ssml.toString());
+        //Log.e(TAG, ssml.toString());
         callback.start(format.HZ,
                 format.BitRate, 1 /* Number of channels. */);
 
@@ -647,6 +667,7 @@ public class TTSService extends TextToSpeechService {
      */
     @Override
     protected void onStop() {
+
         webSocket.close(1000, "closed by call onStop");
     }
 

@@ -28,6 +28,10 @@ public class Constants {
      */
     public static final String USE_DICT = "use_dict";
     /**
+     * 是否对文本进行分段
+     */
+    public static final String SPLIT_SENTENCE = "use_split_sentence";
+    /**
      * 是否检查更新
      */
     public static final String USE_AUTO_UPDATE = "use_auto_update";

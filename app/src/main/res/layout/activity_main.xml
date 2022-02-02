@@ -30,10 +30,16 @@
                 android:visibility="gone" />
 
             <Switch
-                android:id="@+id/switch_use_custom_language"
+                android:id="@+id/switch_use_custom_voice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/use_custom_language" />
+
+            <Switch
+                android:id="@+id/switch_use_split_sentence"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/split_sentence" />
 
             <Switch
                 android:id="@+id/switch_use_dict"
@@ -118,7 +124,7 @@
 
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/gv"
+        android:id="@+id/rv_voice_actors"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:numColumns="2" />
