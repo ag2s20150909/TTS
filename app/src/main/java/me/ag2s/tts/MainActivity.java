@@ -71,6 +71,8 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
         binding.btnKillBattery.setOnClickListener(this);
         binding.ttsStyleDegreeAdd.setOnClickListener(this);
         binding.ttsStyleDegreeReduce.setOnClickListener(this);
+        binding.ttsVoiceVolumeAdd.setOnClickListener(this);
+        binding.ttsVoiceVolumeReduce.setOnClickListener(this);
 
         int styleIndex = APP.getInt(Constants.VOICE_STYLE_INDEX, 0);//sharedPreferences.getInt(Constants.VOICE_STYLE_INDEX, 0);
 
@@ -167,7 +169,9 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
         APP.putInt(Constants.VOICE_STYLE_DEGREE, styleDegree);
         APP.putInt(Constants.VOICE_VOLUME, volumeValue);
         binding.ttsStyleDegree.setProgress(styleDegree);
-        binding.ttsStyleDegreeValue.setText("强度:" + styleDegree / TtsStyle.DEFAULT_DEGREE + "." + styleDegree % TtsStyle.DEFAULT_DEGREE + "音量:" + volumeValue);
+
+        String format = String.format(Locale.US, "强度:%01d.%02d 音量:%03d", styleDegree / TtsStyle.DEFAULT_DEGREE, styleDegree % TtsStyle.DEFAULT_DEGREE, volumeValue);
+        binding.ttsStyleDegreeValue.setText(format);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -376,6 +380,16 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
         } else if (id == binding.ttsStyleDegreeReduce.getId()) {
             if (styleDegree > 1) {
                 styleDegree--;
+                updateView();
+            }
+        } else if (id == binding.ttsVoiceVolumeReduce.getId()) {
+            if (volumeValue > 1) {
+                volumeValue--;
+                updateView();
+            }
+        } else if (id == binding.ttsVoiceVolumeAdd.getId()) {
+            if (volumeValue < 100) {
+                volumeValue++;
                 updateView();
             }
         }

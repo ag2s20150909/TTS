@@ -10,9 +10,10 @@
         android:layout_height="wrap_content">
 
         <LinearLayout
+            android:minHeight="48dp"
+            android:orientation="horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
-
 
             <Button
                 android:id="@+id/btn_set_tts"
@@ -30,18 +31,21 @@
                 android:visibility="gone" />
 
             <Switch
+                style="?android:attr/buttonBarButtonStyle"
                 android:id="@+id/switch_use_custom_voice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/use_custom_language" />
 
             <Switch
+                style="?android:attr/buttonBarButtonStyle"
                 android:id="@+id/switch_use_split_sentence"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/split_sentence" />
 
             <Switch
+                style="?android:attr/buttonBarButtonStyle"
                 android:id="@+id/switch_use_dict"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -83,44 +87,78 @@
     </LinearLayout>
 
     <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <Button
             android:id="@+id/tts_style_degree_reduce"
-            android:layout_margin="5dp"
+            android:layout_width="32dp"
             android:background="@drawable/ic_reduce"
-            android:layout_width="25dp"
-            android:layout_height="25dp" />
+            android:layout_height="32dp"
+            android:layout_margin="8dp" />
 
         <SeekBar
+            android:layout_gravity="center_vertical"
+            android:layout_margin="0dp"
+            android:adjustViewBounds="true"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
             android:layout_weight="1"
             android:id="@+id/tts_style_degree"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp"
+            android:thumbOffset="0dp"
             android:max="200"
             android:min="1"
 
             android:visibility="visible"
             tools:targetApi="o" />
+
         <Button
             android:id="@+id/tts_style_degree_add"
-            android:layout_margin="5dp"
+            android:layout_width="32dp"
             android:background="@drawable/ic_add"
-            android:layout_width="25dp"
-            android:layout_height="25dp" />
+            android:layout_height="32dp"
+            android:layout_margin="8dp" />
     </LinearLayout>
 
-    <SeekBar
-        android:id="@+id/tts_voice_volume"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:max="100"
-        android:min="1"
-        android:visibility="visible"
-        tools:targetApi="o" />
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/tts_voice_volume_reduce"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/ic_reduce" />
+
+        <SeekBar
+            android:id="@+id/tts_voice_volume"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_margin="0dp"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            android:max="100"
+            android:min="1"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
+            android:thumbOffset="0dp"
+            android:visibility="visible"
+            tools:targetApi="o" />
+
+        <Button
+            android:id="@+id/tts_voice_volume_add"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/ic_add" />
+
+    </LinearLayout>
 
 
     <androidx.recyclerview.widget.RecyclerView

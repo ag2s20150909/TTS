@@ -8,7 +8,6 @@ import android.media.MediaCodec;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.speech.tts.SynthesisCallback;
@@ -61,23 +60,14 @@ public class TTSService extends TextToSpeechService {
     //当前的数据
     private Buffer mData;
     private volatile String currentMime;
-    private static MediaCodec mediaCodec;
+    private MediaCodec mediaCodec;
 
 
     private volatile String[] mCurrentLanguage = null;
 
 
     private int oldFormatIndex = 0;
-    SynthesisCallback callback;
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        client = getOkHttpClient();
-        reNewWakeLock();
-
-    }
-
+    private SynthesisCallback callback;
     private final WebSocketListener webSocketListener = new WebSocketListener() {
         @Override
         public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
@@ -102,7 +92,7 @@ public class TTSService extends TextToSpeechService {
             Log.e(TAG, "onFailure", t);
             TTSService.this.webSocket = null;
             if (!callback.hasFinished()) {
-                callback.done();
+                callback.error();
             }
 
             isSynthesizing = false;
@@ -162,9 +152,11 @@ public class TTSService extends TextToSpeechService {
             int endIndex = bytes.lastIndexOf(endTag.getBytes(StandardCharsets.UTF_8));
             if (audioIndex != -1 && callback != null) {
                 try {
-                    currentMime = bytes.substring(startIndex, endIndex).utf8();
-                    Log.v(TAG, "当前Mime:" + currentMime);
-                    if (!currentMime.startsWith("audio")) {
+                    String temp = bytes.substring(startIndex, endIndex).utf8();
+                    Log.v(TAG, "当前Mime:" + temp);
+                    if (temp.startsWith("audio")) {
+                        currentMime = temp;
+                    } else {
                         return;
                     }
                     if (!currentFormat.needDecode) {
@@ -198,6 +190,15 @@ public class TTSService extends TextToSpeechService {
         }
     };
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        client = getOkHttpClient();
+
+        reNewWakeLock();
+
+    }
+
     /**
      * 释放WakeLock
      */
@@ -228,9 +229,9 @@ public class TTSService extends TextToSpeechService {
         }
 
         if (null != mWakeLock && !mWakeLock.isHeld()) {
-            mWakeLock.acquire(60 * 5 * 1000);
+            mWakeLock.acquire(60 * 20 * 1000);
             GcManger.getInstance().doGC();
-            Log.e(TAG, "刷新WakeLock5分钟");
+            Log.e(TAG, "刷新WakeLock20分钟");
         }
     }
 
@@ -248,7 +249,7 @@ public class TTSService extends TextToSpeechService {
         if (mediaCodec == null || !mime.equals(oldMime)) {
             if (mediaCodec != null) {
                 mediaCodec.release();
-                Runtime.getRuntime().gc();
+                GcManger.getInstance().doGC();
             }
             try {
                 mediaCodec = MediaCodec.createDecoderByType(mime);
@@ -325,10 +326,10 @@ public class TTSService extends TextToSpeechService {
                 byte[] csd1bytes = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
                 byte[] csd2bytes = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
                 ByteString hd = buf.readByteString();
-                Log.e(TAG, ByteString.of(trackFormat.getByteBuffer("csd-0")).hex());
-                Log.e(TAG, ByteString.of(trackFormat.getByteBuffer("csd-1")).hex());
-                Log.e(TAG, ByteString.of(trackFormat.getByteBuffer("csd-2")).hex());
-                Log.e(TAG, hd.hex());
+//                Log.e(TAG, ByteString.of(trackFormat.getByteBuffer("csd-0")).hex());
+//                Log.e(TAG, ByteString.of(trackFormat.getByteBuffer("csd-1")).hex());
+//                Log.e(TAG, ByteString.of(trackFormat.getByteBuffer("csd-2")).hex());
+//                Log.e(TAG, hd.hex());
                 ByteBuffer csd0 = ByteBuffer.wrap(hd.toByteArray());
                 trackFormat.setByteBuffer("csd-0", csd0);
                 ByteBuffer csd1 = ByteBuffer.wrap(csd1bytes);
@@ -342,7 +343,7 @@ public class TTSService extends TextToSpeechService {
             mediaExtractor.selectTrack(audioTrackIndex);
 
             //创建解码器
-            MediaCodec mediaCodec = getMediaCodec(mime, trackFormat);//MediaCodec.createDecoderByType(mime);
+            mediaCodec = getMediaCodec(mime, trackFormat);//MediaCodec.createDecoderByType(mime);
 
             //mediaCodec.configure(trackFormat, null, null, 0);
 
@@ -436,7 +437,7 @@ public class TTSService extends TextToSpeechService {
      *
      * @return WebSocket
      */
-    public WebSocket getOrCreateWs() {
+    public synchronized WebSocket getOrCreateWs() {
         if (this.webSocket != null) {
             boolean isSuccess = this.webSocket.send("");
             if (isSuccess) {
@@ -450,13 +451,14 @@ public class TTSService extends TextToSpeechService {
                 .addHeader("Origin", Constants.EDGE_ORIGIN)
                 .build();
         this.webSocket = client.newWebSocket(request, webSocketListener);
-        sendConfig(this.webSocket, new TtsConfig.Builder( APP.getInt(Constants.AUDIO_FORMAT_INDEX, 0)).build());
+        sendConfig(this.webSocket, new TtsConfig.Builder(APP.getInt(Constants.AUDIO_FORMAT_INDEX, 0)).build());
         return webSocket;
     }
+
     /**
-     *  发送合成语音配置,更改格式需要重新发送
+     * 发送合成语音配置,更改格式需要重新发送
      */
-    private void sendConfig(WebSocket ws, TtsConfig ttsConfig) {
+    private synchronized void sendConfig(WebSocket ws, TtsConfig ttsConfig) {
         String msg = "X-Timestamp:+" + getTime() + "\r\n" +
                 "Content-Type:application/json; charset=utf-8\r\n" +
                 "Path:speech.config\r\n\r\n"
@@ -473,17 +475,16 @@ public class TTSService extends TextToSpeechService {
      */
     public synchronized void sendText(SynthesisRequest request, SynthesisCallback callback) {
 
-        Bundle bundle = request.getParams();
-        Set<String> keySet = bundle.keySet();
-        if (bundle.containsKey(Constants.USE_CUSTOM_VOICE)) {
-            APP.putBoolean(Constants.USE_CUSTOM_VOICE, bundle.getBoolean(Constants.USE_CUSTOM_VOICE));
-        }
-        for (String key : keySet) {
-            Log.e(TAG, key + "__" + bundle.get(key));
-        }
+//        Bundle bundle = request.getParams();
+//        Set<String> keySet = bundle.keySet();
+//        for (String key : keySet) {
+//            Log.e(TAG, key + "__" + bundle.get(key));
+//        }
 
         //设置发送的音质
         int index = APP.getInt(Constants.AUDIO_FORMAT_INDEX, 0);
+
+
         TtsConfig ttsConfig = new TtsConfig.Builder(index).build();
         TtsOutputFormat format = ttsConfig.getFormat();
         currentFormat = format;
@@ -498,16 +499,16 @@ public class TTSService extends TextToSpeechService {
         }
 
         String name = request.getVoiceName();
-        if ( APP.getBoolean(Constants.USE_CUSTOM_VOICE, true)) {
-            name =  APP.getString(Constants.CUSTOM_VOICE, "zh-CN-XiaoxiaoNeural");
+        if (APP.getBoolean(Constants.USE_CUSTOM_VOICE, true)) {
+            name = APP.getString(Constants.CUSTOM_VOICE, "zh-CN-XiaoxiaoNeural");
         }
-        int styleIndex= APP.getInt(Constants.VOICE_STYLE_INDEX,0);
+        int styleIndex = APP.getInt(Constants.VOICE_STYLE_INDEX, 0);
         TtsStyle ttsStyle = TtsStyleManger.getInstance().get(styleIndex);
         ttsStyle.setStyleDegree(APP.getInt(Constants.VOICE_STYLE_DEGREE, 100));
-        ttsStyle.setVolume( APP.getInt(Constants.VOICE_VOLUME, 100));
-        boolean useDict =  APP.getBoolean(Constants.USE_DICT, false);
-        SSML ssml=SSML.getInstance(request,name, ttsStyle,useDict);
-        //Log.e(TAG, ssml.toString());
+        ttsStyle.setVolume(APP.getInt(Constants.VOICE_VOLUME, 100));
+        boolean useDict = APP.getBoolean(Constants.USE_DICT, false);
+        SSML ssml = SSML.getInstance(request, name, ttsStyle, useDict);
+        Log.e(TAG, ssml.toString());
         callback.start(format.HZ,
                 format.BitRate, 1 /* Number of channels. */);
 
@@ -516,7 +517,10 @@ public class TTSService extends TextToSpeechService {
             sendConfig(webSocket, ttsConfig);
             oldFormatIndex = index;
         }
-        webSocket.send(ssml.toString());
+        boolean success = webSocket.send(ssml.toString());
+//        if (!success){
+//            getOrCreateWs().send(ssml.toString());
+//        }
 
 
     }
@@ -667,7 +671,8 @@ public class TTSService extends TextToSpeechService {
      */
     @Override
     protected void onStop() {
-
+        //直接使用cancel丢弃之前所有请求
+        //webSocket.cancel();
         webSocket.close(1000, "closed by call onStop");
     }
 
@@ -709,7 +714,6 @@ public class TTSService extends TextToSpeechService {
                 if (time > 50000) {
                     callback.error(TextToSpeech.ERROR_NETWORK_TIMEOUT);
                     isSynthesizing = false;
-                    callback.done();
                 }
             }
         }

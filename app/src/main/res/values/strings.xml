@@ -25,10 +25,7 @@
     <string name="tts_voice_style_degree">风格强度与合成音量</string>
     <string name="test">测试</string>
 
-    <string name="raw_16khz_16bit_mono_pcm">Raw16Khz16BitMonoPcm</string>
-    <string name="raw_24khz_16bit_mono_pcm">Raw24Khz16BitMonoPcm</string>
-    <string name="raw_48khz_16bit_mono_pcm">Raw48Khz16BitMonoPcm</string>
-    <string name="raw_8khz_16bit_mono_pcm">Raw8Khz16BitMonoPcm</string>
+
     <string name="check_update">检查更新</string>
     <string name="battery_optimizations">电池优化</string>
     <string name="audio_format">音频流格式</string>

@@ -123,8 +123,6 @@ public class SSML {
         CommonTool.replace(content, "'", "&apos;");
         CommonTool.replace(content, ">", "&lt;");
         CommonTool.replace(content, "<", "&gt;");
-        CommonTool.replace(content, "×", "&times;");
-        CommonTool.replace(content, "÷", "&divde;");
         //是否分段
         if (APP.getBoolean(Constants.SPLIT_SENTENCE, false)) {
             String temp = content.toString();

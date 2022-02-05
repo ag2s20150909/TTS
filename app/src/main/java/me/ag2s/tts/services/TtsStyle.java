@@ -3,12 +3,14 @@ package me.ag2s.tts.services;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.Locale;
+
 /**
  * TTS的说话风格
  */
 public class TtsStyle {
 
-    public static final short DEFAULT_DEGREE =100;
+    public static final short DEFAULT_DEGREE = 100;
     /**
      * 展示的名称
      */
@@ -48,6 +50,6 @@ public class TtsStyle {
         this.styleDegree= (short) styleDegree;
     }
     public String getStyleDegree() {
-        return styleDegree/DEFAULT_DEGREE+"."+styleDegree%DEFAULT_DEGREE;
+        return String.format(Locale.US, "%01d.%02d", styleDegree / DEFAULT_DEGREE, styleDegree % DEFAULT_DEGREE);
     }
 }
