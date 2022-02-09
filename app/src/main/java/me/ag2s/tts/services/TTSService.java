@@ -73,11 +73,14 @@ public class TTSService extends TextToSpeechService {
         public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
             super.onClosed(webSocket, code, reason);
             Log.e(TAG, "onClosed" + reason);
-            TTSService.this.webSocket = null;
-            if (!callback.hasFinished()) {
-                //callback.done();
+            synchronized (TTSService.this) {
+                isSynthesizing = false;
+                if (!callback.hasFinished()) {
+                    callback.done();
+                }
             }
-            //isSynthesizing = false;
+
+            //
         }
 
         @Override
@@ -90,12 +93,8 @@ public class TTSService extends TextToSpeechService {
         public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @Nullable Response response) {
             super.onFailure(webSocket, t, response);
             Log.e(TAG, "onFailure", t);
-            TTSService.this.webSocket = null;
-            if (!callback.hasFinished()) {
-                //callback.error();
-            }
+            APP.showToast("网络发生波动，掉线了，正在重连。");
 
-            //isSynthesizing = false;
 
         }
 
