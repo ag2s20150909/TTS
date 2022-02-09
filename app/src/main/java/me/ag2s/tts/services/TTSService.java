@@ -75,9 +75,9 @@ public class TTSService extends TextToSpeechService {
             Log.e(TAG, "onClosed" + reason);
             TTSService.this.webSocket = null;
             if (!callback.hasFinished()) {
-                callback.done();
+                //callback.done();
             }
-            isSynthesizing = false;
+            //isSynthesizing = false;
         }
 
         @Override
@@ -92,10 +92,10 @@ public class TTSService extends TextToSpeechService {
             Log.e(TAG, "onFailure", t);
             TTSService.this.webSocket = null;
             if (!callback.hasFinished()) {
-                callback.error();
+                //callback.error();
             }
 
-            isSynthesizing = false;
+            //isSynthesizing = false;
 
         }
 
@@ -352,7 +352,7 @@ public class TTSService extends TextToSpeechService {
 
             MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
             ByteBuffer inputBuffer;
-            long TIME_OUT_US = 1000;
+            long TIME_OUT_US = 5000;
             while (true) {
                 //获取可用的inputBuffer，输入参数-1代表一直等到，0代表不等待，10*1000代表10秒超时
                 //超时时间10秒
@@ -465,6 +465,7 @@ public class TTSService extends TextToSpeechService {
                 + ttsConfig.toString();
         this.currentFormat = ttsConfig.getFormat();
         ws.send(msg);
+
     }
 
 
@@ -518,9 +519,9 @@ public class TTSService extends TextToSpeechService {
             oldFormatIndex = index;
         }
         boolean success = webSocket.send(ssml.toString());
-//        if (!success){
-//            getOrCreateWs().send(ssml.toString());
-//        }
+        if (!success) {
+            getOrCreateWs().send(ssml.toString());
+        }
 
 
     }

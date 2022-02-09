@@ -3,8 +3,8 @@ plugins {
 }
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion '31.0.0'
+    compileSdk 32
+    buildToolsVersion '32.0.0'
     //签名设置
     signingConfigs {
         release {
@@ -120,6 +120,10 @@ dependencies {
     implementation "com.squareup.okhttp3:okhttp:4.9.3"
     //noinspection GradleDependency
     implementation "com.squareup.okhttp3:okhttp-dnsoverhttps:4.9.3"
+
+    // https://mvnrepository.com/artifact/com.squareup.okio/okio
+    implementation 'com.squareup.okio:okio:2.10.0'
+
 }
 
 static def releaseTime() {
