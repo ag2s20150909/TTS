@@ -14,6 +14,7 @@ import java.util.Objects;
 import me.ag2s.tts.APP;
 
 public class TtsDictManger {
+    private final File file;
     //单例
     private static TtsDictManger instance;
 
@@ -27,7 +28,7 @@ public class TtsDictManger {
     private final List<TtsDict> dict;
 
     private TtsDictManger() {
-
+        file = new File(APP.getContext().getExternalFilesDir(""), "dict.txt");
         dict = new ArrayList<>(20);
         readDicFile();
     }
@@ -37,14 +38,14 @@ public class TtsDictManger {
      */
     public void updateDict() {
         readDicFile();
-        APP.showToast("更新语音校正词典成功");
+        APP.showToast("更新语音校正词典成功.路径:\n" + file.getAbsolutePath());
 
     }
 
     private void readDicFile() {
         this.dict.clear();
 
-        File file = new File(APP.getContext().getExternalFilesDir(""), "dict.txt");
+
         if (!file.exists()) {
             try {
                 boolean is = Objects.requireNonNull(file.getParentFile()).mkdirs();

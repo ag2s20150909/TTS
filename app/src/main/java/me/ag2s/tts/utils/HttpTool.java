@@ -57,6 +57,28 @@ public class HttpTool {
         }
     }
 
+    public static String httpGet(String url, HashMap<String, String> headers) {
+        OkHttpClient client = APP.getOkHttpClient();
+        Request.Builder requestBuilder = new Request.Builder().get().url(url);
+        String refer = url.substring(0, url.lastIndexOf("/") + 1);
+        requestBuilder.header("Referer", refer);
+        requestBuilder.header("User-Agent", UA);
+
+
+        Request request = requestBuilder.build();
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful()) {
+                return new String(Objects.requireNonNull(response.body()).bytes(), StandardCharsets.UTF_8);
+            } else {
+                Log.e(TAG, HTTP_ERROR + response.message() + " errorCode:" + response.code());
+                return HTTP_ERROR + response.message() + " errorCode:" + response.code();
+            }
+        } catch (Exception e) {
+            return HTTP_ERROR + CommonTool.getStackTrace(e);
+        }
+    }
+
 
     @SuppressWarnings("unused")
     public static String httpPost(String url, HashMap<String, String> headers, HashMap<String, String> map) {
@@ -84,7 +106,7 @@ public class HttpTool {
             if (response.isSuccessful()) {
                 return new String(Objects.requireNonNull(response.body()).bytes(), StandardCharsets.UTF_8);
             } else {
-                return HTTP_ERROR + response.message() + " errorcode:" + response.code();
+                return HTTP_ERROR + response.message() + " errors:" + response.code();
             }
         } catch (Exception e) {
             return HTTP_ERROR + CommonTool.getStackTrace(e);
@@ -121,9 +143,7 @@ public class HttpTool {
 
     @SuppressWarnings("unused")
     public static String httpPostJson(String url, HashMap<String, String> headers, String json) {
-
         OkHttpClient client = APP.getOkHttpClient();
-
         RequestBody body = RequestBody.create(json, JSON);
         String refer = url.substring(0, url.lastIndexOf("/") + 1);
 
@@ -143,7 +163,7 @@ public class HttpTool {
             if (response.isSuccessful()) {
                 return new String(Objects.requireNonNull(response.body()).bytes(), StandardCharsets.UTF_8);
             } else {
-                return HTTP_ERROR + response.message() + " errorcode:" + response.code();
+                return HTTP_ERROR + response.message() + " errors:" + response.code();
             }
         } catch (Exception e) {
             return HTTP_ERROR + CommonTool.getStackTrace(e);

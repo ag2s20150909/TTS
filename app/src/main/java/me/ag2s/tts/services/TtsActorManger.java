@@ -49,19 +49,19 @@ public class TtsActorManger {
         //zh-TW,曉雨,zh-TW-HsiaoYuNeural,Female
         //zh-TW,雲哲,zh-TW-YunJheNeural,Male
 
-        actors.add(new TtsActor("晓晓", "zh-CN-XiaoxiaoNeural", "zh-CN", true, "晓晓(Xiaoxiao),常规，使用 SSML 提供多种语音风格"));
-        actors.add(new TtsActor("晓悠", "zh-CN-XiaoyouNeural", "zh-CN", true, "晓悠(Xiaoyou),儿童语音，针对讲故事进行了优化"));
-        actors.add(new TtsActor("云扬", "zh-CN-YunyangNeural", "zh-CN", false, "云扬(Yunyang),针对新闻阅读进行了优化，使用 SSML 提供多种语音风格"));
-        actors.add(new TtsActor("云野", "zh-CN-YunyeNeural", "zh-CN", false, "云野(Yunye),针对讲故事进行了优化"));
-        actors.add(new TtsActor("云希", "zh-CN-YunxiNeural", "zh-CN", false, "云希(Yunxi),使用 SSML 提供多种语音风格"));
-        actors.add(new TtsActor("晓涵", "zh-CN-XiaohanNeural", "zh-CN", true, "晓涵(Xiaohan),使用 SSML 提供多种语音风格"));
-        actors.add(new TtsActor("晓墨", "zh-CN-XiaomoNeural", "zh-CN", true, "使用 SSML 提供多种语音风格"));
-        actors.add(new TtsActor("晓睿", "zh-CN-XiaoruiNeural", "zh-CN", true, "使用 SSML 提供多种语音风格"));
-        actors.add(new TtsActor("晓萱", "zh-CN-XiaoxuanNeural", "zh-CN", true, "使用 SSML 提供多种语音风格"));
-        actors.add(new TtsActor("晓辰", "zh-CN-XiaochenNeural", "zh-CN", true, "使用 SSML 提供多种语音风格"));
-        actors.add(new TtsActor("晓秋", "zh-CN-XiaoqiuNeural", "zh-CN", true, "使用 SSML 提供多种语音风格"));
-        actors.add(new TtsActor("晓双", "zh-CN-XiaoshuangNeural", "zh-CN", true, "使用 SSML 提供多种语音风格"));
-        actors.add(new TtsActor("晓颜", "zh-CN-XiaoyanNeural", "zh-CN", true, "使用 SSML 提供多种语音风格"));
+        actors.add(new TtsActor("晓晓", "zh-CN-XiaoxiaoNeural", "zh-CN", true, "活泼、温暖的声音，具有多种场景风格和情感。"));
+        actors.add(new TtsActor("晓悠", "zh-CN-XiaoyouNeural", "zh-CN", true, "天使般的清晰声音，可以应用于许多儿童相关场景。"));
+        actors.add(new TtsActor("云扬", "zh-CN-YunyangNeural", "zh-CN", false, "专业、流利的声音，具有多种场景风格。"));
+        actors.add(new TtsActor("云野", "zh-CN-YunyeNeural", "zh-CN", false, "成熟、放松的声音，具有多种情感，适合音频书籍。"));
+        actors.add(new TtsActor("云希", "zh-CN-YunxiNeural", "zh-CN", false, "活泼、阳光的声音，具有丰富的情感，可用于许多对话场景。"));
+        actors.add(new TtsActor("晓涵", "zh-CN-XiaohanNeural", "zh-CN", true, "温暖、甜美、富有感情的声音，可用于许多对话场景。"));
+        actors.add(new TtsActor("晓墨", "zh-CN-XiaomoNeural", "zh-CN", true, "清晰、放松的声音，具有丰富的角色扮演和情感，适合音频书籍。"));
+        actors.add(new TtsActor("晓睿", "zh-CN-XiaoruiNeural", "zh-CN", true, "成熟、睿智的声音，具有丰富的情感，适合音频书籍。"));
+        actors.add(new TtsActor("晓萱", "zh-CN-XiaoxuanNeural", "zh-CN", true, "自信、有能力的声音，具有丰富的角色扮演和情感，适合音频书籍。"));
+        actors.add(new TtsActor("晓辰", "zh-CN-XiaochenNeural", "zh-CN", true, "休闲、放松的语音，用于自发性对话和会议听录。"));
+        actors.add(new TtsActor("晓秋", "zh-CN-XiaoqiuNeural", "zh-CN", true, "智能、舒适的语音，适合阅读长内容。"));
+        actors.add(new TtsActor("晓双", "zh-CN-XiaoshuangNeural", "zh-CN", true, "可爱、愉悦的语音，可应用于许多儿童相关场景。"));
+        actors.add(new TtsActor("晓颜", "zh-CN-XiaoyanNeural", "zh-CN", true, "训练有素、舒适的语音，用于客户服务和对话场景。"));
 
 
         actors.add(new TtsActor("曉佳", "zh-HK-HiuGaaiNeural", "zh-HK", true, "曉佳(HiuGaai),粤语女声"));

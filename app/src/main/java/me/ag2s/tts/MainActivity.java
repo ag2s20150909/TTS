@@ -53,6 +53,8 @@ import me.ag2s.tts.utils.HttpTool;
 public class MainActivity extends Activity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
     private static final String TAG = "CheckVoiceData";
     private static final AtomicInteger mNextRequestId = new AtomicInteger(0);
+
+    boolean connected = false;
     ActivityMainBinding binding;
 
     TextToSpeech textToSpeech;
@@ -65,6 +67,8 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        connectToText2Speech();
 
 
         binding.btnSetTts.setOnClickListener(this);
@@ -108,18 +112,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
         binding.switchUseDict.setOnCheckedChangeListener((buttonView, isChecked) -> APP.putBoolean(Constants.USE_DICT, isChecked));
 
 
-        textToSpeech = new TextToSpeech(MainActivity.this, status -> {
-            // TODO Auto-generated method stub
-            if (status == TextToSpeech.SUCCESS) {
-                int result = textToSpeech.setLanguage(Locale.CHINA);
-                if (result != TextToSpeech.LANG_MISSING_DATA
-                        && result != TextToSpeech.LANG_NOT_SUPPORTED) {
-                    if (!textToSpeech.isSpeaking()) {
-                        textToSpeech.speak("初始化成功。", TextToSpeech.QUEUE_FLUSH, null, null);
-                    }
-                }
-            }
-        }, this.getPackageName());
+
 
 
         TtsActorAdapter actorAdapter = new TtsActorAdapter(TtsActorManger.getInstance().getActors());
@@ -138,6 +131,9 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
             }
 
             Locale locale = item.getLocale();
+            if (!connected) {
+                connectToText2Speech();
+            }
 
             if (!textToSpeech.isSpeaking()) {
                 Bundle bundle = new Bundle();
@@ -147,7 +143,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
                 bundle.putString("language", locale.getISO3Language());
                 bundle.putString("country", locale.getISO3Country());
                 bundle.putString("variant", item.getGender() ? "Female" : "Male");
-                bundle.putString("utteranceId", "Sample");
+                bundle.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "Sample");
                 textToSpeech.speak(TtsVoiceSample.getByLocate(this, locale), TextToSpeech.QUEUE_FLUSH, bundle, MainActivity.class.getName() + mNextRequestId.getAndIncrement());
             } else {
                 Toast.makeText(MainActivity.this, "" + item.getShortName(), Toast.LENGTH_SHORT).show();
@@ -161,6 +157,26 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
         }
 
 
+    }
+
+
+    /**
+     * 连接Text2Speech
+     */
+    private void connectToText2Speech() {
+        textToSpeech = new TextToSpeech(MainActivity.this, status -> {
+
+            if (status == TextToSpeech.SUCCESS) {
+                int result = textToSpeech.setLanguage(Locale.CHINA);
+                if (result != TextToSpeech.LANG_MISSING_DATA
+                        && result != TextToSpeech.LANG_NOT_SUPPORTED) {
+                    connected = true;
+                    if (!textToSpeech.isSpeaking()) {
+                        textToSpeech.speak("初始化成功。", TextToSpeech.QUEUE_FLUSH, null, null);
+                    }
+                }
+            }
+        }, this.getPackageName());
     }
 
 
@@ -205,16 +221,16 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(Menu.NONE, Menu.FIRST + 1, 0, R.string.check_update);
-        menu.add(Menu.NONE, Menu.FIRST + 2, 0, R.string.battery_optimizations);
-        menu.add(Menu.NONE, Menu.FIRST + 3, 0, R.string.update_dic);
+        menu.add(Menu.NONE, Menu.FIRST + 1, Menu.NONE, R.string.check_update);
+        menu.add(Menu.NONE, Menu.FIRST + 2, Menu.NONE, R.string.battery_optimizations);
+        menu.add(Menu.NONE, Menu.FIRST + 3, Menu.NONE, R.string.update_dic);
 
         Menu aa = menu.addSubMenu(100, 100, 1, R.string.audio_format);
 
 
         List<TtsOutputFormat> formats = TtsFormatManger.getInstance().getFormats();
         for (int i = 0; i < formats.size(); i++) {
-            aa.add(100, 1000 + i, 0, formats.get(i).name);
+            aa.add(100, 1000 + i, Menu.NONE, formats.get(i).name);
         }
 
         MenuItem menuItem = menu.findItem(100);
@@ -293,6 +309,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
 
     private void downLoadAndInstall(String tag) {
         try {
+
             //String url = "https://fastly.jsdelivr.net/gh/ag2s20150909/TTS@release/TTS_release_v" + tag+".apk";
             String downUrl = "https://github.com/ag2s20150909/TTS/releases/download/" + tag + "/TTS_release_v" + tag + ".apk";
 
@@ -319,25 +336,6 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
         } catch (Exception ignored) {
         }
     }
-
-//    private void QueryApk() {
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            if (!getPackageManager().canRequestPackageInstalls()) {
-//                startActivityForResult(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES)
-//                        .setData(Uri.parse(String.format("package:%s", getPackageName()))), 1);
-//            }
-//        }
-//
-//        //Storage Permission
-//
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
-//        }
-//
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-//        }
-//    }
 
 
     private void setTTS() {
@@ -411,11 +409,9 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
 
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
-
     }
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
-
     }
 }

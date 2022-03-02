@@ -136,6 +136,7 @@ public class SSML {
             GcManger.getInstance().doGC();
         }
 
+        //是否使用字典
         if (useDict) {
             List<TtsDict> dictList = TtsDictManger.getInstance().getDict();
             for (TtsDict dict : dictList) {

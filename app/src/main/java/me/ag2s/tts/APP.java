@@ -20,13 +20,12 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.dnsoverhttps.DnsOverHttps;
 
-
+@SuppressWarnings("unused")
 public class APP extends Application {
     /**
      * 全局的android.content.Context
@@ -39,7 +38,7 @@ public class APP extends Application {
     /**
      * 用于DoH的@see:okhttp3.OkHttpClient
      */
-    private static final okhttp3.OkHttpClient bootClient = new OkHttpClient.Builder().build();
+    private static final okhttp3.OkHttpClient bootClient = new OkHttpClient.Builder().fastFallback(true).build();
 
     private static okhttp3.OkHttpClient okHttpClient = null;
 
@@ -54,14 +53,16 @@ public class APP extends Application {
                                     getByName("223.5.5.5"),
                                     getByName("223.6.6.6"),
                                     getByName("2400:3200::1"),
-                                    getByName("2400:3200:baba::1"))
+                                    getByName("2400:3200:baba::1")
+                            )
                             //.url(HttpUrl.get("https://dns.google.com/dns-query"))
                             .includeIPv6(true)
                             .build();
                     okHttpClient = bootClient.newBuilder()
                             .cookieJar(new PersistentCookieJar(new SetCookieCache(),
                                     new SharedPrefsCookiePersistor(getContext())))
-                            .pingInterval(40, TimeUnit.SECONDS) // 设置 PING 帧发送间隔
+                            //.pingInterval(20, TimeUnit.SECONDS) // 设置 PING 帧发送间隔
+                            .fastFallback(true)
                             .dns(dns)
                             .build();
                 }
@@ -218,7 +219,7 @@ public class APP extends Application {
         if(isMainThread()){
             Toast.makeText(getContext(),msg,Toast.LENGTH_LONG).show();
         }else {
-            new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(getContext(),msg,Toast.LENGTH_LONG).show());
+            new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show());
         }
     }
 

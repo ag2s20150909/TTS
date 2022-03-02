@@ -25,7 +25,7 @@ public class GcManger {
      */
     public void doGC() {
         synchronized (this) {
-            if (SystemClock.elapsedRealtime() - last > 1000) {
+            if (SystemClock.elapsedRealtime() - last > 10000) {
                 Runtime.getRuntime().gc();
                 last = SystemClock.elapsedRealtime();
             }
