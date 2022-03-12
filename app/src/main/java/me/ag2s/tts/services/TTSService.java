@@ -187,11 +187,11 @@ public class TTSService extends TextToSpeechService {
         }
     };
 
+
     @Override
     public void onCreate() {
         super.onCreate();
         client = getOkHttpClient();
-
         reNewWakeLock();
 
     }
@@ -238,7 +238,6 @@ public class TTSService extends TextToSpeechService {
     /**
      * 根据mime创建MediaCodec
      * 当Mime未变化时复用MediaCodec
-     *
      * @param mime mime
      * @return MediaCodec
      */
@@ -268,7 +267,7 @@ public class TTSService extends TextToSpeechService {
     }
 
 
-    private void doDecode(SynthesisCallback cb, @SuppressWarnings("unused") TtsOutputFormat format, ByteString data) {
+    private synchronized void doDecode(SynthesisCallback cb, @SuppressWarnings("unused") TtsOutputFormat format, ByteString data) {
         isDecoding = true;
         try {
             MediaExtractor mediaExtractor = new MediaExtractor();
@@ -351,7 +350,7 @@ public class TTSService extends TextToSpeechService {
             MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
             ByteBuffer inputBuffer;
             long TIME_OUT_US = 5000;
-            while (isSynthesizing) {
+            while (true) {
                 //获取可用的inputBuffer，输入参数-1代表一直等到，0代表不等待，10*1000代表10秒超时
                 //超时时间10秒
 
@@ -700,9 +699,9 @@ public class TTSService extends TextToSpeechService {
         //使用System.nanoTime()来保证获得的是精准的时间间隔
         long startTime = SystemClock.elapsedRealtime();
 
-        sendText(request, TTSService.this.callback);
-        synchronized (this) {
 
+        synchronized (TTSService.this) {
+            sendText(request, TTSService.this.callback);
             while (isSynthesizing) {
                 try {
                     this.wait(100);

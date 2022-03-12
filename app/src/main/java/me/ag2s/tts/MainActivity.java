@@ -46,7 +46,6 @@ import me.ag2s.tts.services.TtsOutputFormat;
 import me.ag2s.tts.services.TtsStyle;
 import me.ag2s.tts.services.TtsStyleManger;
 import me.ag2s.tts.services.TtsVoiceSample;
-import me.ag2s.tts.utils.ApkInstall;
 import me.ag2s.tts.utils.HttpTool;
 
 
@@ -110,9 +109,6 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
         boolean useDict = APP.getBoolean(Constants.USE_DICT, false);
         binding.switchUseDict.setChecked(useDict);
         binding.switchUseDict.setOnCheckedChangeListener((buttonView, isChecked) -> APP.putBoolean(Constants.USE_DICT, isChecked));
-
-
-
 
 
         TtsActorAdapter actorAdapter = new TtsActorAdapter(TtsActorManger.getInstance().getActors());
@@ -277,8 +273,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
     }
 
     private void checkUpdate() {
-        new Thread(() -> {
-
+        HttpTool.executorService.submit(() -> {
             try {
                 String url = "https://api.github.com/repos/ag2s20150909/TTS/tags";
                 String s = HttpTool.httpGet(url);
@@ -304,7 +299,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
                 Log.e(TAG, "", e);
                 e.printStackTrace();
             }
-        }).start();
+        });
     }
 
     private void downLoadAndInstall(String tag) {
@@ -312,31 +307,29 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
 
             //String url = "https://fastly.jsdelivr.net/gh/ag2s20150909/TTS@release/TTS_release_v" + tag+".apk";
             String downUrl = "https://github.com/ag2s20150909/TTS/releases/download/" + tag + "/TTS_release_v" + tag + ".apk";
-
             Log.e(TAG, downUrl);
             runOnUiThread(() -> new AlertDialog.Builder(MainActivity.this)
                     .setTitle("有新版本")
                     .setMessage("发现新版本:\n" + tag + "\n如需更新，点击确定，将跳转到浏览器下载。如不想更新，点击取消，将不再自动检查更新，直到你清除应用数据。你可以到右上角菜单手动检查更新。")
-                    .setPositiveButton("确定", (dialog, which) -> HttpTool.downLoadFile(downUrl, getExternalCacheDir().getAbsolutePath() + "/TTS_release_v" + tag + ".apk", new HttpTool.DownloadCallBack() {
-                        @Override
-                        public void onSuccess(String path) {
-                            new ApkInstall(getApplicationContext()).installAPK(path);
-                        }
+                    .setPositiveButton("确定", (dialog, which) -> {
+                                Intent intent = new Intent(Intent.ACTION_VIEW);
+                                intent.setData(Uri.parse(downUrl));
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                            }
 
-                        @Override
-                        public void onError(String err) {
-                            Intent intent = new Intent(Intent.ACTION_VIEW);
-                            intent.setData(Uri.parse(downUrl));
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(intent);
-                        }
-                    }))
+                    )
                     .setNegativeButton("取消", (dialog, which) -> APP.putBoolean(Constants.USE_AUTO_UPDATE, false))
                     .create().show());
         } catch (Exception ignored) {
         }
     }
 
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+    }
 
     private void setTTS() {
         Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);

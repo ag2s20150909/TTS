@@ -19,11 +19,11 @@ import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersisto
 import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Set;
 
-import okhttp3.HttpUrl;
+import okhttp3.Dns;
 import okhttp3.OkHttpClient;
-import okhttp3.dnsoverhttps.DnsOverHttps;
 
 @SuppressWarnings("unused")
 public class APP extends Application {
@@ -35,10 +35,11 @@ public class APP extends Application {
 
     public static SharedPreferences preferences;
 
+
     /**
      * 用于DoH的@see:okhttp3.OkHttpClient
      */
-    private static final okhttp3.OkHttpClient bootClient = new OkHttpClient.Builder().fastFallback(true).build();
+    //private static final okhttp3.OkHttpClient bootClient = new OkHttpClient.Builder().fastFallback(true).build();
 
     private static okhttp3.OkHttpClient okHttpClient = null;
 
@@ -46,24 +47,39 @@ public class APP extends Application {
         if (okHttpClient == null) {
             synchronized (APP.class) {
                 if (okHttpClient == null) {
-                    DnsOverHttps dns = new DnsOverHttps.Builder().client(
-                            APP.bootClient.newBuilder().cache(getCache("doh", 1024 * 1024 * 100)).build())
-                            .url(HttpUrl.get("https://dns.alidns.com/dns-query"))
-                            .bootstrapDnsHosts(
-                                    getByName("223.5.5.5"),
-                                    getByName("223.6.6.6"),
-                                    getByName("2400:3200::1"),
-                                    getByName("2400:3200:baba::1")
-                            )
-                            //.url(HttpUrl.get("https://dns.google.com/dns-query"))
-                            .includeIPv6(true)
-                            .build();
-                    okHttpClient = bootClient.newBuilder()
+//                    DnsOverHttps dns = new DnsOverHttps.Builder().client(
+//                            APP.bootClient.newBuilder().cache(getCache("doh", 1024 * 1024 * 100)).build())
+//                            .url(HttpUrl.get("https://dns.alidns.com/dns-query"))
+//                            .bootstrapDnsHosts(
+//                                    getByName("223.5.5.5"),
+//                                    getByName("223.6.6.6"),
+//                                    getByName("2400:3200::1"),
+//                                    getByName("2400:3200:baba::1")
+//                            )
+//                            //.url(HttpUrl.get("https://dns.google.com/dns-query"))
+//                            .post(true)
+//                            .includeIPv6(true)
+//                            .build();
+
+                    okHttpClient = new OkHttpClient.Builder()
                             .cookieJar(new PersistentCookieJar(new SetCookieCache(),
                                     new SharedPrefsCookiePersistor(getContext())))
                             //.pingInterval(20, TimeUnit.SECONDS) // 设置 PING 帧发送间隔
                             .fastFallback(true)
-                            .dns(dns)
+                            .dns(s -> {
+                                List<InetAddress> addresses;
+                                if (s.equals("speech.platform.bing.com")) {
+                                    addresses = Dns.SYSTEM.lookup("cn.bing.com");
+
+                                } else {
+                                    addresses = Dns.SYSTEM.lookup(s);
+                                }
+
+                                Log.e("DNS", s + ":" + addresses);
+                                return addresses;
+
+
+                            })
                             .build();
                 }
             }
@@ -72,40 +88,39 @@ public class APP extends Application {
     }
 
 
-
-    public static  void putString(String key, @Nullable String value) {
-        SharedPreferences.Editor editor=getSharedPreferences().edit();
+    public static void putString(String key, @Nullable String value) {
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
         editor.putString(key, value);
         editor.apply();
 
     }
 
 
-    public static  void putStringSet(String key, @Nullable Set<String> values) {
-        SharedPreferences.Editor editor=getSharedPreferences().edit();
+    public static void putStringSet(String key, @Nullable Set<String> values) {
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
         editor.putStringSet(key, values);
         editor.apply();
 
     }
 
 
-    public static  void putInt(String key, int value) {
-        SharedPreferences.Editor editor=getSharedPreferences().edit();
+    public static void putInt(String key, int value) {
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
         editor.putInt(key, value);
         editor.apply();
 
     }
 
 
-    public static  void putLong(String key, long value) {
-        SharedPreferences.Editor editor=getSharedPreferences().edit();
+    public static void putLong(String key, long value) {
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
         editor.putLong(key, value);
         editor.apply();
     }
 
 
-    public static  void putFloat(String key, float value) {
-        SharedPreferences.Editor editor=getSharedPreferences().edit();
+    public static void putFloat(String key, float value) {
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
         editor.putFloat(key, value);
         editor.apply();
 
@@ -113,7 +128,7 @@ public class APP extends Application {
 
 
     public static void putBoolean(String key, boolean value) {
-        SharedPreferences.Editor editor=getSharedPreferences().edit();
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
         editor.putBoolean(key, value);
         editor.apply();
 
@@ -121,13 +136,13 @@ public class APP extends Application {
 
 
     @Nullable
-    public static  String getString(String key, @Nullable String defValue) {
+    public static String getString(String key, @Nullable String defValue) {
         return getSharedPreferences().getString(key, defValue);
     }
 
 
     @Nullable
-    public static  Set<String> getStringSet(String key, @Nullable Set<String> defValues) {
+    public static Set<String> getStringSet(String key, @Nullable Set<String> defValues) {
         return getSharedPreferences().getStringSet(key, defValues);
     }
 
@@ -151,11 +166,11 @@ public class APP extends Application {
     }
 
 
-    public static SharedPreferences getSharedPreferences(){
-        if(preferences==null){
-            synchronized (APP.class){
-                if (preferences==null){
-                    preferences=getContext().getSharedPreferences("TTS",Context.MODE_PRIVATE);
+    public static SharedPreferences getSharedPreferences() {
+        if (preferences == null) {
+            synchronized (APP.class) {
+                if (preferences == null) {
+                    preferences = getContext().getSharedPreferences("TTS", Context.MODE_PRIVATE);
                 }
 
             }
@@ -163,7 +178,8 @@ public class APP extends Application {
         return preferences;
     }
 
-    public static @Nullable InetAddress getByName(@NonNull String ip){
+    public static @Nullable
+    InetAddress getByName(@NonNull String ip) {
         try {
             return InetAddress.getByName(ip);
         } catch (UnknownHostException e) {
@@ -215,10 +231,10 @@ public class APP extends Application {
         mContext = this.getApplicationContext();
     }
 
-    public static void showToast(String msg){
-        if(isMainThread()){
-            Toast.makeText(getContext(),msg,Toast.LENGTH_LONG).show();
-        }else {
+    public static void showToast(String msg) {
+        if (isMainThread()) {
+            Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
+        } else {
             new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show());
         }
     }

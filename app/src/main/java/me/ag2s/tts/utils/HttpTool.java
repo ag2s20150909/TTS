@@ -4,12 +4,14 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import java.io.FileOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import me.ag2s.tts.APP;
 import okhttp3.Call;
@@ -20,9 +22,13 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okio.BufferedSink;
+import okio.Okio;
 
 
 public class HttpTool {
+
+    public static final ExecutorService executorService = Executors.newFixedThreadPool(2);
 
     public interface DownloadCallBack {
         void onSuccess(String path);
@@ -127,15 +133,15 @@ public class HttpTool {
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) {
 
-                try (FileOutputStream fos = new FileOutputStream(path)) {
-                    fos.write(Objects.requireNonNull(response.body()).bytes());
-                    fos.flush();
-                } catch (Exception e) {
+                try (BufferedSink bufferedSink = Okio.buffer(Okio.sink(new File(path)))) {
+                    bufferedSink.write(Objects.requireNonNull(response.body()).byteString());
+                    cb.onSuccess(path);
+                } catch (IOException e) {
+                    e.printStackTrace();
                     e.printStackTrace();
                     cb.onError(e.getLocalizedMessage());
-                } finally {
-                    cb.onSuccess(path);
                 }
+
             }
 
         });

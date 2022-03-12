@@ -12,6 +12,10 @@ android {
             keyPassword '1234567890'
             storeFile file('../public.jks')
             storePassword '1234567890'
+            v1SigningEnabled true
+            v2SigningEnabled true
+            enableV3Signing = true
+            enableV4Signing = true
         }
         debug {
             keyAlias 'key'
@@ -59,8 +63,10 @@ android {
 
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        //coreLibraryDesugaringEnabled true
+        // Sets Java compatibility to Java 11
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     dependenciesInfo {
         includeInApk true
@@ -113,6 +119,7 @@ tasks.whenTaskAdded {task ->
 
 dependencies {
 
+    //coreLibraryDesugaring('com.android.tools:desugar_jdk_libs:1.1.5')
 
     implementation "androidx.recyclerview:recyclerview:1.2.1"
 
@@ -120,7 +127,8 @@ dependencies {
     //noinspection GradleDependency
     implementation "com.squareup.okhttp3:okhttp:5.0.0-alpha.5"
     //noinspection GradleDependency
-    implementation "com.squareup.okhttp3:okhttp-dnsoverhttps:5.0.0-alpha.5"
+    //implementation "com.squareup.okhttp3:okhttp-dnsoverhttps:5.0.0-alpha.5"
+
 
     // https://mvnrepository.com/artifact/com.squareup.okio/okio
     implementation 'com.squareup.okio:okio:3.0.0'
