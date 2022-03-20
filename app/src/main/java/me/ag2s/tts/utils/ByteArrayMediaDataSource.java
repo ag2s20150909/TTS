@@ -8,7 +8,6 @@ import androidx.annotation.RequiresApi;
 
 @RequiresApi(api = Build.VERSION_CODES.M)
 public class ByteArrayMediaDataSource extends MediaDataSource {
-
     private byte[] data;
 
     public ByteArrayMediaDataSource(@NonNull byte[] data) {

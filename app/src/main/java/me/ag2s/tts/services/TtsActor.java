@@ -1,5 +1,8 @@
 package me.ag2s.tts.services;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import java.util.Locale;
 
 public class TtsActor {
@@ -7,11 +10,13 @@ public class TtsActor {
     /**
      * 标准名称
      */
+    @NonNull
     private String name;
 
     /**
      * 简写名称
      */
+    @NonNull
     private String shortName;
     /**
      * 性别,true 为女性，false为男性
@@ -20,13 +25,15 @@ public class TtsActor {
     /**
      * 地区
      */
+    @NonNull
     private String locale;
     /**
      * 注释
      */
+    @Nullable
     private String note;
 
-    public TtsActor(String name, String shortName, String locate, boolean gender, String note) {
+    public TtsActor(@NonNull String name, @NonNull String shortName, @NonNull String locate, boolean gender, @Nullable String note) {
         this.name = name;
         this.shortName = shortName;
         this.locale = locate;
@@ -34,10 +41,10 @@ public class TtsActor {
         this.note = note;
     }
 
-    public TtsActor(String shortName, boolean gender, String note) {
-        this.gender=gender;
-        this.note=note;
-        this.shortName=shortName;
+    public TtsActor(String shortName, boolean gender, @Nullable String note) {
+        this.gender = gender;
+        this.note = note;
+        this.shortName = shortName;
         String tag = "-";
         if (shortName.contains("-")) {
             tag = "-";
@@ -55,19 +62,23 @@ public class TtsActor {
         this(name, shortName, locate, gender, "");
     }
 
+    @NonNull
     public String getName() {
         return name;
     }
+
     @SuppressWarnings("unused")
-    public void setName(String name) {
+    public void setName(@NonNull String name) {
         this.name = name;
     }
 
+    @NonNull
     public String getShortName() {
         return shortName;
     }
+
     @SuppressWarnings("unused")
-    public void setShortName(String shortName) {
+    public void setShortName(@NonNull String shortName) {
         this.shortName = shortName;
     }
 
@@ -90,17 +101,20 @@ public class TtsActor {
         String[] temp = locale.split(tag);
         return new Locale(temp[0], temp[1], gender ? "Female" : "Male");
     }
+
     @SuppressWarnings("unused")
-    public void setLocale(String locale) {
+    public void setLocale(@NonNull String locale) {
         this.locale = locale;
     }
 
 
+    @Nullable
     public String getNote() {
         return note;
     }
+
     @SuppressWarnings("unused")
-    public void setNote(String note) {
+    public void setNote(@Nullable String note) {
         this.note = note;
     }
 }

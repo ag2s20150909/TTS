@@ -14,10 +14,12 @@ public class TtsStyle {
     /**
      * 展示的名称
      */
+    @NonNull
     public final String name;
     /**
      * 风格的值
      */
+    @NonNull
     public final String value;
     /**
      * 风格的强度(0.00-2.00)
@@ -30,6 +32,7 @@ public class TtsStyle {
     /**
      * 风格的说明
      */
+    @Nullable
     public final String extra;
 
     public TtsStyle(@NonNull String name, @NonNull String value,@Nullable String extra) {

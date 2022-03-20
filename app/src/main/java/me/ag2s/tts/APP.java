@@ -40,14 +40,7 @@ public class APP extends Application {
      * 用于DoH的@see:okhttp3.OkHttpClient
      */
     //private static final okhttp3.OkHttpClient bootClient = new OkHttpClient.Builder().fastFallback(true).build();
-
-    private static okhttp3.OkHttpClient okHttpClient = null;
-
-    public static okhttp3.OkHttpClient getOkHttpClient() {
-        if (okHttpClient == null) {
-            synchronized (APP.class) {
-                if (okHttpClient == null) {
-//                    DnsOverHttps dns = new DnsOverHttps.Builder().client(
+    //                    DnsOverHttps dns = new DnsOverHttps.Builder().client(
 //                            APP.bootClient.newBuilder().cache(getCache("doh", 1024 * 1024 * 100)).build())
 //                            .url(HttpUrl.get("https://dns.alidns.com/dns-query"))
 //                            .bootstrapDnsHosts(
@@ -61,6 +54,13 @@ public class APP extends Application {
 //                            .includeIPv6(true)
 //                            .build();
 
+    private static okhttp3.OkHttpClient okHttpClient = null;
+
+    public static okhttp3.OkHttpClient getOkHttpClient() {
+        if (okHttpClient == null) {
+            synchronized (APP.class) {
+                if (okHttpClient == null) {
+
                     okHttpClient = new OkHttpClient.Builder()
                             .cookieJar(new PersistentCookieJar(new SetCookieCache(),
                                     new SharedPrefsCookiePersistor(getContext())))
@@ -68,7 +68,10 @@ public class APP extends Application {
                             .fastFallback(true)
                             .dns(s -> {
                                 List<InetAddress> addresses;
-                                if (s.equals("speech.platform.bing.com")) {
+
+                                boolean isMainLand = mContext.getResources().getConfiguration().locale.getCountry().equals("CN");
+
+                                if (s.equals("speech.platform.bing.com") && isMainLand) {
                                     addresses = Dns.SYSTEM.lookup("cn.bing.com");
 
                                 } else {

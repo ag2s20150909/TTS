@@ -61,7 +61,6 @@ public class TTSService extends TextToSpeechService {
     private volatile String currentMime;
     private static MediaCodec mediaCodec;
 
-
     private volatile String[] mCurrentLanguage = null;
 
 
@@ -246,9 +245,7 @@ public class TTSService extends TextToSpeechService {
 
 
     private synchronized void doDecode(SynthesisCallback cb, @SuppressWarnings("unused") TtsOutputFormat format, ByteString data) {
-        isSynthesizing = true;
-        callback.start(format.HZ,
-                format.BitRate, 1 /* Number of channels. */);
+       isSynthesizing = true;
         try {
             MediaExtractor mediaExtractor = new MediaExtractor();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -266,8 +263,6 @@ public class TTSService extends TextToSpeechService {
             for (int i = 0; i < mediaExtractor.getTrackCount(); i++) {
                 trackFormat = mediaExtractor.getTrackFormat(i);
                 mime = trackFormat.getString(MediaFormat.KEY_MIME);
-                //Log.e(TAG, String.valueOf(trackFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT)));
-                //Log.e(TAG, String.valueOf(trackFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE)));
 
                 if (!TextUtils.isEmpty(mime) && mime.startsWith("audio")) {
                     audioTrackIndex = i;
@@ -389,9 +384,7 @@ public class TTSService extends TextToSpeechService {
 
 
     private synchronized void doUnDecode(SynthesisCallback cb, @SuppressWarnings("unused") TtsOutputFormat format, ByteString data) {
-        callback.start(format.HZ,
-                format.BitRate, 1 /* Number of channels. */);
-        //isSynthesizing=true;
+        isSynthesizing = true;
         int length = data.toByteArray().length;
         //最大BufferSize
         final int maxBufferSize = cb.getMaxBufferSize();
@@ -452,7 +445,7 @@ public class TTSService extends TextToSpeechService {
      * @param request 需要合成的txt
      */
     public synchronized void sendText(SynthesisRequest request, SynthesisCallback callback) {
-
+//
 //        Bundle bundle = request.getParams();
 //        Set<String> keySet = bundle.keySet();
 //        for (String key : keySet) {
@@ -482,11 +475,15 @@ public class TTSService extends TextToSpeechService {
         Log.e(TAG, ssml.toString());
 
 
-        webSocket = getOrCreateWs();
         if (oldFormatIndex != index) {
             sendConfig(webSocket, ttsConfig);
             oldFormatIndex = index;
         }
+
+        //在Google Play图书之类应用会闪退，应该及时调用该方法
+        callback.start(currentFormat.HZ,
+                currentFormat.BitRate, 1 /* Number of channels. */);
+        webSocket = getOrCreateWs();
         boolean success = webSocket.send(ssml.toString());
         //Log.e(TAG,"SSS:"+success);
         if (!success && isSynthesizing) {
@@ -557,7 +554,7 @@ public class TTSService extends TextToSpeechService {
             Locale locale = voice.getLocale();
 
             Set<String> features = onGetFeaturesForLanguage(locale.getLanguage(), locale.getCountry(), locale.getVariant());
-            Log.e(TAG, features.toString());
+            //Log.e(TAG, features.toString());
             voices.add(new android.speech.tts.Voice(voice.getShortName(), voice.getLocale(), quality, latency, true, features));
         }
         return voices;
@@ -660,7 +657,6 @@ public class TTSService extends TextToSpeechService {
      */
     @Override
     protected void onSynthesizeText(SynthesisRequest request, SynthesisCallback callback) {
-        //Log.e(TAG,Thread.currentThread().getName()+"_"+Thread.currentThread().getId());
 
         int load = onLoadLanguage(request.getLanguage(), request.getCountry(),
                 request.getVariant());
@@ -669,8 +665,6 @@ public class TTSService extends TextToSpeechService {
             Log.e(TAG, "语言不支持:" + request.getLanguage());
             return;
         }
-
-        //this.callback = callback;
 
         isSynthesizing = true;
         //判断是否全是不发声字符，如果是，直接跳过
@@ -686,7 +680,9 @@ public class TTSService extends TextToSpeechService {
 
 
         synchronized (TTSService.this) {
+            isSynthesizing = true;
             sendText(request, callback);
+
             while (isSynthesizing) {
                 try {
                     this.wait(100);

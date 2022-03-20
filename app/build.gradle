@@ -125,7 +125,7 @@ dependencies {
 
     //An HTTP & HTTP/2 client for Android and Java applications.
     //noinspection GradleDependency
-    implementation "com.squareup.okhttp3:okhttp:5.0.0-alpha.5"
+    implementation "com.squareup.okhttp3:okhttp:5.0.0-alpha.6"
     //noinspection GradleDependency
     //implementation "com.squareup.okhttp3:okhttp-dnsoverhttps:5.0.0-alpha.5"
 
