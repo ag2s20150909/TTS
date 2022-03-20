@@ -28,7 +28,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -275,10 +275,13 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
     private void checkUpdate() {
         HttpTool.executorService.submit(() -> {
             try {
-                String url = "https://api.github.com/repos/ag2s20150909/TTS/tags";
+                String url = "https://api.github.com/repos/ag2s20150909/TTS/releases/latest";
                 String s = HttpTool.httpGet(url);
-                Log.e(TAG, s);
-                String tag = new JSONArray(s).getJSONObject(0).getString("name");
+                //Log.e(TAG, s);
+                JSONObject json = new JSONObject(s);
+                String tag = json.getString("tag_name");
+                String downloadUrl = json.getJSONArray("assets").getJSONObject(0).getString("browser_download_url");
+                String body = json.getString("body");
                 Log.e(TAG, tag);
 
 
@@ -289,9 +292,9 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
                 Log.d(TAG, appVersionName + "\n" + versionName);
                 if (appVersionName.compareTo(versionName) < 0) {
                     Log.d(TAG, "需要更新。");
-                    downLoadAndInstall(tag);
+                    downLoadAndInstall(body, downloadUrl, tag);
                 } else {
-                    //downLoadAndInstall(tag);
+                    //downLoadAndInstall(body,downloadUrl,tag);
                     Log.d(TAG, "不需要更新。");
                     runOnUiThread(() -> Toast.makeText(MainActivity.this, "不需要更新", Toast.LENGTH_LONG).show());
                 }
@@ -302,20 +305,17 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
         });
     }
 
-    private void downLoadAndInstall(String tag) {
+    private void downLoadAndInstall(String body, String downloadUrl, String tag) {
         try {
 
-            //String url = "https://fastly.jsdelivr.net/gh/ag2s20150909/TTS@release/TTS_release_v" + tag+".apk";
-            String downUrl = "https://github.com/ag2s20150909/TTS/releases/download/" + tag + "/TTS_release_v" + tag + ".apk";
-            Log.e(TAG, downUrl);
             runOnUiThread(() -> new AlertDialog.Builder(MainActivity.this)
                     .setTitle("有新版本")
-                    .setMessage("发现新版本:\n" + tag + "\n如需更新，点击确定，将跳转到浏览器下载。如不想更新，点击取消，将不再自动检查更新，直到你清除应用数据。你可以到右上角菜单手动检查更新。")
+                    .setMessage("发现新版本:" + tag + "\n" + body)
                     .setPositiveButton("确定", (dialog, which) -> {
-                                Intent intent = new Intent(Intent.ACTION_VIEW);
-                                intent.setData(Uri.parse(downUrl));
-                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                startActivity(intent);
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.setData(Uri.parse(downloadUrl));
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
                             }
 
                     )

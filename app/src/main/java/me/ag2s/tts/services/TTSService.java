@@ -19,6 +19,8 @@ import android.speech.tts.Voice;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,32 +53,42 @@ public class TTSService extends TextToSpeechService {
     private static final String TAG = TTSService.class.getSimpleName();
 
 
-    private OkHttpClient client;
+    @NonNull
+    private final OkHttpClient client;
+    @Nullable
     private WebSocket webSocket;
-    private volatile boolean isSynthesizing;
+    private volatile boolean isSynthesizing = false;
     //当前的生成格式
     private volatile TtsOutputFormat currentFormat;
     //当前的数据
-    private Buffer mData;
+    @NonNull
+    private final Buffer mData = new Buffer();
+    @Nullable
     private volatile String currentMime;
+
     private static MediaCodec mediaCodec;
 
+    @Nullable
     private volatile String[] mCurrentLanguage = null;
 
 
     private int oldFormatIndex = 0;
+    @Nullable
     private SynthesisCallback callback;
+    @NonNull
     private final WebSocketListener webSocketListener = new WebSocketListener() {
         @Override
         public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
             super.onClosed(webSocket, code, reason);
-            Log.e(TAG, "onClosed" + reason);
+            Log.e(TAG, "onClosed:" + reason);
 
         }
 
         @Override
         public void onClosing(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
             super.onClosing(webSocket, code, reason);
+            Log.e(TAG, "onClosing:" + reason);
+
 
         }
 
@@ -101,9 +113,9 @@ public class TTSService extends TextToSpeechService {
             //生成开始
             if (startIndex != -1) {
                 isSynthesizing = true;
-                mData = new Buffer();
+                mData.clear();
             } else if (endIndex != -1) {
-                if (callback != null && !callback.hasFinished()) {
+                if (callback != null && !callback.hasFinished() && isSynthesizing) {
                     if (!currentFormat.needDecode) {
                         doUnDecode(callback, currentFormat, mData.readByteString());
                     } else {
@@ -153,7 +165,9 @@ public class TTSService extends TextToSpeechService {
                     Log.e(TAG, "onMessage Error:", e);
 
                     //如果出错返回错误
-                    callback.error();
+                    if (callback != null) {
+                        callback.error();
+                    }
                     isSynthesizing = false;
                 }
 
@@ -167,14 +181,19 @@ public class TTSService extends TextToSpeechService {
         }
     };
 
+    public TTSService() {
+        client = getOkHttpClient();
+    }
+
 
     @Override
     public void onCreate() {
         super.onCreate();
-        client = getOkHttpClient();
+
         reNewWakeLock();
 
     }
+
 
     /**
      * 释放WakeLock
@@ -191,6 +210,7 @@ public class TTSService extends TextToSpeechService {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        releaseWakeLock();
 
     }
 
@@ -406,7 +426,7 @@ public class TTSService extends TextToSpeechService {
      *
      * @return WebSocket
      */
-    public WebSocket getOrCreateWs() {
+    public synchronized WebSocket getOrCreateWs() {
         if (this.webSocket != null) {
             boolean isSuccess = this.webSocket.send("");
             if (isSuccess) {
@@ -474,17 +494,16 @@ public class TTSService extends TextToSpeechService {
         SSML ssml = SSML.getInstance(request, name, ttsStyle, useDict);
         Log.e(TAG, ssml.toString());
 
-
+        webSocket = getOrCreateWs();
         if (oldFormatIndex != index) {
             sendConfig(webSocket, ttsConfig);
             oldFormatIndex = index;
         }
-
         //在Google Play图书之类应用会闪退，应该及时调用该方法
         callback.start(currentFormat.HZ,
                 currentFormat.BitRate, 1 /* Number of channels. */);
-        webSocket = getOrCreateWs();
-        boolean success = webSocket.send(ssml.toString());
+
+        boolean success = getOrCreateWs().send(ssml.toString());
         //Log.e(TAG,"SSS:"+success);
         if (!success && isSynthesizing) {
             getOrCreateWs().send(ssml.toString());
@@ -641,9 +660,11 @@ public class TTSService extends TextToSpeechService {
      */
     @Override
     protected void onStop() {
-        webSocket.close(1000, "closed by call onStop");
-        mData.clear();
-        isSynthesizing = false;
+        if (webSocket != null) {
+            webSocket.close(1000, "closed by call onStop");
+            mData.clear();
+            isSynthesizing = false;
+        }
 
 
     }

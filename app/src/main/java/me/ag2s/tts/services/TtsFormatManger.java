@@ -30,6 +30,8 @@ public class TtsFormatManger {
 
         //audio/SILK; samplerate=24000
         //this.formats.add(new TtsOutputFormat("raw-24khz-16bit-mono-truesilk", 24000, AudioFormat.ENCODING_PCM_16BIT));//audio/SILK
+
+
         //this.formats.add(new TtsOutputFormat("audio-16khz-16kbps-mono-siren", 16000, AudioFormat.ENCODING_PCM_16BIT, true));
 
 
