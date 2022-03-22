@@ -438,7 +438,7 @@ public class TTSService extends TextToSpeechService {
         }
         Request request = new Request.Builder()
                 .url(Constants.EDGE_URL)
-                //.header("Sec-CH-UA-Platform", "Windows")
+                .header("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6")
                 .header("User-Agent", Constants.EDGE_UA)
                 .addHeader("Origin", Constants.EDGE_ORIGIN)
                 .build();
@@ -662,12 +662,12 @@ public class TTSService extends TextToSpeechService {
      */
     @Override
     protected void onStop() {
-        if (webSocket != null) {
+        if (TTSService.this.webSocket != null) {
             webSocket.close(1000, "closed by call onStop");
-            mData.clear();
-            isSynthesizing = false;
+            TTSService.this.webSocket = null;
         }
-
+        isSynthesizing = false;
+        mData.clear();
 
     }
 

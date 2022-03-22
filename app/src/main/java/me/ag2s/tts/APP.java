@@ -67,16 +67,17 @@ public class APP extends Application {
                             //.pingInterval(20, TimeUnit.SECONDS) // 设置 PING 帧发送间隔
                             .fastFallback(true)
                             .dns(s -> {
-                                List<InetAddress> addresses;
+                                List<InetAddress> addresses = Dns.SYSTEM.lookup(s);
 
-                                boolean isMainLand = mContext.getResources().getConfiguration().locale.getCountry().equals("CN");
+                                //boolean isMainLand = mContext.getResources().getConfiguration().locale.getCountry().equals("CN");
 
-                                if (s.equals("speech.platform.bing.com") && isMainLand) {
-                                    addresses = Dns.SYSTEM.lookup("cn.bing.com");
+//                                if (s.equals("speech.platform.bing.com") && isMainLand) {
+//                                    //addresses = Dns.SYSTEM.lookup("cn.bing.com");
+//                                    addresses = Dns.SYSTEM.lookup(s);
+//
+//                                } else {
 
-                                } else {
-                                    addresses = Dns.SYSTEM.lookup(s);
-                                }
+//                                }
 
                                 Log.e("DNS", s + ":" + addresses);
                                 return addresses;
