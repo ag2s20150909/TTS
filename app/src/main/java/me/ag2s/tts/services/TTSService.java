@@ -97,6 +97,7 @@ public class TTSService extends TextToSpeechService {
         public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @Nullable Response response) {
             super.onFailure(webSocket, t, response);
             String msg = response == null ? "null" : response.toString();
+            TTSService.this.webSocket = null;
             Log.e(TAG, "onFailure" + msg, t);
             //APP.showToast("网络发生波动，掉线了，正在重连。");
 
