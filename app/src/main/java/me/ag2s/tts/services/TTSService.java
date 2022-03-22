@@ -88,6 +88,7 @@ public class TTSService extends TextToSpeechService {
         public void onClosing(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
             super.onClosing(webSocket, code, reason);
             Log.e(TAG, "onClosing:" + reason);
+            TTSService.this.webSocket = null;
 
 
         }
@@ -428,10 +429,10 @@ public class TTSService extends TextToSpeechService {
      */
     public synchronized WebSocket getOrCreateWs() {
         if (this.webSocket != null) {
-            boolean isSuccess = this.webSocket.send("");
-            if (isSuccess) {
-                return this.webSocket;
-            }
+            //boolean isSuccess = this.webSocket.send(ByteString.EMPTY);
+            //if (isSuccess) {
+            return this.webSocket;
+            //}
 
         }
         Request request = new Request.Builder()
