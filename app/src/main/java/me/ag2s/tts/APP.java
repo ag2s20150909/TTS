@@ -21,6 +21,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Dns;
 import okhttp3.OkHttpClient;
@@ -64,19 +65,19 @@ public class APP extends Application {
                     okHttpClient = new OkHttpClient.Builder()
                             .cookieJar(new PersistentCookieJar(new SetCookieCache(),
                                     new SharedPrefsCookiePersistor(getContext())))
-                            //.pingInterval(20, TimeUnit.SECONDS) // 设置 PING 帧发送间隔
+                            .pingInterval(20, TimeUnit.SECONDS) // 设置 PING 帧发送间隔
                             .fastFallback(true)
                             .dns(s -> {
                                 List<InetAddress> addresses = Dns.SYSTEM.lookup(s);
 
-                                //boolean isMainLand = mContext.getResources().getConfiguration().locale.getCountry().equals("CN");
-
+//                                boolean isMainLand = mContext.getResources().getConfiguration().locale.getCountry().equals("CN");
+//
 //                                if (s.equals("speech.platform.bing.com") && isMainLand) {
-//                                    //addresses = Dns.SYSTEM.lookup("cn.bing.com");
-//                                    addresses = Dns.SYSTEM.lookup(s);
+//                                    addresses = Dns.SYSTEM.lookup("cn.bing.com");
+//                                    //addresses = Dns.SYSTEM.lookup(s);
 //
 //                                } else {
-
+//
 //                                }
 
                                 Log.e("DNS", s + ":" + addresses);

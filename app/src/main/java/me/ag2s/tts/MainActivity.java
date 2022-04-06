@@ -127,9 +127,9 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
             }
 
             Locale locale = item.getLocale();
-            if (!connected) {
-                connectToText2Speech();
-            }
+
+            connectToText2Speech();
+
 
             if (!textToSpeech.isSpeaking()) {
                 Bundle bundle = new Bundle();
@@ -160,19 +160,22 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
      * 连接Text2Speech
      */
     private void connectToText2Speech() {
-        textToSpeech = new TextToSpeech(MainActivity.this, status -> {
+        if (textToSpeech == null || textToSpeech.speak("", TextToSpeech.QUEUE_FLUSH, null, null) != TextToSpeech.SUCCESS) {
+            textToSpeech = new TextToSpeech(MainActivity.this, status -> {
 
-            if (status == TextToSpeech.SUCCESS) {
-                int result = textToSpeech.setLanguage(Locale.CHINA);
-                if (result != TextToSpeech.LANG_MISSING_DATA
-                        && result != TextToSpeech.LANG_NOT_SUPPORTED) {
-                    connected = true;
-                    if (!textToSpeech.isSpeaking()) {
-                        textToSpeech.speak("初始化成功。", TextToSpeech.QUEUE_FLUSH, null, null);
+                if (status == TextToSpeech.SUCCESS) {
+                    int result = textToSpeech.setLanguage(Locale.CHINA);
+                    if (result != TextToSpeech.LANG_MISSING_DATA
+                            && result != TextToSpeech.LANG_NOT_SUPPORTED) {
+                        connected = true;
+                        if (!textToSpeech.isSpeaking()) {
+                            textToSpeech.speak("初始化成功。", TextToSpeech.QUEUE_FLUSH, null, null);
+                        }
                     }
                 }
-            }
-        }, this.getPackageName());
+            }, this.getPackageName());
+        }
+
     }
 
 
@@ -312,10 +315,10 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
                     .setTitle("有新版本")
                     .setMessage("发现新版本:" + tag + "\n" + body)
                     .setPositiveButton("确定", (dialog, which) -> {
-                        Intent intent = new Intent(Intent.ACTION_VIEW);
-                        intent.setData(Uri.parse(downloadUrl));
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
+                                Intent intent = new Intent(Intent.ACTION_VIEW);
+                                intent.setData(Uri.parse(downloadUrl));
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
                             }
 
                     )
