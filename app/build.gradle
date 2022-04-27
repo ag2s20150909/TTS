@@ -124,9 +124,7 @@ dependencies {
     implementation "androidx.recyclerview:recyclerview:1.2.1"
 
     //An HTTP & HTTP/2 client for Android and Java applications.
-    //noinspection GradleDependency
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
-    //noinspection GradleDependency
     //implementation "com.squareup.okhttp3:okhttp-dnsoverhttps:5.0.0-alpha.5"
     implementation "com.squareup.okio:okio:$okio_version"
 
