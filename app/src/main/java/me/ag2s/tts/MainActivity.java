@@ -278,7 +278,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
     private void checkUpdate() {
         HttpTool.executorService.submit(() -> {
             try {
-                String url = "https://api.github.com/repos/ag2s20150909/TTS/releases/latest";
+                String url = "https://api.github.com/repos/ag2s20150909/tts/releases/latest";
                 String s = HttpTool.httpGet(url);
                 //Log.e(TAG, s);
                 JSONObject json = new JSONObject(s);
