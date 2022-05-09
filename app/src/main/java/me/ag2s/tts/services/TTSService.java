@@ -41,6 +41,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import me.ag2s.tts.APP;
+import me.ag2s.tts.BuildConfig;
 import me.ag2s.tts.R;
 import me.ag2s.tts.utils.ByteArrayMediaDataSource;
 import me.ag2s.tts.utils.CommonTool;
@@ -97,6 +98,7 @@ public class TTSService extends TextToSpeechService {
             super.onClosing(webSocket, code, reason);
             Log.e(TAG, "onClosing:" + reason);
             TTSService.this.webSocket = null;
+            updateNotification("TTS服务-错误中", reason);
 
 
         }
@@ -392,12 +394,13 @@ public class TTSService extends TextToSpeechService {
             //没有找到音频流的情况下
             if (audioTrackIndex == -1) {
                 Log.e(TAG, "initAudioDecoder: 没有找到音频流");
+                updateNotification("TTS服务-错误中", "没有找到音频流");
                 cb.done();
                 isSynthesizing = false;
                 return;
             }
 
-            Log.e("Track", trackFormat.toString());
+            //Log.e("Track", trackFormat.toString());
 
 
             //opus的音频必须设置这个才能正确的解码
@@ -423,17 +426,18 @@ public class TTSService extends TextToSpeechService {
                 //Channel Mapping Table：可选参数，上面的Family默认设置0x00的时候可忽略
 
 
-                Log.e(TAG, trackFormat.getByteBuffer("csd-1").order(ByteOrder.nativeOrder()).getLong() + "");
-                Log.e(TAG, trackFormat.getByteBuffer("csd-2").order(ByteOrder.nativeOrder()).getLong() + "");
-                Log.e(TAG, ByteString.of(trackFormat.getByteBuffer("csd-2").array()).hex());
+                if (BuildConfig.DEBUG) {
+                    Log.e(TAG, trackFormat.getByteBuffer("csd-1").order(ByteOrder.nativeOrder()).getLong() + "");
+                    Log.e(TAG, trackFormat.getByteBuffer("csd-2").order(ByteOrder.nativeOrder()).getLong() + "");
+                    Log.e(TAG, ByteString.of(trackFormat.getByteBuffer("csd-2").array()).hex());
+                }
+
                 byte[] csd1bytes = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
                 byte[] csd2bytes = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
                 ByteString hd = buf.readByteString();
                 ByteBuffer csd0 = ByteBuffer.wrap(hd.toByteArray());
-                //trackFormat.setByteBuffer("csd-0", csd0);
+                trackFormat.setByteBuffer("csd-0", csd0);
                 ByteBuffer csd1 = ByteBuffer.wrap(csd1bytes);
-
-
                 trackFormat.setByteBuffer("csd-1", csd1);
                 ByteBuffer csd2 = ByteBuffer.wrap(csd2bytes);
                 trackFormat.setByteBuffer("csd-2", csd2);
