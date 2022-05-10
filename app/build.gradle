@@ -72,6 +72,7 @@ android {
         includeInApk true
         includeInBundle false
     }
+    namespace 'me.ag2s.tts'
 
     android.applicationVariants.all {
         variant ->
