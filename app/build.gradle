@@ -3,8 +3,8 @@ plugins {
 }
 
 android {
-    compileSdk 31
-    buildToolsVersion '32.0.0'
+    compileSdk 32
+    buildToolsVersion '32.1.0-rc1'
     //签名设置
     signingConfigs {
         release {
@@ -28,7 +28,7 @@ android {
     defaultConfig {
         applicationId "me.ag2s.tts"
         minSdkVersion 21
-        targetSdk 31
+        targetSdk 32
         versionCode 1
         versionName "0.2_${releaseTime()}"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
