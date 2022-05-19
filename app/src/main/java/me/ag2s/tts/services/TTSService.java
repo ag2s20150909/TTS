@@ -245,7 +245,7 @@ public class TTSService extends TextToSpeechService {
         PendingIntent pStopSelf = PendingIntent.getService(this, 0, stopSelf, Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE : PendingIntent.FLAG_UPDATE_CURRENT);
 
         notificationBuilder = new Notification.Builder(this)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_audio)
                 .setOnlyAlertOnce(true)
                 .setVibrate(null)
                 .setSound(null)
