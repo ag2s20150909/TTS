@@ -35,9 +35,11 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 
 import me.ag2s.tts.APP;
@@ -65,7 +67,7 @@ public class TTSService extends TextToSpeechService {
     @NonNull
     private final OkHttpClient client;
     @Nullable
-    private WebSocket webSocket;
+    private volatile WebSocket webSocket;
     private volatile boolean isSynthesizing = false;
     //当前的生成格式
     private volatile TtsOutputFormat currentFormat;
@@ -98,6 +100,11 @@ public class TTSService extends TextToSpeechService {
             super.onClosing(webSocket, code, reason);
             Log.e(TAG, "onClosing:" + reason);
             TTSService.this.webSocket = null;
+
+            Log.e("SS", "SS:" + isSynthesizing);
+            if (isSynthesizing) {
+                //TTSService.this.webSocket = getOrCreateWs();
+            }
             updateNotification("TTS服务-错误中", reason);
 
 
@@ -108,6 +115,9 @@ public class TTSService extends TextToSpeechService {
             super.onFailure(webSocket, t, response);
             TTSService.this.webSocket = null;
             Log.e(TAG, "onFailure" + t.getMessage(), t);
+            if (isSynthesizing) {
+                TTSService.this.webSocket = getOrCreateWs();
+            }
             updateNotification("TTS服务-错误中", t.getMessage());
 
             //APP.showToast("网络发生波动，掉线了，正在重连。");
@@ -119,8 +129,8 @@ public class TTSService extends TextToSpeechService {
         public void onMessage(@NotNull WebSocket webSocket, @NotNull String text) {
             super.onMessage(webSocket, text);
             //Log.v(TAG, "onMessage" + text);
-            String endTag = "turn.end";
-            String startTag = "turn.start";
+            final String endTag = "turn.end";
+            final String startTag = "turn.start";
             int endIndex = text.lastIndexOf(endTag);
             int startIndex = text.lastIndexOf(startTag);
             //生成开始
@@ -146,9 +156,9 @@ public class TTSService extends TextToSpeechService {
         public void onMessage(@NotNull WebSocket webSocket, @NotNull ByteString bytes) {
             super.onMessage(webSocket, bytes);
             //音频数据流标志头
-            String audioTag = "Path:audio\r\n";
-            String startTag = "Content-Type:";
-            String endTag = "\r\nX-StreamId";
+            final String audioTag = "Path:audio\r\n";
+            final String startTag = "Content-Type:";
+            final String endTag = "\r\nX-StreamId";
             //Log.e(TAG,bytes.utf8());
 
             int audioIndex = bytes.lastIndexOf(audioTag.getBytes(StandardCharsets.UTF_8)) + audioTag.length();
@@ -191,7 +201,7 @@ public class TTSService extends TextToSpeechService {
         @Override
         public void onOpen(@NotNull WebSocket webSocket, @NotNull Response response) {
             super.onOpen(webSocket, response);
-            Log.d(TAG, "onOpen" + response.headers());
+            Log.e(TAG, "onOpen" + response.headers());
         }
     };
 
@@ -205,8 +215,8 @@ public class TTSService extends TextToSpeechService {
     NotificationManager notificationManager;
     Notification.Builder notificationBuilder;
 
-    String notificationChannelId = TTSService.class.getName();
-    String notificationName = "文字转语音服务通知";
+    final String notificationChannelId = TTSService.class.getName();
+    final String notificationName = "文字转语音服务通知";
     private static final int NOTIFICATION_ID = 1;
 
 
@@ -273,8 +283,11 @@ public class TTSService extends TextToSpeechService {
 
     }
 
-    public void updateNotification(String title, String content) {
+    public void updateNotification(@NotNull String title, @Nullable String content) {
 
+        if (content == null || content.isEmpty()) {
+            return;
+        }
         StringBuilder sb = new StringBuilder(content);
         CommonTool.Trim(sb);
         notificationBuilder.setContentTitle(title);
@@ -544,23 +557,28 @@ public class TTSService extends TextToSpeechService {
      *
      * @return WebSocket
      */
-    public synchronized WebSocket getOrCreateWs() {
-        if (this.webSocket != null) {
-            //boolean isSuccess = this.webSocket.send(ByteString.EMPTY);
-            //if (isSuccess) {
-            return this.webSocket;
-            //}
+    public WebSocket getOrCreateWs() {
+
+        if (this.webSocket == null) {
+            synchronized (TTSService.class) {
+                if (this.webSocket == null) {
+                    Request request = new Request.Builder()
+                            .url(Constants.EDGE_URL + "&ConnectionId=" + CommonTool.getMD5String(new Date().toString()))
+                            .header("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6")
+                            .header("Accept-Encoding", "gzip, deflate")
+                            .header("User-Agent", Constants.EDGE_UA)
+                            .addHeader("Origin", Constants.EDGE_ORIGIN)
+                            .build();
+                    this.webSocket = client.newWebSocket(request, webSocketListener);
+                    sendConfig(Objects.requireNonNull(this.webSocket), new TtsConfig.Builder(APP.getInt(Constants.AUDIO_FORMAT_INDEX, 0)).build());
+
+                }
+            }
+
 
         }
-        Request request = new Request.Builder()
-                .url(Constants.EDGE_URL)
-                .header("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6")
-                .header("User-Agent", Constants.EDGE_UA)
-                .addHeader("Origin", Constants.EDGE_ORIGIN)
-                .build();
-        this.webSocket = client.newWebSocket(request, webSocketListener);
-        sendConfig(this.webSocket, new TtsConfig.Builder(APP.getInt(Constants.AUDIO_FORMAT_INDEX, 0)).build());
-        return webSocket;
+
+        return this.webSocket;
     }
 
     /**
@@ -610,9 +628,9 @@ public class TTSService extends TextToSpeechService {
         ttsStyle.setVolume(APP.getInt(Constants.VOICE_VOLUME, 100));
         boolean useDict = APP.getBoolean(Constants.USE_DICT, false);
         SSML ssml = SSML.getInstance(request, name, ttsStyle, useDict);
-        Log.e(TAG, ssml.toString());
+        //Log.e(TAG, ssml.toString());
 
-        webSocket = getOrCreateWs();
+        //webSocket = webSocket == null ? getOrCreateWs() : webSocket;
         if (oldFormatIndex != index) {
             sendConfig(getOrCreateWs(), ttsConfig);
             oldFormatIndex = index;
@@ -780,7 +798,7 @@ public class TTSService extends TextToSpeechService {
     @Override
     protected void onStop() {
         if (TTSService.this.webSocket != null) {
-            webSocket.close(1000, "closed by call onStop");
+            Objects.requireNonNull(webSocket).close(1000, "closed by call onStop");
             TTSService.this.webSocket = null;
         }
         isSynthesizing = false;
@@ -820,14 +838,17 @@ public class TTSService extends TextToSpeechService {
         //使用System.nanoTime()来保证获得的是精准的时间间隔
         long startTime = SystemClock.elapsedRealtime();
 
-
         synchronized (TTSService.this) {
-            isSynthesizing = true;
 
-            updateNotification("TTS服务-生成中", request.getCharSequenceText().toString());
+            isSynthesizing = true;
             sendText(request, callback);
+            updateNotification("TTS服务-生成中", request.getCharSequenceText().toString());
+
 
             while (isSynthesizing) {
+//                if(this.webSocket==null){
+//                    this.webSocket=getOrCreateWs();
+//                }
                 try {
                     this.wait(100);
                 } catch (InterruptedException e) {
@@ -842,6 +863,8 @@ public class TTSService extends TextToSpeechService {
             }
 
         }
+        isSynthesizing = false;
+
         updateNotification("TTS服务-闲置中", "当前没有生成任务");
 
 

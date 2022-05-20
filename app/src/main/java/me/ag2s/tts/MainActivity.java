@@ -128,10 +128,9 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
 
             Locale locale = item.getLocale();
 
-            connectToText2Speech();
 
-
-            if (!textToSpeech.isSpeaking()) {
+            if (textToSpeech != null && !textToSpeech.isSpeaking()) {
+                connectToText2Speech();
                 Bundle bundle = new Bundle();
                 bundle.putString(CUSTOM_VOICE, item.getShortName());
                 bundle.putInt(Constants.CUSTOM_VOICE_INDEX, position);
@@ -142,6 +141,9 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
                 bundle.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "Sample");
                 textToSpeech.speak(TtsVoiceSample.getByLocate(this, locale), TextToSpeech.QUEUE_FLUSH, bundle, MainActivity.class.getName() + mNextRequestId.getAndIncrement());
             } else {
+                if (textToSpeech == null) {
+                    connectToText2Speech();
+                }
                 Toast.makeText(MainActivity.this, "" + item.getShortName(), Toast.LENGTH_SHORT).show();
             }
 
@@ -207,6 +209,18 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
 
 
     }
+
+//    void getToken(){
+//        HttpTool.executorService.submit(() -> {
+//            HttpTool.httpGet("https://cn.bing.com/");
+//            String url="https://azure.microsoft.com/zh-cn/services/cognitive-services/text-to-speech/#features";
+//            String s = HttpTool.httpGet(url);
+//            s = s.substring(s.indexOf("token:") + 8);
+//            s = s.substring(0, s.indexOf("\""));
+//            Log.e("SS",s);
+//        });
+//
+//    }
 
 
     @Override
@@ -276,6 +290,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
     }
 
     private void checkUpdate() {
+        //getToken();
         HttpTool.executorService.submit(() -> {
             try {
                 String url = "https://api.github.com/repos/ag2s20150909/tts/releases/latest";

@@ -8,11 +8,16 @@ import java.util.List;
 public class TtsFormatManger {
 
     //单例
-    private static TtsFormatManger instance;
+    private static volatile TtsFormatManger instance;
 
     public static TtsFormatManger getInstance() {
         if (instance == null) {
-            instance = new TtsFormatManger();
+            synchronized (TtsFormatManger.class) {
+                if (instance == null) {
+                    instance = new TtsFormatManger();
+                }
+            }
+
         }
         return instance;
     }

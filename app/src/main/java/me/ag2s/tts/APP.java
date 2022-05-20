@@ -19,11 +19,14 @@ import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersisto
 import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
-import okhttp3.Dns;
+import okhttp3.ConnectionSpec;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
+import okhttp3.dnsoverhttps.DnsOverHttps;
 
 @SuppressWarnings("unused")
 public class APP extends Application {
@@ -33,28 +36,43 @@ public class APP extends Application {
     @SuppressLint("StaticFieldLeak")
     private static Context mContext;
 
-    public static SharedPreferences preferences;
-
 
     /**
      * 用于DoH的@see:okhttp3.OkHttpClient
      */
-    //private static final okhttp3.OkHttpClient bootClient = new OkHttpClient.Builder().fastFallback(true).build();
-    //                    DnsOverHttps dns = new DnsOverHttps.Builder().client(
-//                            APP.bootClient.newBuilder().cache(getCache("doh", 1024 * 1024 * 100)).build())
-//                            .url(HttpUrl.get("https://dns.alidns.com/dns-query"))
-//                            .bootstrapDnsHosts(
-//                                    getByName("223.5.5.5"),
-//                                    getByName("223.6.6.6"),
-//                                    getByName("2400:3200::1"),
-//                                    getByName("2400:3200:baba::1")
-//                            )
-//                            //.url(HttpUrl.get("https://dns.google.com/dns-query"))
-//                            .post(true)
-//                            .includeIPv6(true)
-//                            .build();
+    private static final okhttp3.OkHttpClient bootClient = new OkHttpClient.Builder()
+            .connectionSpecs(Arrays.asList(ConnectionSpec.MODERN_TLS, ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.CLEARTEXT))
+            .fastFallback(true)
+            .build();
+    private static volatile DnsOverHttps dns = null;
 
-    private static okhttp3.OkHttpClient okHttpClient = null;
+    private static DnsOverHttps getDns() {
+
+        if (dns == null) {
+            synchronized (APP.class) {
+                if (dns == null) {
+                    OkHttpClient temp = APP.bootClient.newBuilder().cache(getCache("doh", 1024 * 1024 * 100)).build();
+                    dns = new DnsOverHttps.Builder()
+                            .client(temp)
+                            .url(HttpUrl.get("https://dns.alidns.com/dns-query"))
+                            .bootstrapDnsHosts(
+                                    getByName("223.5.5.5"),
+                                    getByName("223.6.6.6"),
+                                    getByName("2400:3200::1"),
+                                    getByName("2400:3200:baba::1")
+                            )
+
+                            .includeIPv6(false)
+                            .build();
+                }
+            }
+        }
+        return dns;
+    }
+    //private static final DnsOverHttps dns = new DnsOverHttps.Builder().client(
+
+
+    private static volatile okhttp3.OkHttpClient okHttpClient = null;
 
     public static okhttp3.OkHttpClient getOkHttpClient() {
         if (okHttpClient == null) {
@@ -64,25 +82,13 @@ public class APP extends Application {
                     okHttpClient = new OkHttpClient.Builder()
                             .cookieJar(new PersistentCookieJar(new SetCookieCache(),
                                     new SharedPrefsCookiePersistor(getContext())))
-                            //.pingInterval(20, TimeUnit.SECONDS) // 设置 PING 帧发送间隔
+                            .pingInterval(20, TimeUnit.SECONDS) // 设置 PING 帧发送间隔
                             .fastFallback(true)
                             .dns(s -> {
-                                List<InetAddress> addresses = Dns.SYSTEM.lookup(s);
-
-//                                boolean isMainLand = mContext.getResources().getConfiguration().locale.getCountry().equals("CN");
-//
-//                                if (s.equals("speech.platform.bing.com") && isMainLand) {
-//                                    addresses = Dns.SYSTEM.lookup("cn.bing.com");
-//                                    //addresses = Dns.SYSTEM.lookup(s);
-//
-//                                } else {
-//
+//                                if("speech.platform.bing.com".equals(s)){
+//                                    s="cn.bing.com";
 //                                }
-
-                                Log.e("DNS", s + ":" + addresses);
-                                return addresses;
-
-
+                                return getDns().lookup(s);
                             })
                             .build();
                 }
@@ -170,20 +176,17 @@ public class APP extends Application {
     }
 
 
-    public static SharedPreferences getSharedPreferences() {
-        if (preferences == null) {
-            synchronized (APP.class) {
-                if (preferences == null) {
-                    preferences = getContext().getSharedPreferences("TTS", Context.MODE_PRIVATE);
-                }
+    private static final class PreferencesHolder {
+        public static final SharedPreferences preferences = getContext().getSharedPreferences("TTS", Context.MODE_PRIVATE);
+    }
 
-            }
-        }
-        return preferences;
+    public static SharedPreferences getSharedPreferences() {
+        return PreferencesHolder.preferences;
     }
 
     public static @Nullable
     InetAddress getByName(@NonNull String ip) {
+
         try {
             return InetAddress.getByName(ip);
         } catch (UnknownHostException e) {
@@ -232,6 +235,7 @@ public class APP extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        //Security.insertProviderAt(Conscrypt.newProvider(), 1);
         mContext = this.getApplicationContext();
     }
 
@@ -250,6 +254,7 @@ public class APP extends Application {
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
+        //Security.insertProviderAt(Conscrypt.newProvider(), 1);
         mContext = getApplicationContext();
     }
 }

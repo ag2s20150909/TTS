@@ -4,7 +4,7 @@ plugins {
 
 android {
     compileSdk 32
-    buildToolsVersion '32.1.0-rc1'
+    buildToolsVersion '32.0.0'
     //签名设置
     signingConfigs {
         release {
@@ -123,10 +123,10 @@ dependencies {
     //coreLibraryDesugaring('com.android.tools:desugar_jdk_libs:1.1.5')
 
     implementation "androidx.recyclerview:recyclerview:1.2.1"
-
+    //implementation 'org.conscrypt:conscrypt-android:2.5.2'
     //An HTTP & HTTP/2 client for Android and Java applications.
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
-    //implementation "com.squareup.okhttp3:okhttp-dnsoverhttps:5.0.0-alpha.5"
+    implementation "com.squareup.okhttp3:okhttp-dnsoverhttps:$okhttp_version"
     implementation "com.squareup.okio:okio:$okio_version"
 
 

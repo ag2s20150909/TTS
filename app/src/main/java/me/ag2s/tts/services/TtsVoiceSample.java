@@ -10,7 +10,7 @@ import java.util.MissingResourceException;
 
 import me.ag2s.tts.R;
 
-public class TtsVoiceSample {
+public final class TtsVoiceSample {
 
     public static String getByLocate(@NonNull Context context, @NonNull Locale locale) throws MissingResourceException {
         String language = locale.getISO3Language();

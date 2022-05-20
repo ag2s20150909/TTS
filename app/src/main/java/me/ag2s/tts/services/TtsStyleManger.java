@@ -9,16 +9,23 @@ import java.util.List;
 
 public class TtsStyleManger {
     //单例
-    private static TtsStyleManger instance;
+    private static volatile TtsStyleManger instance;
 
     public static TtsStyleManger getInstance() {
         if (instance == null) {
-            instance = new TtsStyleManger();
+            synchronized (TtsStyleManger.class) {
+                if (instance == null) {
+                    instance = new TtsStyleManger();
+                }
+            }
+
         }
         return instance;
     }
 
     private final List<TtsStyle> styles;
+
+    //https://docs.microsoft.com/zh-cn/azure/cognitive-services/speech-service/speech-synthesis-markup?tabs=csharp#adjust-speaking-styles
 
     private TtsStyleManger() {
         styles = new ArrayList<>(22);
@@ -57,12 +64,15 @@ public class TtsStyleManger {
 
     }
 
-    public @NonNull List<TtsStyle> getStyles() {
+    public @NonNull
+    List<TtsStyle> getStyles() {
         return this.styles;
     }
+
     @SuppressWarnings("unused")
-    public @NonNull TtsStyle get(int index) {
-        if (index>=0&&index < styles.size()) {
+    public @NonNull
+    TtsStyle get(int index) {
+        if (index >= 0 && index < styles.size()) {
             return styles.get(index);
         }
         return new TtsStyle("默认", "", "默认值");

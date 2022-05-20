@@ -16,11 +16,16 @@ import me.ag2s.tts.APP;
 public class TtsDictManger {
     private final File file;
     //单例
-    private static TtsDictManger instance;
+    private static volatile TtsDictManger instance;
 
     public static TtsDictManger getInstance() {
         if (instance == null) {
-            instance = new TtsDictManger();
+            synchronized (TtsStyleManger.class) {
+                if (instance == null) {
+                    instance = new TtsDictManger();
+                }
+            }
+
         }
         return instance;
     }

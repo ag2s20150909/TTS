@@ -2,8 +2,8 @@ package me.ag2s.tts.utils;
 
 import android.os.SystemClock;
 
-public class GcManger {
-    private static GcManger instance;
+public final class GcManger {
+    private static volatile GcManger instance;
     public long last = 0;
 
     private GcManger() {

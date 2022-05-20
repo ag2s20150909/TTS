@@ -14,11 +14,16 @@ public class TtsActorManger {
     private static final String TAG = "TtsActorManger";
     //单例
 
-    private static TtsActorManger instance;
+    private static volatile TtsActorManger instance;
 
     public static TtsActorManger getInstance() {
         if (instance == null) {
-            instance = new TtsActorManger();
+            synchronized (TtsActorManger.class) {
+                if (instance == null) {
+                    instance = new TtsActorManger();
+                }
+            }
+
         }
         return instance;
     }
@@ -54,10 +59,14 @@ public class TtsActorManger {
         actors.add(new TtsActor("云扬", "zh-CN-YunyangNeural", "zh-CN", false, "专业、流利的声音，具有多种场景风格。"));
         actors.add(new TtsActor("云野", "zh-CN-YunyeNeural", "zh-CN", false, "成熟、放松的声音，具有多种情感，适合音频书籍。"));
         actors.add(new TtsActor("云希", "zh-CN-YunxiNeural", "zh-CN", false, "活泼、阳光的声音，具有丰富的情感，可用于许多对话场景。"));
-        /*
-         * 预览版的无法使用
-        actors.add(new TtsActor("云健", "zh-CN-YunjianNeural", "zh-CN", false, "适合影视和体育解说"));
-         */
+
+
+//        actors.add(new TtsActor("云希四川", "zh-CN-SC-YunxiNeural", "zh-CN", false, "活泼、阳光的声音，具有丰富的情感，可用于许多对话场景。"));
+//        actors.add(new TtsActor("云枫", "zh-CN-YunfengNeural", "zh-CN", false, "适合影视和体育解说"));
+//        actors.add(new TtsActor("云皓", "zh-CN-YunhaoNeural", "zh-CN", false, "适合影视和体育解说"));
+//        actors.add(new TtsActor("云健", "zh-CN-YunjianNeural", "zh-CN", false, "适合影视和体育解说"));
+
+
         actors.add(new TtsActor("晓涵", "zh-CN-XiaohanNeural", "zh-CN", true, "温暖、甜美、富有感情的声音，可用于许多对话场景。"));
         actors.add(new TtsActor("晓墨", "zh-CN-XiaomoNeural", "zh-CN", true, "清晰、放松的声音，具有丰富的角色扮演和情感，适合音频书籍。"));
         actors.add(new TtsActor("晓睿", "zh-CN-XiaoruiNeural", "zh-CN", true, "成熟、睿智的声音，具有丰富的情感，适合音频书籍。"));
