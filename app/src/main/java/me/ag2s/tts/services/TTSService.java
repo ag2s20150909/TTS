@@ -566,7 +566,7 @@ public class TTSService extends TextToSpeechService {
 
                     String url;
                     String origin = Constants.EDGE_ORIGIN;
-                    if (TokenHolder.token != null) {
+                    if (TokenHolder.token != null && APP.getBoolean(Constants.USE_PREVIEW, false)) {
                         url = "wss://eastus.tts.speech.microsoft.com/cognitiveservices/websocket/v1?Authorization=bearer " + TokenHolder.token + "&X-ConnectionId=" + CommonTool.getMD5String(new Date().toString());
                         origin = "https://azure.microsoft.com";
                     } else {

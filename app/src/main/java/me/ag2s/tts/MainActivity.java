@@ -1,6 +1,7 @@
 package me.ag2s.tts;
 
 import static me.ag2s.tts.services.Constants.CUSTOM_VOICE;
+import static me.ag2s.tts.services.Constants.USE_PREVIEW;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -109,8 +110,8 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
         binding.switchUseDict.setChecked(APP.getBoolean(Constants.USE_DICT, false));
         binding.switchUseDict.setOnCheckedChangeListener((buttonView, isChecked) -> APP.putBoolean(Constants.USE_DICT, isChecked));
 
-//        binding.switchUsePreview.setChecked(APP.getBoolean(Constants.USE_PREVIEW,false));
-//        binding.switchUsePreview.setOnCheckedChangeListener(((buttonView, isChecked) -> APP.putBoolean(CUSTOM_VOICE,isChecked)));
+        binding.switchUsePreview.setChecked(APP.getBoolean(Constants.USE_PREVIEW, false));
+        binding.switchUsePreview.setOnCheckedChangeListener(((buttonView, isChecked) -> APP.putBoolean(USE_PREVIEW, isChecked)));
 
 
         TtsActorAdapter actorAdapter = new TtsActorAdapter(TtsActorManger.getInstance().getActors());
@@ -150,6 +151,8 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
             }
 
         });
+
+        Toast.makeText(this, "选择预览版语音时,如果卡住了，杀掉应用重进！！！", Toast.LENGTH_LONG).show();
 
 
         if (APP.getBoolean(Constants.USE_AUTO_UPDATE, true)) {
