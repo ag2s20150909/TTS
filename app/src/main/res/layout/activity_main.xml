@@ -50,6 +50,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/use_dict" />
+            <!--            <Switch-->
+            <!--                style="?android:attr/buttonBarButtonStyle"-->
+            <!--                android:id="@+id/switch_use_preview"-->
+            <!--                android:layout_width="wrap_content"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:text="@string/use_preview" />-->
         </LinearLayout>
     </HorizontalScrollView>
 

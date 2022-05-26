@@ -86,6 +86,10 @@ public class SSML {
         this.pitch = (short) (request.getPitch() - 100);
         this.rate = (short) (request.getSpeechRate());
         Locale locale = Locale.getDefault();
+        if (name.contains("Multilingual")) {
+            locale = Locale.CHINA;
+        }
+
         this.lang = locale.getLanguage() + "-" + locale.getCountry();
         this.id = CommonTool.getMD5String(request.getCharSequenceText() + "" + System.currentTimeMillis());
         this.useDict = useDict;

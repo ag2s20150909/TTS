@@ -14,6 +14,8 @@ public class TtsActorManger {
     private static final String TAG = "TtsActorManger";
     //单例
 
+    private static final String previewNote = "预览版语音,如果卡住了，杀掉应用重进！！！";
+
     private static volatile TtsActorManger instance;
 
     public static TtsActorManger getInstance() {
@@ -61,10 +63,11 @@ public class TtsActorManger {
         actors.add(new TtsActor("云希", "zh-CN-YunxiNeural", "zh-CN", false, "活泼、阳光的声音，具有丰富的情感，可用于许多对话场景。"));
 
 
-//        actors.add(new TtsActor("云希四川", "zh-CN-SC-YunxiNeural", "zh-CN", false, "活泼、阳光的声音，具有丰富的情感，可用于许多对话场景。"));
-//        actors.add(new TtsActor("云枫", "zh-CN-YunfengNeural", "zh-CN", false, "适合影视和体育解说"));
-//        actors.add(new TtsActor("云皓", "zh-CN-YunhaoNeural", "zh-CN", false, "适合影视和体育解说"));
-//        actors.add(new TtsActor("云健", "zh-CN-YunjianNeural", "zh-CN", false, "适合影视和体育解说"));
+        actors.add(new TtsActor("晓北辽宁", "zh-CN-LN-XiaobeiNeural", "zh-CN", true, "东北大妹子，" + previewNote));
+        actors.add(new TtsActor("云希四川", "zh-CN-SC-YunxiNeural", "zh-CN", false, "四川小伙，" + previewNote));
+        actors.add(new TtsActor("云枫", "zh-CN-YunfengNeural", "zh-CN", false, "" + previewNote));
+        actors.add(new TtsActor("云皓", "zh-CN-YunhaoNeural", "zh-CN", false, "" + previewNote));
+        actors.add(new TtsActor("云健", "zh-CN-YunjianNeural", "zh-CN", false, "适合影视和体育解说，" + previewNote));
 
 
         actors.add(new TtsActor("晓涵", "zh-CN-XiaohanNeural", "zh-CN", true, "温暖、甜美、富有感情的声音，可用于许多对话场景。"));

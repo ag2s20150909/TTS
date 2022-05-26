@@ -97,18 +97,20 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
         linearLayoutManager.scrollToPositionWithOffset(styleIndex, 0);
         ttsStyleAdapter.setItemClickListener((position, item) -> APP.putInt(Constants.VOICE_STYLE_INDEX, position));
 
-        boolean useCustomVoice = APP.getBoolean(Constants.USE_CUSTOM_VOICE, true);//sharedPreferences.getBoolean(Constants.USE_CUSTOM_VOICE, true);
-        binding.switchUseCustomVoice.setChecked(useCustomVoice);
+        //boolean useCustomVoice = APP.getBoolean(Constants.USE_CUSTOM_VOICE, true);//sharedPreferences.getBoolean(Constants.USE_CUSTOM_VOICE, true);
+        binding.switchUseCustomVoice.setChecked(APP.getBoolean(Constants.USE_CUSTOM_VOICE, true));
         binding.switchUseCustomVoice.setOnCheckedChangeListener((buttonView, isChecked) -> APP.putBoolean(Constants.USE_CUSTOM_VOICE, isChecked));
 
-        boolean useSplitSentence = APP.getBoolean(Constants.SPLIT_SENTENCE, false);//sharedPreferences.getBoolean(Constants.USE_CUSTOM_VOICE, true);
-        binding.switchUseSplitSentence.setChecked(useSplitSentence);
+
+        binding.switchUseSplitSentence.setChecked(APP.getBoolean(Constants.SPLIT_SENTENCE, false));
         binding.switchUseSplitSentence.setOnCheckedChangeListener((buttonView, isChecked) -> APP.putBoolean(Constants.SPLIT_SENTENCE, isChecked));
 
 
-        boolean useDict = APP.getBoolean(Constants.USE_DICT, false);
-        binding.switchUseDict.setChecked(useDict);
+        binding.switchUseDict.setChecked(APP.getBoolean(Constants.USE_DICT, false));
         binding.switchUseDict.setOnCheckedChangeListener((buttonView, isChecked) -> APP.putBoolean(Constants.USE_DICT, isChecked));
+
+//        binding.switchUsePreview.setChecked(APP.getBoolean(Constants.USE_PREVIEW,false));
+//        binding.switchUsePreview.setOnCheckedChangeListener(((buttonView, isChecked) -> APP.putBoolean(CUSTOM_VOICE,isChecked)));
 
 
         TtsActorAdapter actorAdapter = new TtsActorAdapter(TtsActorManger.getInstance().getActors());
@@ -209,18 +211,6 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
 
 
     }
-
-//    void getToken(){
-//        HttpTool.executorService.submit(() -> {
-//            HttpTool.httpGet("https://cn.bing.com/");
-//            String url="https://azure.microsoft.com/zh-cn/services/cognitive-services/text-to-speech/#features";
-//            String s = HttpTool.httpGet(url);
-//            s = s.substring(s.indexOf("token:") + 8);
-//            s = s.substring(0, s.indexOf("\""));
-//            Log.e("SS",s);
-//        });
-//
-//    }
 
 
     @Override

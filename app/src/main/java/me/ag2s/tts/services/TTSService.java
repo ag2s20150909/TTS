@@ -103,7 +103,7 @@ public class TTSService extends TextToSpeechService {
 
             Log.e("SS", "SS:" + isSynthesizing);
             if (isSynthesizing) {
-                //TTSService.this.webSocket = getOrCreateWs();
+                TTSService.this.webSocket = getOrCreateWs();
             }
             updateNotification("TTS服务-错误中", reason);
 
@@ -299,6 +299,7 @@ public class TTSService extends TextToSpeechService {
     @Override
     public void onCreate() {
         super.onCreate();
+        TokenHolder.startToken();
         startForegroundService();
         reNewWakeLock();
 
@@ -562,12 +563,21 @@ public class TTSService extends TextToSpeechService {
         if (this.webSocket == null) {
             synchronized (TTSService.class) {
                 if (this.webSocket == null) {
+
+                    String url;
+                    String origin = Constants.EDGE_ORIGIN;
+                    if (TokenHolder.token != null) {
+                        url = "wss://eastus.tts.speech.microsoft.com/cognitiveservices/websocket/v1?Authorization=bearer " + TokenHolder.token + "&X-ConnectionId=" + CommonTool.getMD5String(new Date().toString());
+                        origin = "https://azure.microsoft.com";
+                    } else {
+                        url = Constants.EDGE_URL + "&ConnectionId=" + CommonTool.getMD5String(new Date().toString());
+                    }
                     Request request = new Request.Builder()
-                            .url(Constants.EDGE_URL + "&ConnectionId=" + CommonTool.getMD5String(new Date().toString()))
+                            .url(url)
                             .header("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6")
                             .header("Accept-Encoding", "gzip, deflate")
                             .header("User-Agent", Constants.EDGE_UA)
-                            .addHeader("Origin", Constants.EDGE_ORIGIN)
+                            .addHeader("Origin", origin)
                             .build();
                     this.webSocket = client.newWebSocket(request, webSocketListener);
                     sendConfig(Objects.requireNonNull(this.webSocket), new TtsConfig.Builder(APP.getInt(Constants.AUDIO_FORMAT_INDEX, 0)).build());
@@ -628,7 +638,7 @@ public class TTSService extends TextToSpeechService {
         ttsStyle.setVolume(APP.getInt(Constants.VOICE_VOLUME, 100));
         boolean useDict = APP.getBoolean(Constants.USE_DICT, false);
         SSML ssml = SSML.getInstance(request, name, ttsStyle, useDict);
-        //Log.e(TAG, ssml.toString());
+        Log.e(TAG, ssml.toString());
 
         //webSocket = webSocket == null ? getOrCreateWs() : webSocket;
         if (oldFormatIndex != index) {

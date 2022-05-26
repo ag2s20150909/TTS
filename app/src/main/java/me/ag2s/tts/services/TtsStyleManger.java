@@ -52,11 +52,10 @@ public class TtsStyleManger {
         styles.add(new TtsStyle("新闻(正式）", "newscast-formal", "以正式、自信、权威的语气叙述新闻。"));
         styles.add(new TtsStyle("旁白-专业", "narration-professional", "对内容阅读表达专业、客观的语气。（云扬，Aria）"));
         styles.add(new TtsStyle("轻松阅读", "narration-relaxed", "适合阅读轻松的文章(云希，云健)"));
-        /*
-         * 预览版的无法使用
-         styles.add(new TtsStyle("体育解说","Sports_commentary","体育解说(云健)"));
-         styles.add(new TtsStyle("体育解说(兴奋)","Sports_commentary_excited","兴奋语气的体育解说(云健)"));
-         */
+
+        styles.add(new TtsStyle("体育解说", "Sports_commentary", "体育解说(云健)"));
+        styles.add(new TtsStyle("体育解说(兴奋)", "Sports_commentary_excited", "兴奋语气的体育解说(云健)"));
+        styles.add(new TtsStyle("乐观的广告", "Advertisement_upbeat", "(云皓)Advertisement_upbeat"));
 
 
         Log.e("Style", styles.size() + "");
