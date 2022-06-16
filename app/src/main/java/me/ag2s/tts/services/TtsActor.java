@@ -32,6 +32,7 @@ public class TtsActor {
      */
     @Nullable
     private String note;
+    private Locale tempLocate;
 
     public TtsActor(@NonNull String name, @NonNull String shortName, @NonNull String locate, boolean gender, @Nullable String note) {
         this.name = name;
@@ -53,10 +54,11 @@ public class TtsActor {
         }
         //String[] temp = locale.split(tag);
 
-        this.name = shortName.substring(shortName.lastIndexOf(tag) + 1).replace("Neural","");
+        this.name = shortName.substring(shortName.lastIndexOf(tag) + 1).replace("Neural", "");
         this.locale = shortName.substring(0, shortName.lastIndexOf(tag));
 
     }
+
     @SuppressWarnings("unused")
     public TtsActor(String name, String shortName, String locate, boolean gender) {
         this(name, shortName, locate, gender, "");
@@ -92,6 +94,11 @@ public class TtsActor {
     }
 
     public Locale getLocale() {
+        if (tempLocate != null) {
+            return tempLocate;
+        }
+
+
         String tag = "-";
         if (locale.contains("-")) {
             tag = "-";
@@ -118,3 +125,5 @@ public class TtsActor {
         this.note = note;
     }
 }
+
+

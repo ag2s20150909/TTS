@@ -1,5 +1,6 @@
 package me.ag2s.tts.services;
 
+import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -508,48 +509,50 @@ public class TtsActorManger {
     }
 
     public List<TtsActor> sortByLocale(List<TtsActor> list, Locale locale) {
-        Collections.sort(list, (o1, o2) -> {
-            Locale loc1 = o1.getLocale();
-            Locale loc2 = o2.getLocale();
-            boolean b11 = loc1.getISO3Language().equals(locale.getISO3Language());
-            boolean b12 = loc1.getISO3Country().equals(locale.getISO3Country());
-            boolean b13 = loc1.getDisplayVariant(Locale.US).equals(locale.getDisplayVariant(Locale.US));
-            boolean b21 = loc2.getISO3Language().equals(locale.getISO3Language());
-            boolean b22 = loc2.getISO3Country().equals(locale.getISO3Country());
-            boolean b23 = loc2.getDisplayVariant(Locale.US).equals(locale.getDisplayVariant(Locale.US));
-            //语言不同
-            if ((!b11) && (!b21)) {
-                return 0;
-            }
-            //两个都相同
-            if (b11 && b12 && b13 == b21 && b22 && b23) {
-                return 0;
-            }
-            if (b11 && b12 && b13) {
-                return -1;
-            }
-            if (b21 && b22 && b23) {
-                return 1;
-            }
-
-            if ((b11 && b12 == b21 && b22)) {
-                if (b13 == b23) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Collections.sort(list, (o1, o2) -> {
+                Locale loc1 = o1.getLocale();
+                Locale loc2 = o2.getLocale();
+                boolean b11 = loc1.getISO3Language().equals(locale.getISO3Language());
+                boolean b12 = loc1.getISO3Country().equals(locale.getISO3Country());
+                boolean b13 = loc1.getDisplayVariant(Locale.US).equals(locale.getDisplayVariant(Locale.US));
+                boolean b21 = loc2.getISO3Language().equals(locale.getISO3Language());
+                boolean b22 = loc2.getISO3Country().equals(locale.getISO3Country());
+                boolean b23 = loc2.getDisplayVariant(Locale.US).equals(locale.getDisplayVariant(Locale.US));
+                //语言都不同
+                if ((!b11) && (!b21)) {
                     return 0;
                 }
-                if (b13) {
+                //两个都相同
+                if (b11 && b12 && b13 == b21 && b22 && b23) {
+                    return 0;
+                }
+                if (b11 && b12 && b13) {
                     return -1;
-                } else {
+                }
+                if (b21 && b22 && b23) {
                     return 1;
                 }
-            }
-            if (b11 && b12) {
-                return -1;
-            }
-            if (b21 && b22) {
-                return 1;
-            }
-            return 0;
-        });
+
+                if ((b11 && b12 == b21 && b22)) {
+                    if (b13 == b23) {
+                        return 0;
+                    }
+                    if (b13) {
+                        return -1;
+                    } else {
+                        return 1;
+                    }
+                }
+                if (b11 && b12) {
+                    return -1;
+                }
+                if (b21 && b22) {
+                    return 1;
+                }
+                return 0;
+            });
+        }
         return list;
     }
 
@@ -571,6 +574,7 @@ public class TtsActorManger {
      */
     @SuppressWarnings("unused")
     public synchronized List<TtsActor> getActors() {
+
         return sortByLocale(this.actors, Locale.getDefault());
         //return this.actors;
     }

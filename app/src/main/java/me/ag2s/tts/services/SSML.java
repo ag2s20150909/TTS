@@ -73,13 +73,16 @@ public class SSML {
     private short pitch;
     private short rate;
     private boolean useDict;
+    //是否使用预览版
+    private boolean usePre;
 
     private static SSML instance;
 
 
-    private SSML(SynthesisRequest request, String name, TtsStyle ttsStyle, boolean useDict) {
+    private SSML(SynthesisRequest request, String name, TtsStyle ttsStyle, boolean useDict, boolean usePre) {
         this.content = new StringBuilder(request.getCharSequenceText());
         this.useDict = useDict;
+        this.usePre = usePre;
         this.name = name;
         this.style = new WeakReference<>(ttsStyle);
         this.time = CommonTool.getTime();
@@ -97,19 +100,19 @@ public class SSML {
 
     }
 
-    public static SSML getInstance(SynthesisRequest request, String name, TtsStyle ttsStyle, boolean useDict) {
+    public static SSML getInstance(SynthesisRequest request, String name, TtsStyle ttsStyle, boolean useDict, boolean usePre) {
         if (instance == null) {
-            instance = new SSML(request, name, ttsStyle, useDict);
+            instance = new SSML(request, name, ttsStyle, useDict, usePre);
         } else {
-            instance.content=new StringBuilder(request.getCharSequenceText());
+            instance.content = new StringBuilder(request.getCharSequenceText());
             instance.useDict = useDict;
+            instance.usePre = usePre;
             instance.name = name;
             instance.style = new WeakReference<>(ttsStyle);
             instance.time = CommonTool.getTime();
             instance.pitch = (short) (request.getPitch() - 100);
             instance.rate = (short) (request.getSpeechRate());
             instance.id = CommonTool.getMD5String(request.getCharSequenceText() + "" + System.currentTimeMillis());
-            instance.useDict = useDict;
             instance.handleContent();
         }
         return instance;
@@ -128,7 +131,7 @@ public class SSML {
         CommonTool.replace(content, ">", "&lt;");
         CommonTool.replace(content, "<", "&gt;");
         //是否分段
-        if (APP.getBoolean(Constants.SPLIT_SENTENCE, false)) {
+        if (APP.getBoolean(Constants.SPLIT_SENTENCE, false) && usePre) {
             String temp = content.toString();
             temp = p0.matcher(temp).replaceAll("$1");//把常用的影响分句的重复符号合并
             temp = p1.matcher(temp).replaceAll("$1</p><p>$2");//单字符断句符,排除后面有引号的情况
@@ -155,20 +158,45 @@ public class SSML {
     @NonNull
     @Override
     public String toString() {
-        String rateString =rate/100+"."+rate%100;
-        String pitchString = pitch >= 0 ? "+" + pitch + "Hz" : pitch + "Hz";
-        return "X-RequestId:" + id + "\r\n" +
-                "Content-Type:application/ssml+xml\r\n" +
-                "X-Timestamp:" + time + "Z\r\n" +
+        String rateString = rate / 100 + "." + rate % 100;
+//        if (!usePre) {
+//            return "Path: ssml" + "\r\n" +
+//                    "X-RequestId: " + id + "\r\n" +
+//                    "X-Timestamp: " + time + "Z" + "\r\n" +
+//                    "Content-Type: application/ssml+xml" + "\r\n\r\n" +
+//                    "<speak xmlns=\"http://www.w3.org/2001/10/synthesis\" xmlns:mstts=\"http://www.w3.org/2001/mstts\" xmlns:emo=\"http://www.w3.org/2009/10/emotionml\" version=\"1.0\" xml:lang=\"en-US\"><voice name=\"" + name + "\"><prosody rate=\"" + rateString + "%\" pitch=\"" + pitch + "%\">" + content.toString() + "\r\n" +
+//                    "</prosody></voice></speak>";
+//        }
+        //String pitchString = pitch >= 0 ? "+" + pitch + "Hz" : pitch + "Hz";
+        StringBuilder sb = new StringBuilder()
+                .append("Path:ssml\r\n")
+                .append("X-RequestId:").append(id).append("\r\n")
+                .append("X-Timestamp:").append(time).append("Z\r\n")
+                .append("Content-Type:application/ssml+xml\r\n\r\n");
 
-                "Path:ssml\r\n\r\n" +
-                "<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xmlns:mstts=\"https://www.w3.org/2001/mstts\" xml:lang=\"" + lang + "\">" +
-                "<voice  name=\"" + name + "\">" +
-                "<lang xml:lang=\"" + lang + "\">" +
-                "<prosody pitch=\"" + pitchString + "\" " +
-                "rate =\"" + rateString + "\" " +
-                "volume=\"" + style.get().getVolume() + "\">" +
-                "<mstts:express-as  style=\"" + style.get().value + "\" styledegree=\"" + style.get().getStyleDegree() + "\" ><p>" + content.toString() + "</p></mstts:express-as>" +
-                "</prosody></lang></voice></speak>";
+
+        sb.append("<speak version=\"1.0\" xmlns=\"http://www.w3.org/2001/10/synthesis\" xmlns:emo=\"http://www.w3.org/2009/10/emotionml\"  xmlns:mstts=\"https://www.w3.org/2001/mstts\" xml:lang=\"").append(lang).append("\">");
+        sb.append("<voice  name=\"").append(name).append("\">");
+        if (usePre) {
+            sb.append("<lang xml:lang=\"").append(lang).append("\">");
+        }
+        sb.append("<prosody pitch=\"").append(pitch).append("%\" ").append("rate=\"").append(rateString).append("\" ").append("volume=\"").append(style.get().getVolume()).append("\">");
+
+        if (usePre) {
+            sb.append("<mstts:express-as  style=\"").append(style.get().value).append("\" styledegree=\"").append(style.get().getStyleDegree()).append("\" ><p>").append(content.toString()).append("</p></mstts:express-as>");
+        } else {
+            sb.append("").append(content.toString()).append("");
+
+        }
+
+
+        sb.append("</prosody>");
+        if (usePre) {
+            sb.append("</lang>");
+        }
+
+        sb.append("</voice></speak>");
+
+        return sb.toString();
     }
 }

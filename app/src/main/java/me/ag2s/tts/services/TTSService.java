@@ -68,6 +68,7 @@ public class TTSService extends TextToSpeechService {
     private final OkHttpClient client;
     @Nullable
     private volatile WebSocket webSocket;
+    private volatile boolean isPreview = false;
     private volatile boolean isSynthesizing = false;
     //当前的生成格式
     private volatile TtsOutputFormat currentFormat;
@@ -564,18 +565,29 @@ public class TTSService extends TextToSpeechService {
             synchronized (TTSService.class) {
                 if (this.webSocket == null) {
 
+                    while (TokenHolder.token == null) {
+                        try {
+                            this.wait(500);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
                     String url;
-                    String origin = Constants.EDGE_ORIGIN;
+                    String origin;
                     if (TokenHolder.token != null && APP.getBoolean(Constants.USE_PREVIEW, false)) {
                         url = "wss://eastus.tts.speech.microsoft.com/cognitiveservices/websocket/v1?Authorization=bearer " + TokenHolder.token + "&X-ConnectionId=" + CommonTool.getMD5String(new Date().toString());
                         origin = "https://azure.microsoft.com";
+                        isPreview = true;
                     } else {
-                        url = Constants.EDGE_URL + "&ConnectionId=" + CommonTool.getMD5String(new Date().toString());
+                        url = Constants.EDGE_URL;
+                        isPreview = false;
+                        origin = Constants.EDGE_ORIGIN;
                     }
                     Request request = new Request.Builder()
                             .url(url)
-                            .header("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6")
-                            .header("Accept-Encoding", "gzip, deflate")
+                            //.header("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6")
+                            //.header("Accept-Encoding", "gzip, deflate")
                             .header("User-Agent", Constants.EDGE_UA)
                             .addHeader("Origin", origin)
                             .build();
@@ -595,7 +607,7 @@ public class TTSService extends TextToSpeechService {
      * 发送合成语音配置,更改格式需要重新发送
      */
     private synchronized void sendConfig(WebSocket ws, TtsConfig ttsConfig) {
-        String msg = "X-Timestamp:+" + getTime() + "Z\r\n" +
+        String msg = "X-Timestamp:+" + getTime() + "\r\n" +
                 "Content-Type:application/json; charset=utf-8\r\n" +
                 "Path:speech.config\r\n\r\n"
                 + ttsConfig.toString();
@@ -637,14 +649,15 @@ public class TTSService extends TextToSpeechService {
         ttsStyle.setStyleDegree(APP.getInt(Constants.VOICE_STYLE_DEGREE, 100));
         ttsStyle.setVolume(APP.getInt(Constants.VOICE_VOLUME, 100));
         boolean useDict = APP.getBoolean(Constants.USE_DICT, false);
-        SSML ssml = SSML.getInstance(request, name, ttsStyle, useDict);
-        Log.e(TAG, ssml.toString());
+
 
         //webSocket = webSocket == null ? getOrCreateWs() : webSocket;
         if (oldFormatIndex != index) {
             sendConfig(getOrCreateWs(), ttsConfig);
             oldFormatIndex = index;
         }
+        SSML ssml = SSML.getInstance(request, name, ttsStyle, useDict, isPreview);
+        Log.e(TAG, ssml.toString());
         //在Google Play图书之类应用会闪退，应该及时调用该方法
         callback.start(currentFormat.HZ,
                 currentFormat.BitRate, 1 /* Number of channels. */);

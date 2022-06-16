@@ -31,6 +31,12 @@ public class TtsConfig {
     @NotNull
     @Override
     public String toString() {
+        //X-Timestamp:Thu Jun 16 2022 19:13:55 GMT+0800 (中国标准时间)
+        //Content-Type:application/json; charset=utf-8
+        //Path:speech.config
+        //
+        //{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"true"},"outputFormat":"webm-24khz-16bit-mono-opus"}}}}
+
         String msg = "{\"context\":{\"synthesis\":{\"audio\":{\"metadataoptions\":{\"sentenceBoundaryEnabled\":\"%s\",\"wordBoundaryEnabled\":\"%s\"},\"outputFormat\":\"%s\"}}}}";
         msg = String.format(msg, sentenceBoundaryEnabled ? "true" : "false", "true", TtsFormatManger.getInstance().getFormat(index).value);
         Log.d(TTSService.class.getSimpleName(), msg);

@@ -22,6 +22,13 @@
                 android:layout_height="wrap_content"
                 android:text="@string/set_tts" />
 
+            <Switch
+                android:id="@+id/switch_use_preview"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/use_preview" />
+
             <Button
                 android:id="@+id/btn_kill_battery"
                 style="?android:attr/buttonBarButtonStyle"
@@ -44,12 +51,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/use_dict" />
 
-            <Switch
-                android:id="@+id/switch_use_preview"
-                style="?android:attr/buttonBarButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/use_preview" />
+
 
             <Switch
                 style="?android:attr/buttonBarButtonStyle"
@@ -61,6 +63,7 @@
 
         </LinearLayout>
     </HorizontalScrollView>
+
 
     <TextView
         android:layout_width="match_parent"
@@ -96,6 +99,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/tts_style_degree_parent"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">

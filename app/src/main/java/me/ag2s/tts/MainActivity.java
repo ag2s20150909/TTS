@@ -110,8 +110,12 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
         binding.switchUseDict.setChecked(APP.getBoolean(Constants.USE_DICT, false));
         binding.switchUseDict.setOnCheckedChangeListener((buttonView, isChecked) -> APP.putBoolean(Constants.USE_DICT, isChecked));
 
+        showStyleView(APP.getBoolean(Constants.USE_PREVIEW, false));
         binding.switchUsePreview.setChecked(APP.getBoolean(Constants.USE_PREVIEW, false));
-        binding.switchUsePreview.setOnCheckedChangeListener(((buttonView, isChecked) -> APP.putBoolean(USE_PREVIEW, isChecked)));
+        binding.switchUsePreview.setOnCheckedChangeListener(((buttonView, isChecked) -> {
+            showStyleView(isChecked);
+            APP.putBoolean(USE_PREVIEW, isChecked);
+        }));
 
 
         TtsActorAdapter actorAdapter = new TtsActorAdapter(TtsActorManger.getInstance().getActors());
@@ -183,6 +187,17 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
             }, this.getPackageName());
         }
 
+    }
+
+
+    private void showStyleView(boolean show) {
+        if (show) {
+            binding.rvVoiceStyles.setVisibility(View.VISIBLE);
+            binding.ttsStyleDegreeParent.setVisibility(View.VISIBLE);
+        } else {
+            binding.rvVoiceStyles.setVisibility(View.GONE);
+            binding.ttsStyleDegreeParent.setVisibility(View.GONE);
+        }
     }
 
 
