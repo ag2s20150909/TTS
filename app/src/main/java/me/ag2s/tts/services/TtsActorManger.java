@@ -69,6 +69,8 @@ public class TtsActorManger {
         actors.add(new TtsActor("云枫", "zh-CN-YunfengNeural", "zh-CN", false, "" + previewNote));
         actors.add(new TtsActor("云皓", "zh-CN-YunhaoNeural", "zh-CN", false, "" + previewNote));
         actors.add(new TtsActor("云健", "zh-CN-YunjianNeural", "zh-CN", false, "适合影视和体育解说，" + previewNote));
+        actors.add(new TtsActor("云泽", "zh-CN-YunzeNeural", "zh-CN", false, "老年男声，" + previewNote));
+        actors.add(new TtsActor("云夏", "zh-CN-YunxiaNeural", "zh-CN", false, "少年年男声，" + previewNote));
 
 
         actors.add(new TtsActor("晓涵", "zh-CN-XiaohanNeural", "zh-CN", true, "温暖、甜美、富有感情的声音，可用于许多对话场景。"));

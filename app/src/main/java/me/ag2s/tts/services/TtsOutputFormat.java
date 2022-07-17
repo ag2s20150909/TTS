@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import org.jetbrains.annotations.NotNull;
 
 public class TtsOutputFormat {
+    public static final String TAG = "\uD83D\uDC96";
     @NonNull
     public final String name;
     @NonNull
@@ -25,7 +26,13 @@ public class TtsOutputFormat {
 
     public TtsOutputFormat(@NonNull String name, int hz, int bitRate, boolean needDecode) {
         this.name = name;
-        this.value = name;
+        if (name.contains(TAG)) {
+            this.value = name.substring(TAG.length());
+        } else {
+            this.value = name;
+        }
+
+
         this.HZ = hz;
         this.BitRate = (byte) bitRate;
         this.needDecode = needDecode;

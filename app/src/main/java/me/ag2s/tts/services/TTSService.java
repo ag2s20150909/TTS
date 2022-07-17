@@ -60,6 +60,8 @@ public class TTSService extends TextToSpeechService {
 
     private PowerManager.WakeLock mWakeLock;
 
+    private volatile WebSocketState webSocketState = WebSocketState.OFFLINE;
+
 
     private static final String TAG = TTSService.class.getSimpleName();
 
@@ -100,7 +102,9 @@ public class TTSService extends TextToSpeechService {
         public void onClosing(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
             super.onClosing(webSocket, code, reason);
             Log.e(TAG, "onClosing:" + reason);
+
             TTSService.this.webSocket = null;
+            webSocketState = WebSocketState.OFFLINE;
 
             Log.e("SS", "SS:" + isSynthesizing);
             if (isSynthesizing) {
@@ -115,13 +119,14 @@ public class TTSService extends TextToSpeechService {
         public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @Nullable Response response) {
             super.onFailure(webSocket, t, response);
             TTSService.this.webSocket = null;
+            webSocketState = WebSocketState.OFFLINE;
             Log.e(TAG, "onFailure" + t.getMessage(), t);
             if (isSynthesizing) {
                 TTSService.this.webSocket = getOrCreateWs();
             }
             updateNotification("TTS服务-错误中", t.getMessage());
 
-            //APP.showToast("网络发生波动，掉线了，正在重连。");
+            APP.showToast("发生错误:" + t.getMessage());
 
 
         }
@@ -565,7 +570,17 @@ public class TTSService extends TextToSpeechService {
             synchronized (TTSService.class) {
                 if (this.webSocket == null) {
 
+
                     while (TokenHolder.token == null) {
+                        try {
+                            this.wait(500);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    //避免同时重复请求
+                    while (webSocketState == WebSocketState.CONNECTING) {
                         try {
                             this.wait(500);
                         } catch (InterruptedException e) {
@@ -591,7 +606,9 @@ public class TTSService extends TextToSpeechService {
                             .header("User-Agent", Constants.EDGE_UA)
                             .addHeader("Origin", origin)
                             .build();
+                    webSocketState = WebSocketState.CONNECTING;
                     this.webSocket = client.newWebSocket(request, webSocketListener);
+                    webSocketState = WebSocketState.CONNECTED;
                     sendConfig(Objects.requireNonNull(this.webSocket), new TtsConfig.Builder(APP.getInt(Constants.AUDIO_FORMAT_INDEX, 0)).build());
 
                 }

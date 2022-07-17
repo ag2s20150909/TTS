@@ -26,6 +26,10 @@ public class TtsFormatManger {
 
     public TtsFormatManger() {
         formats = new ArrayList<>();
+        this.formats.add(new TtsOutputFormat(TtsOutputFormat.TAG + "audio-24khz-48kbitrate-mono-mp3", 24000, AudioFormat.ENCODING_PCM_16BIT, true));
+        this.formats.add(new TtsOutputFormat(TtsOutputFormat.TAG + "audio-24khz-96kbitrate-mono-mp3", 24000, AudioFormat.ENCODING_PCM_16BIT, true));
+        this.formats.add(new TtsOutputFormat(TtsOutputFormat.TAG + "webm-24khz-16bit-mono-opus", 24000 * 2, AudioFormat.ENCODING_PCM_16BIT, true));
+
         this.formats.add(new TtsOutputFormat("raw-16khz-16bit-mono-pcm", 16000, AudioFormat.ENCODING_PCM_16BIT));
         this.formats.add(new TtsOutputFormat("raw-24khz-16bit-mono-pcm", 24000, AudioFormat.ENCODING_PCM_16BIT));
         this.formats.add(new TtsOutputFormat("raw-48khz-16bit-mono-pcm", 48000, AudioFormat.ENCODING_PCM_16BIT));
@@ -45,8 +49,6 @@ public class TtsFormatManger {
         this.formats.add(new TtsOutputFormat("audio-16khz-128kbitrate-mono-mp3", 16000, AudioFormat.ENCODING_PCM_16BIT, true));
 
 
-        this.formats.add(new TtsOutputFormat("audio-24khz-48kbitrate-mono-mp3", 24000, AudioFormat.ENCODING_PCM_16BIT, true));
-        this.formats.add(new TtsOutputFormat("audio-24khz-96kbitrate-mono-mp3", 24000, AudioFormat.ENCODING_PCM_16BIT, true));
         this.formats.add(new TtsOutputFormat("audio-24khz-160kbitrate-mono-mp3", 24000, AudioFormat.ENCODING_PCM_16BIT, true));
 
         this.formats.add(new TtsOutputFormat("audio-48khz-96kbitrate-mono-mp3", 48000, AudioFormat.ENCODING_PCM_16BIT, true));
@@ -61,13 +63,13 @@ public class TtsFormatManger {
         this.formats.add(new TtsOutputFormat("riff-24khz-16bit-mono-pcm", 24000, AudioFormat.ENCODING_PCM_16BIT));
         this.formats.add(new TtsOutputFormat("riff-48khz-16bit-mono-pcm", 48000, AudioFormat.ENCODING_PCM_16BIT));
 
-        //下面的几个不能正确的被MediaCodec解码
+
         this.formats.add(new TtsOutputFormat("ogg-16khz-16bit-mono-opus", 16000 * 3, AudioFormat.ENCODING_PCM_16BIT, true));
         this.formats.add(new TtsOutputFormat("ogg-24khz-16bit-mono-opus", 24000 * 2, AudioFormat.ENCODING_PCM_16BIT, true));
         this.formats.add(new TtsOutputFormat("ogg-48khz-16bit-mono-opus", 48000, AudioFormat.ENCODING_PCM_16BIT, true));
 
         this.formats.add(new TtsOutputFormat("webm-16khz-16bit-mono-opus", 16000 * 3, AudioFormat.ENCODING_PCM_16BIT, true));
-        this.formats.add(new TtsOutputFormat("webm-24khz-16bit-mono-opus", 24000 * 2, AudioFormat.ENCODING_PCM_16BIT, true));
+
         //this.formats.add(new TtsOutputFormat("webm-48khz-16bit-mono-opus",48000,AudioFormat.ENCODING_PCM_16BIT,true));
 
 
