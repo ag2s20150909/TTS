@@ -2,6 +2,7 @@ package me.ag2s.tts.services;
 
 import android.util.Log;
 
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +57,8 @@ public class TokenHolder {
                             try {
 
                                 //HttpTool.httpGet("https://cn.bing.com/");
-                                String url = "https://azure.microsoft.com/zh-cn/services/cognitive-services/text-to-speech/";
+                                String url = getUrl();// "https://azure.microsoft.com/zh-cn/services/cognitive-services/text-to-speech/";
+                                Log.e("Token", url);
                                 String s = HttpTool.httpGet(url);
                                 if (s.startsWith(HttpTool.HTTP_ERROR)) {
                                     return;
@@ -86,19 +88,19 @@ public class TokenHolder {
     }
 
 
-    //    void getToken(){
-//        HttpTool.executorService.submit(() -> {
-//            HttpTool.httpGet("https://cn.bing.com/");
-//            String url="https://azure.microsoft.com/zh-cn/services/cognitive-services/text-to-speech/#features";
-//            String s = HttpTool.httpGet(url);
-//            s = s.substring(s.indexOf("token:") + 8);
-//            s = s.substring(0, s.indexOf("\""));
-//            Log.e("SS",s);
-//        });
+    private static final Random r = new Random(System.currentTimeMillis());
 
+    /**
+     * 随机生成url
+     *
+     * @return url
+     */
+    private static String getUrl() {
+        return "https://azure.microsoft.com/" + areas[r.nextInt(areas.length)] + "/services/cognitive-services/text-to-speech/";
 
-//
-//    }
+    }
+
+    private static final String[] areas = {"en-us", "cs-cz", "da-dk", "de-de", "en-au", "en-ca", "en-in", "en-gb", "es-es", "es-mx", "fr-fr", "fr-ca", "id-id", "it-it", "hu-hu", "nb-no", "nl-nl", "pl-pl", "pt-br", "pt-pt", "sv-se", "tr-tr", "ru-ru", "ja-jp", "ko-kr", "zh-cn", "zh-tw"};
 
 
 }
