@@ -126,7 +126,7 @@ public class TTSService extends TextToSpeechService {
             }
             updateNotification("TTS服务-错误中", t.getMessage());
 
-            APP.showToast("发生错误:" + t.getMessage());
+            //APP.showToast("发生错误:" + t.getMessage());
 
 
         }
