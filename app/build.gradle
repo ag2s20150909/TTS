@@ -3,8 +3,8 @@ plugins {
 }
 
 android {
-    compileSdk 32
-    buildToolsVersion '32.0.0'
+    compileSdk 33
+    buildToolsVersion '33.0.0'
     //签名设置
     signingConfigs {
         release {
@@ -77,22 +77,22 @@ android {
     android.applicationVariants.all {
         variant ->
 
-            variant.outputs.all { output ->
-                def buildType = variant.buildType.name
-                println("buildType=" + buildType)
-                if (buildType != "debug") {
-                    //apk默认路径
-                    String defaultOutputApkPath =
-                            variant.getPackageApplicationProvider().get().outputDirectory.getAsFile().get().getPath() +
-                                    File.separator
-                    println("defaultOutputApkPath=" + defaultOutputApkPath)
-                   //在项目根目录创建apk文件夹
-                    def outputFileDir = new File("$rootDir" + File.separator, "release")
-//                    println("outputFileDir=" + outputFileDir)
-                    //设置自定义apk生成路径
-                    variant.getPackageApplicationProvider().get().outputDirectory = outputFileDir
-                }
-            }
+//            variant.outputs.all { output ->
+//                def buildType = variant.buildType.name
+//                println("buildType=" + buildType)
+//                if (buildType != "debug") {
+//                    //apk默认路径
+//                    String defaultOutputApkPath =
+//                            variant.getPackageApplicationProvider().get().outputDirectory.getAsFile().get().getPath() +
+//                                    File.separator
+//                    println("defaultOutputApkPath=" + defaultOutputApkPath)
+//                   //在项目根目录创建apk文件夹
+//                    def outputFileDir = new File("$rootDir" + File.separator, "release")
+////                    println("outputFileDir=" + outputFileDir)
+//                    //设置自定义apk生成路径
+//                    variant.getPackageApplicationProvider().get().outputDirectory = outputFileDir
+//                }
+//            }
 
 
             def path = ((project.name != "app") ? project.name : rootProject.name.replace(" ", "")) + "_" +
@@ -106,6 +106,20 @@ android {
 
     }
 
+//    android.assembleRelease{
+//        doLast {
+//            Sync{
+//                from "$projectDir/build/outputs"
+//                into "$rootDir/release"
+//                preserve{
+//                    include("apks/**")
+//                    include("mapping/**")
+//                    exclude("logs/**")
+//                }
+//            }
+//        }
+//    }
+
 
 
 
@@ -113,10 +127,38 @@ android {
 
 tasks.whenTaskAdded {task ->
     //新版的AGP7.1.0修改apk输出路径会导致文件找不到而出错（硬编码？？？），暂时禁用这个task
-    if(task.name.contains("createReleaseApkListingFileRedirect")) {
-        task.enabled = false
+//    if(task.name.contains("createReleaseApkListingFileRedirect")) {
+//        //task.enabled = false
+//    }
+    if (task.name == 'assembleRelease') {
+        task.finalizedBy syncApkFile
     }
 }
+
+
+task syncMappingFile(type: Sync){
+    from "$projectDir/build/outputs/mapping/release"
+    into "$rootDir/release/mapping"
+    exclude("configuration.txt")
+    exclude("resources.txt")
+
+
+}
+
+
+task syncApkFile(type: Sync) {
+    dependsOn syncMappingFile
+    from "$projectDir/build/outputs/apk/release"
+    into "$rootDir/release"
+    exclude("logs/**")
+    exclude("sdk-dependencies/**")
+    //保护下面的不会被删除
+    preserve{
+        include("mapping/**")
+    }
+}
+
+
 
 dependencies {
 

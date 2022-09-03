@@ -305,7 +305,7 @@ public class TTSService extends TextToSpeechService {
     @Override
     public void onCreate() {
         super.onCreate();
-        TokenHolder.startToken();
+        //TokenHolder.startToken();
         startForegroundService();
         reNewWakeLock();
 
@@ -571,13 +571,13 @@ public class TTSService extends TextToSpeechService {
                 if (this.webSocket == null) {
 
 
-                    while (TokenHolder.token == null) {
-                        try {
-                            this.wait(500);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
+//                    while (TokenHolder.token == null) {
+//                        try {
+//                            this.wait(500);
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
 
                     //避免同时重复请求
                     while (webSocketState == WebSocketState.CONNECTING) {
@@ -590,8 +590,10 @@ public class TTSService extends TextToSpeechService {
 
                     String url;
                     String origin;
-                    if (TokenHolder.token != null && APP.getBoolean(Constants.USE_PREVIEW, false)) {
-                        url = "wss://eastus.tts.speech.microsoft.com/cognitiveservices/websocket/v1?Authorization=bearer " + TokenHolder.token + "&X-ConnectionId=" + CommonTool.getMD5String(new Date().toString());
+//                    if (TokenHolder.token != null && APP.getBoolean(Constants.USE_PREVIEW, false)) {
+                    if (APP.getBoolean(Constants.USE_PREVIEW, false)) {
+                        //url = "wss://eastus.tts.speech.microsoft.com/cognitiveservices/websocket/v1?Authorization=bearer " + TokenHolder.token + "&X-ConnectionId=" + CommonTool.getMD5String(new Date().toString());
+                        url = "wss://eastus.api.speech.microsoft.com/cognitiveservices/websocket/v1?TrafficType=AzureDemo&Authorization=bearer undefined&X-ConnectionId=" + CommonTool.getMD5String(new Date().toString());
                         origin = "https://azure.microsoft.com";
                         isPreview = true;
                     } else {
