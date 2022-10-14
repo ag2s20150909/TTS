@@ -1,10 +1,13 @@
 plugins {
     id 'com.android.application'
 }
+static def releaseTime() {
+    return new Date().format("yyyyMMddHHmm", TimeZone.getTimeZone("GMT+08:00"))
+}
 
 android {
     compileSdk 33
-    buildToolsVersion '33.0.0'
+    buildToolsVersion = '33.0.0'
     //签名设置
     signingConfigs {
         release {
@@ -27,8 +30,8 @@ android {
 
     defaultConfig {
         applicationId "me.ag2s.tts"
-        minSdkVersion 21
-        targetSdk 32
+        minSdk 21
+        targetSdk 33
         versionCode 1
         versionName "0.2_${releaseTime()}"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -77,50 +80,14 @@ android {
     android.applicationVariants.all {
         variant ->
 
-//            variant.outputs.all { output ->
-//                def buildType = variant.buildType.name
-//                println("buildType=" + buildType)
-//                if (buildType != "debug") {
-//                    //apk默认路径
-//                    String defaultOutputApkPath =
-//                            variant.getPackageApplicationProvider().get().outputDirectory.getAsFile().get().getPath() +
-//                                    File.separator
-//                    println("defaultOutputApkPath=" + defaultOutputApkPath)
-//                   //在项目根目录创建apk文件夹
-//                    def outputFileDir = new File("$rootDir" + File.separator, "release")
-////                    println("outputFileDir=" + outputFileDir)
-//                    //设置自定义apk生成路径
-//                    variant.getPackageApplicationProvider().get().outputDirectory = outputFileDir
-//                }
-//            }
-
-
-            def path = ((project.name != "app") ? project.name : rootProject.name.replace(" ", "")) + "_" +
-                    variant.buildType.name + "_" +
-                    "v"+variant.versionName + ".apk"
+            def name = ((project.name != "app") ? project.name : rootProject.name.replace(" ", "")) + "_" + variant.buildType.name + "_" + "v" + variant.versionName + ".apk"
             variant.outputs.forEach {
 
-                it.outputFileName = path
+                it.outputFileName = name
             }
 
 
     }
-
-//    android.assembleRelease{
-//        doLast {
-//            Sync{
-//                from "$projectDir/build/outputs"
-//                into "$rootDir/release"
-//                preserve{
-//                    include("apks/**")
-//                    include("mapping/**")
-//                    exclude("logs/**")
-//                }
-//            }
-//        }
-//    }
-
-
 
 
 }
@@ -162,6 +129,8 @@ task syncApkFile(type: Sync) {
 
 dependencies {
 
+    compileOnly "com.android.tools.build:gradle:$agp_version"
+
     //coreLibraryDesugaring('com.android.tools:desugar_jdk_libs:1.1.5')
 
     implementation "androidx.recyclerview:recyclerview:1.2.1"
@@ -172,8 +141,6 @@ dependencies {
     implementation "com.squareup.okio:okio:$okio_version"
 
 
-
-
     testImplementation 'junit:junit:4.13.2'
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
@@ -181,8 +148,3 @@ dependencies {
 
 }
 
-static def releaseTime() {
-
-    return new Date().format("yyyyMMddHHmm", TimeZone.getTimeZone("GMT+08:00"))
-
-}

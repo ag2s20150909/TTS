@@ -69,7 +69,7 @@ public class TTSService extends TextToSpeechService {
     @NonNull
     private final OkHttpClient client;
     @Nullable
-    private volatile WebSocket webSocket;
+    private WebSocket webSocket;
     private volatile boolean isPreview = false;
     private volatile boolean isSynthesizing = false;
     //当前的生成格式
@@ -236,7 +236,7 @@ public class TTSService extends TextToSpeechService {
         //创建NotificationChannel
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel notificationChannel = new NotificationChannel(notificationChannelId, notificationName, NotificationManager.IMPORTANCE_LOW);
+            NotificationChannel notificationChannel = new NotificationChannel(notificationChannelId, notificationName, NotificationManager.IMPORTANCE_HIGH);
             notificationManager.createNotificationChannel(notificationChannel);
 
         }
@@ -255,6 +255,7 @@ public class TTSService extends TextToSpeechService {
         return super.onStartCommand(intent, flags, startId);
     }
 
+    @NonNull
     private Notification getNotification() {
         Intent stopSelf = new Intent(this, TTSService.class);
         stopSelf.setAction(ACTION_STOP_SERVICE);
@@ -324,15 +325,6 @@ public class TTSService extends TextToSpeechService {
         }
     }
 
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        releaseWakeLock();
-        stopForeground(true);
-
-    }
-
     /**
      * 创建或刷新20分钟的WakeLock
      */
@@ -349,6 +341,15 @@ public class TTSService extends TextToSpeechService {
             GcManger.getInstance().doGC();
             Log.e(TAG, "刷新WakeLock20分钟");
         }
+    }
+
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        releaseWakeLock();
+        stopForeground(true);
+
     }
 
 
@@ -383,7 +384,7 @@ public class TTSService extends TextToSpeechService {
     }
 
 
-    private synchronized void doDecode(SynthesisCallback cb, @SuppressWarnings("unused") TtsOutputFormat format, ByteString data) {
+    private synchronized void doDecode(@NonNull SynthesisCallback cb, @SuppressWarnings("unused") @NonNull TtsOutputFormat format, @NonNull ByteString data) {
         isSynthesizing = true;
         try {
             MediaExtractor mediaExtractor = new MediaExtractor();
@@ -541,7 +542,7 @@ public class TTSService extends TextToSpeechService {
     }
 
 
-    private synchronized void doUnDecode(SynthesisCallback cb, @SuppressWarnings("unused") TtsOutputFormat format, ByteString data) {
+    private synchronized void doUnDecode(@NonNull SynthesisCallback cb, @SuppressWarnings("unused") @NonNull TtsOutputFormat format, @NonNull ByteString data) {
         isSynthesizing = true;
         int length = data.toByteArray().length;
         //最大BufferSize
@@ -564,58 +565,40 @@ public class TTSService extends TextToSpeechService {
      *
      * @return WebSocket
      */
-    public WebSocket getOrCreateWs() {
+    @NonNull
+    public synchronized WebSocket getOrCreateWs() {
 
         if (this.webSocket == null) {
-            synchronized (TTSService.class) {
-                if (this.webSocket == null) {
 
-
-//                    while (TokenHolder.token == null) {
-//                        try {
-//                            this.wait(500);
-//                        } catch (InterruptedException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-
-                    //避免同时重复请求
-                    while (webSocketState == WebSocketState.CONNECTING) {
-                        try {
-                            this.wait(500);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    String url;
-                    String origin;
-//                    if (TokenHolder.token != null && APP.getBoolean(Constants.USE_PREVIEW, false)) {
-                    if (APP.getBoolean(Constants.USE_PREVIEW, false)) {
-                        //url = "wss://eastus.tts.speech.microsoft.com/cognitiveservices/websocket/v1?Authorization=bearer " + TokenHolder.token + "&X-ConnectionId=" + CommonTool.getMD5String(new Date().toString());
-                        url = "wss://eastus.api.speech.microsoft.com/cognitiveservices/websocket/v1?TrafficType=AzureDemo&Authorization=bearer undefined&X-ConnectionId=" + CommonTool.getMD5String(new Date().toString());
-                        origin = "https://azure.microsoft.com";
-                        isPreview = true;
-                    } else {
-                        url = Constants.EDGE_URL;
-                        isPreview = false;
-                        origin = Constants.EDGE_ORIGIN;
-                    }
-                    Request request = new Request.Builder()
-                            .url(url)
-                            //.header("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6")
-                            //.header("Accept-Encoding", "gzip, deflate")
-                            .header("User-Agent", Constants.EDGE_UA)
-                            .addHeader("Origin", origin)
-                            .build();
-                    webSocketState = WebSocketState.CONNECTING;
-                    this.webSocket = client.newWebSocket(request, webSocketListener);
-                    webSocketState = WebSocketState.CONNECTED;
-                    sendConfig(Objects.requireNonNull(this.webSocket), new TtsConfig.Builder(APP.getInt(Constants.AUDIO_FORMAT_INDEX, 0)).build());
-
-                }
+            if (webSocketState == WebSocketState.CONNECTED) {
+                client.dispatcher().cancelAll();
             }
 
+            String url;
+            String origin;
+//                    if (TokenHolder.token != null && APP.getBoolean(Constants.USE_PREVIEW, false)) {
+            if (APP.getBoolean(Constants.USE_PREVIEW, false)) {
+                //url = "wss://eastus.tts.speech.microsoft.com/cognitiveservices/websocket/v1?Authorization=bearer " + TokenHolder.token + "&X-ConnectionId=" + CommonTool.getMD5String(new Date().toString());
+                url = "wss://eastus.api.speech.microsoft.com/cognitiveservices/websocket/v1?TrafficType=AzureDemo&Authorization=bearer undefined&X-ConnectionId=" + CommonTool.getMD5String(new Date().toString());
+                origin = "https://azure.microsoft.com";
+                isPreview = true;
+            } else {
+                url = Constants.EDGE_URL;
+                isPreview = false;
+                origin = Constants.EDGE_ORIGIN;
+            }
+            Request request = new Request.Builder()
+                    .url(url)
+                    //.header("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6")
+                    //.header("Accept-Encoding", "gzip, deflate")
+                    .header("User-Agent", Constants.EDGE_UA)
+                    .addHeader("Origin", origin)
+                    .build();
+            webSocketState = WebSocketState.CONNECTING;
+            this.webSocket = client.newWebSocket(request, webSocketListener);
+
+            webSocketState = WebSocketState.CONNECTED;
+            sendConfig(Objects.requireNonNull(this.webSocket), new TtsConfig.Builder(APP.getInt(Constants.AUDIO_FORMAT_INDEX, 0)).build());
 
         }
 
@@ -625,11 +608,11 @@ public class TTSService extends TextToSpeechService {
     /**
      * 发送合成语音配置,更改格式需要重新发送
      */
-    private synchronized void sendConfig(WebSocket ws, TtsConfig ttsConfig) {
+    private synchronized void sendConfig(@NonNull WebSocket ws, @NonNull TtsConfig ttsConfig) {
         String msg = "X-Timestamp:+" + getTime() + "\r\n" +
                 "Content-Type:application/json; charset=utf-8\r\n" +
                 "Path:speech.config\r\n\r\n"
-                + ttsConfig.toString();
+                + ttsConfig;
         this.currentFormat = ttsConfig.getFormat();
         ws.send(msg);
 
@@ -641,7 +624,7 @@ public class TTSService extends TextToSpeechService {
      *
      * @param request 需要合成的txt
      */
-    public synchronized void sendText(SynthesisRequest request, SynthesisCallback callback) {
+    public synchronized void sendText(@NonNull SynthesisRequest request, @NonNull SynthesisCallback callback) {
 //
 //        Bundle bundle = request.getParams();
 //        Set<String> keySet = bundle.keySet();
@@ -681,11 +664,23 @@ public class TTSService extends TextToSpeechService {
         callback.start(currentFormat.HZ,
                 currentFormat.BitRate, 1 /* Number of channels. */);
 
-        boolean success = getOrCreateWs().send(ssml.toString());
-        //Log.e(TAG,"SSS:"+success);
-        if (!success && isSynthesizing) {
-            updateNotification("TTS服务-重试中", "第一次发送不成功，正在重试第二次");
+        try {
+            boolean success = getOrCreateWs().send(ssml.toString());
+            //Log.e(TAG,"SSS:"+success);
+            if (!success && isSynthesizing) {
+                updateNotification("TTS服务-重试中", "第一次发送不成功，正在重试第二次");
+                getOrCreateWs().send(ssml.toString());
+            }
+        } catch (Exception e) {
+            getOrCreateWs();
+            while (this.webSocket == null) {
+                try {
+                    this.wait(500);
+                } catch (Exception ignored) {
+                }
+            }
             getOrCreateWs().send(ssml.toString());
+
         }
 
 
@@ -774,7 +769,7 @@ public class TTSService extends TextToSpeechService {
     }
 
     @Override
-    public int onIsValidVoiceName(String voiceName) {
+    public int onIsValidVoiceName(@NonNull String voiceName) {
         for (String vn : Constants.supportVoiceNames) {
             if (voiceName.equalsIgnoreCase(vn)) {
                 return TextToSpeech.SUCCESS;
@@ -857,7 +852,7 @@ public class TTSService extends TextToSpeechService {
      * @param callback 合成callback SynthesisCallback
      */
     @Override
-    protected void onSynthesizeText(SynthesisRequest request, SynthesisCallback callback) {
+    protected void onSynthesizeText(@NonNull SynthesisRequest request, @NonNull SynthesisCallback callback) {
 
         int load = onLoadLanguage(request.getLanguage(), request.getCountry(),
                 request.getVariant());
@@ -888,9 +883,6 @@ public class TTSService extends TextToSpeechService {
 
 
             while (isSynthesizing) {
-//                if(this.webSocket==null){
-//                    this.webSocket=getOrCreateWs();
-//                }
                 try {
                     this.wait(100);
                 } catch (InterruptedException e) {
@@ -899,7 +891,7 @@ public class TTSService extends TextToSpeechService {
                 long time = SystemClock.elapsedRealtime() - startTime;
                 //超时50秒后跳过,保证长句不会被跳过
                 if (time > 50000) {
-                    callback.error(TextToSpeech.ERROR_NETWORK_TIMEOUT);
+                    callback.done();
                     isSynthesizing = false;
                 }
             }

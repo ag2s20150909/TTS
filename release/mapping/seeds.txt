@@ -1,111 +1,113 @@
-androidx.lifecycle.SingleGeneratedAdapterObserver
-androidx.core.app.CoreComponentFactory
-androidx.core.app.RemoteActionCompat
-me.ag2s.tts.APP
+androidx.core.app.RemoteActionCompatParcelizer
 androidx.versionedparcelable.ParcelImpl
-androidx.annotation.Keep
 me.ag2s.tts.DownloadVoiceData
 me.ag2s.tts.GetSampleText
+kotlin.internal.jdk7.JDK7PlatformImplementations
+androidx.core.app.RemoteActionCompat
 androidx.recyclerview.widget.GridLayoutManager
-kotlin.internal.jdk8.JDK8PlatformImplementations
 androidx.lifecycle.FullLifecycleObserverAdapter
-android.support.v4.graphics.drawable.IconCompatParcelizer
-androidx.core.graphics.drawable.IconCompat
-androidx.recyclerview.widget.LinearLayoutManager
-androidx.lifecycle.CompositeGeneratedAdaptersObserver
-androidx.recyclerview.widget.StaggeredGridLayoutManager
 me.ag2s.tts.MainActivity
+androidx.lifecycle.SingleGeneratedAdapterObserver
+androidx.recyclerview.widget.StaggeredGridLayoutManager
+me.ag2s.tts.APP
+androidx.annotation.Keep
+androidx.versionedparcelable.CustomVersionedParcelable
+android.support.v4.graphics.drawable.IconCompatParcelizer
+androidx.recyclerview.widget.LinearLayoutManager
+androidx.lifecycle.ReflectiveGenericLifecycleObserver
+kotlin.internal.jdk8.JDK8PlatformImplementations
+androidx.lifecycle.CompositeGeneratedAdaptersObserver
 me.ag2s.tts.CheckVoiceData
 androidx.recyclerview.widget.RecyclerView
+androidx.core.app.CoreComponentFactory
 androidx.core.graphics.drawable.IconCompatParcelizer
-androidx.lifecycle.ReflectiveGenericLifecycleObserver
-kotlin.internal.jdk7.JDK7PlatformImplementations
 android.support.v4.app.RemoteActionCompatParcelizer
 me.ag2s.tts.services.TTSService
-androidx.core.app.RemoteActionCompatParcelizer
-androidx.versionedparcelable.CustomVersionedParcelable
-androidx.recyclerview.widget.LinearLayoutManager$SavedState: android.os.Parcelable$Creator CREATOR
+androidx.core.graphics.drawable.IconCompat
 androidx.recyclerview.widget.StaggeredGridLayoutManager$LazySpanLookup$FullSpanItem: android.os.Parcelable$Creator CREATOR
-androidx.recyclerview.widget.RecyclerView$SavedState: android.os.Parcelable$Creator CREATOR
 androidx.recyclerview.widget.StaggeredGridLayoutManager$SavedState: android.os.Parcelable$Creator CREATOR
-androidx.versionedparcelable.ParcelImpl: android.os.Parcelable$Creator CREATOR
+androidx.recyclerview.widget.LinearLayoutManager$SavedState: android.os.Parcelable$Creator CREATOR
+androidx.recyclerview.widget.RecyclerView$SavedState: android.os.Parcelable$Creator CREATOR
 androidx.customview.view.AbsSavedState: android.os.Parcelable$Creator CREATOR
-android.support.v4.graphics.drawable.IconCompatParcelizer: void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel)
-androidx.recyclerview.widget.RecyclerView: boolean isLayoutSuppressed()
-androidx.recyclerview.widget.RecyclerView: void setOnFlingListener(androidx.recyclerview.widget.RecyclerView$OnFlingListener)
-androidx.recyclerview.widget.RecyclerView: void setLayoutManager(androidx.recyclerview.widget.RecyclerView$LayoutManager)
-me.ag2s.tts.CheckVoiceData: CheckVoiceData()
-android.support.v4.graphics.drawable.IconCompatParcelizer: IconCompatParcelizer()
-androidx.recyclerview.widget.StaggeredGridLayoutManager: StaggeredGridLayoutManager(android.content.Context,android.util.AttributeSet,int,int)
-androidx.core.graphics.drawable.IconCompat: IconCompat()
-me.ag2s.tts.APP: APP()
-androidx.recyclerview.widget.RecyclerView: void setScrollingTouchSlop(int)
-androidx.recyclerview.widget.RecyclerView: androidx.recyclerview.widget.RecyclerView$RecycledViewPool getRecycledViewPool()
-androidx.core.app.RemoteActionCompatParcelizer: RemoteActionCompatParcelizer()
-me.ag2s.tts.MainActivity: MainActivity()
-androidx.recyclerview.widget.RecyclerView: void setRecycledViewPool(androidx.recyclerview.widget.RecyclerView$RecycledViewPool)
-androidx.recyclerview.widget.RecyclerView: long getNanoTime()
-me.ag2s.tts.services.WebSocketState: me.ag2s.tts.services.WebSocketState valueOf(java.lang.String)
-androidx.recyclerview.widget.RecyclerView: androidx.recyclerview.widget.RecyclerView$ItemAnimator getItemAnimator()
-android.support.v4.app.RemoteActionCompatParcelizer: void write(androidx.core.app.RemoteActionCompat,androidx.versionedparcelable.VersionedParcel)
-android.support.v4.app.RemoteActionCompatParcelizer: RemoteActionCompatParcelizer()
-androidx.recyclerview.widget.RecyclerView: void setItemAnimator(androidx.recyclerview.widget.RecyclerView$ItemAnimator)
-androidx.recyclerview.widget.RecyclerView: androidx.recyclerview.widget.RecyclerView$EdgeEffectFactory getEdgeEffectFactory()
-androidx.recyclerview.widget.RecyclerView: void setLayoutTransition(android.animation.LayoutTransition)
-androidx.recyclerview.widget.GridLayoutManager: GridLayoutManager(android.content.Context,android.util.AttributeSet,int,int)
-kotlin.time.DurationUnit: kotlin.time.DurationUnit[] values()
-androidx.recyclerview.widget.RecyclerView: void setPreserveFocusAfterLayout(boolean)
-androidx.core.app.RemoteActionCompatParcelizer: void write(androidx.core.app.RemoteActionCompat,androidx.versionedparcelable.VersionedParcel)
-androidx.recyclerview.widget.RecyclerView$Adapter$StateRestorationPolicy: androidx.recyclerview.widget.RecyclerView$Adapter$StateRestorationPolicy valueOf(java.lang.String)
-androidx.recyclerview.widget.RecyclerView: void setViewCacheExtension(androidx.recyclerview.widget.RecyclerView$ViewCacheExtension)
-androidx.core.app.CoreComponentFactory: CoreComponentFactory()
-androidx.recyclerview.widget.RecyclerView: void setAccessibilityDelegateCompat(androidx.recyclerview.widget.RecyclerViewAccessibilityDelegate)
-androidx.recyclerview.widget.RecyclerView: androidx.core.view.NestedScrollingChildHelper getScrollingChildHelper()
-androidx.recyclerview.widget.RecyclerView: void setAdapter(androidx.recyclerview.widget.RecyclerView$Adapter)
-okhttp3.Protocol: okhttp3.Protocol valueOf(java.lang.String)
-android.support.v4.graphics.drawable.IconCompatParcelizer: androidx.core.graphics.drawable.IconCompat read(androidx.versionedparcelable.VersionedParcel)
-me.ag2s.tts.services.TTSService: TTSService()
-androidx.versionedparcelable.CustomVersionedParcelable: CustomVersionedParcelable()
-androidx.recyclerview.widget.RecyclerView: boolean getClipToPadding()
-androidx.recyclerview.widget.RecyclerView: void setChildDrawingOrderCallback(androidx.recyclerview.widget.RecyclerView$ChildDrawingOrderCallback)
-androidx.core.graphics.drawable.IconCompatParcelizer: void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel)
-me.ag2s.tts.GetSampleText: GetSampleText()
-androidx.recyclerview.widget.RecyclerView: void setLayoutFrozen(boolean)
-androidx.recyclerview.widget.RecyclerView: int getItemDecorationCount()
-me.ag2s.tts.services.WebSocketState: me.ag2s.tts.services.WebSocketState[] values()
-androidx.recyclerview.widget.RecyclerView: void setRecyclerListener(androidx.recyclerview.widget.RecyclerView$RecyclerListener)
-okhttp3.internal.http2.ErrorCode: okhttp3.internal.http2.ErrorCode valueOf(java.lang.String)
-kotlin.time.DurationUnit: kotlin.time.DurationUnit valueOf(java.lang.String)
-androidx.recyclerview.widget.RecyclerView: androidx.recyclerview.widget.RecyclerView$Adapter getAdapter()
-androidx.recyclerview.widget.RecyclerView: int getScrollState()
-me.ag2s.tts.DownloadVoiceData: DownloadVoiceData()
-androidx.recyclerview.widget.RecyclerView: androidx.recyclerview.widget.RecyclerViewAccessibilityDelegate getCompatAccessibilityDelegate()
-me.ag2s.tts.MainActivity: void onClick(android.view.View)
-androidx.recyclerview.widget.RecyclerView: void setItemViewCacheSize(int)
-androidx.recyclerview.widget.RecyclerView: void setEdgeEffectFactory(androidx.recyclerview.widget.RecyclerView$EdgeEffectFactory)
-androidx.recyclerview.widget.RecyclerView: androidx.recyclerview.widget.RecyclerView$LayoutManager getLayoutManager()
-androidx.recyclerview.widget.RecyclerView: void setOnScrollListener(androidx.recyclerview.widget.RecyclerView$OnScrollListener)
-androidx.recyclerview.widget.RecyclerView: androidx.recyclerview.widget.RecyclerView$OnFlingListener getOnFlingListener()
-androidx.recyclerview.widget.RecyclerView: RecyclerView(android.content.Context,android.util.AttributeSet)
-androidx.recyclerview.widget.RecyclerView: java.lang.CharSequence getAccessibilityClassName()
-androidx.core.app.RemoteActionCompatParcelizer: androidx.core.app.RemoteActionCompat read(androidx.versionedparcelable.VersionedParcel)
-androidx.core.app.RemoteActionCompat: RemoteActionCompat()
+androidx.versionedparcelable.ParcelImpl: android.os.Parcelable$Creator CREATOR
 androidx.recyclerview.widget.RecyclerView: int getMaxFlingVelocity()
-androidx.recyclerview.widget.RecyclerView: void setScrollState(int)
-androidx.recyclerview.widget.RecyclerView: int getMinFlingVelocity()
-okhttp3.TlsVersion: okhttp3.TlsVersion[] values()
+android.support.v4.app.RemoteActionCompatParcelizer: void write(androidx.core.app.RemoteActionCompat,androidx.versionedparcelable.VersionedParcel)
+androidx.core.graphics.drawable.IconCompatParcelizer: void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel)
+me.ag2s.tts.services.TTSService: TTSService()
+androidx.recyclerview.widget.RecyclerView: void setPreserveFocusAfterLayout(boolean)
+androidx.recyclerview.widget.RecyclerView: boolean getClipToPadding()
 android.support.v4.app.RemoteActionCompatParcelizer: androidx.core.app.RemoteActionCompat read(androidx.versionedparcelable.VersionedParcel)
-androidx.core.view.ViewCompat$Api29Impl: void saveAttributeDataForStyleable(android.view.View,android.content.Context,int[],android.util.AttributeSet,android.content.res.TypedArray,int,int)
-androidx.recyclerview.widget.RecyclerView: void suppressLayout(boolean)
-androidx.core.graphics.drawable.IconCompatParcelizer: IconCompatParcelizer()
-okhttp3.internal.http2.ErrorCode: okhttp3.internal.http2.ErrorCode[] values()
-androidx.recyclerview.widget.RecyclerView: void setClipToPadding(boolean)
-androidx.recyclerview.widget.RecyclerView$Adapter$StateRestorationPolicy: androidx.recyclerview.widget.RecyclerView$Adapter$StateRestorationPolicy[] values()
+androidx.recyclerview.widget.RecyclerView: androidx.recyclerview.widget.RecyclerView$OnFlingListener getOnFlingListener()
 androidx.recyclerview.widget.RecyclerView: int getBaseline()
-androidx.core.graphics.drawable.IconCompatParcelizer: androidx.core.graphics.drawable.IconCompat read(androidx.versionedparcelable.VersionedParcel)
-okhttp3.Protocol: okhttp3.Protocol[] values()
-okhttp3.TlsVersion: okhttp3.TlsVersion valueOf(java.lang.String)
-androidx.recyclerview.widget.RecyclerView: void setHasFixedSize(boolean)
+androidx.core.app.RemoteActionCompat: RemoteActionCompat()
+androidx.recyclerview.widget.RecyclerView: void setItemViewCacheSize(int)
+androidx.recyclerview.widget.RecyclerView: int getScrollState()
+androidx.recyclerview.widget.RecyclerView: long getNanoTime()
+androidx.recyclerview.widget.RecyclerView: java.lang.CharSequence getAccessibilityClassName()
+androidx.recyclerview.widget.RecyclerView: void setChildDrawingOrderCallback(androidx.recyclerview.widget.RecyclerView$ChildDrawingOrderCallback)
+androidx.core.view.ViewCompat$Api29Impl: void saveAttributeDataForStyleable(android.view.View,android.content.Context,int[],android.util.AttributeSet,android.content.res.TypedArray,int,int)
+kotlin.internal.jdk7.JDK7PlatformImplementations: JDK7PlatformImplementations()
+androidx.recyclerview.widget.RecyclerView: int getItemDecorationCount()
+android.support.v4.app.RemoteActionCompatParcelizer: RemoteActionCompatParcelizer()
+okhttp3.internal.http2.ErrorCode: okhttp3.internal.http2.ErrorCode valueOf(java.lang.String)
+android.support.v4.graphics.drawable.IconCompatParcelizer: androidx.core.graphics.drawable.IconCompat read(androidx.versionedparcelable.VersionedParcel)
+me.ag2s.tts.services.WebSocketState: me.ag2s.tts.services.WebSocketState valueOf(java.lang.String)
+okhttp3.internal.http2.ErrorCode: okhttp3.internal.http2.ErrorCode[] values()
+androidx.recyclerview.widget.RecyclerView: androidx.recyclerview.widget.RecyclerView$ItemAnimator getItemAnimator()
+androidx.recyclerview.widget.RecyclerView: void setOnFlingListener(androidx.recyclerview.widget.RecyclerView$OnFlingListener)
+androidx.recyclerview.widget.RecyclerView: int getMinFlingVelocity()
 androidx.recyclerview.widget.RecyclerView: boolean getPreserveFocusAfterLayout()
-androidx.recyclerview.widget.LinearLayoutManager: LinearLayoutManager(android.content.Context,android.util.AttributeSet,int,int)
+androidx.recyclerview.widget.RecyclerView: void setRecyclerListener(androidx.recyclerview.widget.RecyclerView$RecyclerListener)
+androidx.recyclerview.widget.RecyclerView: void setScrollingTouchSlop(int)
+androidx.recyclerview.widget.RecyclerView: boolean isLayoutSuppressed()
+android.support.v4.graphics.drawable.IconCompatParcelizer: void write(androidx.core.graphics.drawable.IconCompat,androidx.versionedparcelable.VersionedParcel)
+androidx.recyclerview.widget.RecyclerView: void setClipToPadding(boolean)
+androidx.recyclerview.widget.RecyclerView: void setEdgeEffectFactory(androidx.recyclerview.widget.RecyclerView$EdgeEffectFactory)
 androidx.recyclerview.widget.RecyclerView: void setNestedScrollingEnabled(boolean)
+androidx.recyclerview.widget.RecyclerView: RecyclerView(android.content.Context,android.util.AttributeSet)
+androidx.recyclerview.widget.RecyclerView: androidx.core.view.NestedScrollingChildHelper getScrollingChildHelper()
+androidx.recyclerview.widget.RecyclerView: androidx.recyclerview.widget.RecyclerView$LayoutManager getLayoutManager()
+androidx.recyclerview.widget.RecyclerView: void setLayoutTransition(android.animation.LayoutTransition)
+androidx.recyclerview.widget.RecyclerView: void setRecycledViewPool(androidx.recyclerview.widget.RecyclerView$RecycledViewPool)
+androidx.recyclerview.widget.RecyclerView: void setOnScrollListener(androidx.recyclerview.widget.RecyclerView$OnScrollListener)
+me.ag2s.tts.CheckVoiceData: CheckVoiceData()
+androidx.recyclerview.widget.RecyclerView: androidx.recyclerview.widget.RecyclerView$RecycledViewPool getRecycledViewPool()
+androidx.recyclerview.widget.RecyclerView: void setAdapter(androidx.recyclerview.widget.RecyclerView$Adapter)
+me.ag2s.tts.MainActivity: MainActivity()
+androidx.recyclerview.widget.RecyclerView: void setItemAnimator(androidx.recyclerview.widget.RecyclerView$ItemAnimator)
+androidx.core.app.RemoteActionCompatParcelizer: RemoteActionCompatParcelizer()
+kotlin.time.DurationUnit: kotlin.time.DurationUnit valueOf(java.lang.String)
+kotlin.time.DurationUnit: kotlin.time.DurationUnit[] values()
+androidx.recyclerview.widget.RecyclerView: void setAccessibilityDelegateCompat(androidx.recyclerview.widget.RecyclerViewAccessibilityDelegate)
+androidx.recyclerview.widget.RecyclerView: void setHasFixedSize(boolean)
+kotlin.internal.jdk8.JDK8PlatformImplementations: JDK8PlatformImplementations()
+androidx.core.graphics.drawable.IconCompat: IconCompat()
+androidx.recyclerview.widget.RecyclerView: void setViewCacheExtension(androidx.recyclerview.widget.RecyclerView$ViewCacheExtension)
+androidx.recyclerview.widget.RecyclerView: void setLayoutFrozen(boolean)
+me.ag2s.tts.MainActivity: void onClick(android.view.View)
+androidx.recyclerview.widget.RecyclerView: void setLayoutManager(androidx.recyclerview.widget.RecyclerView$LayoutManager)
+okhttp3.Protocol: okhttp3.Protocol valueOf(java.lang.String)
+androidx.recyclerview.widget.RecyclerView$Adapter$StateRestorationPolicy: androidx.recyclerview.widget.RecyclerView$Adapter$StateRestorationPolicy[] values()
+me.ag2s.tts.DownloadVoiceData: DownloadVoiceData()
+androidx.recyclerview.widget.StaggeredGridLayoutManager: StaggeredGridLayoutManager(android.content.Context,android.util.AttributeSet,int,int)
+me.ag2s.tts.APP: APP()
+androidx.recyclerview.widget.GridLayoutManager: GridLayoutManager(android.content.Context,android.util.AttributeSet,int,int)
+androidx.core.app.CoreComponentFactory: CoreComponentFactory()
+me.ag2s.tts.GetSampleText: GetSampleText()
+androidx.core.app.RemoteActionCompatParcelizer: androidx.core.app.RemoteActionCompat read(androidx.versionedparcelable.VersionedParcel)
+okhttp3.Protocol: okhttp3.Protocol[] values()
+android.support.v4.graphics.drawable.IconCompatParcelizer: IconCompatParcelizer()
+androidx.recyclerview.widget.RecyclerView: androidx.recyclerview.widget.RecyclerView$Adapter getAdapter()
+androidx.recyclerview.widget.LinearLayoutManager: LinearLayoutManager(android.content.Context,android.util.AttributeSet,int,int)
+androidx.recyclerview.widget.RecyclerView: androidx.recyclerview.widget.RecyclerView$EdgeEffectFactory getEdgeEffectFactory()
+androidx.recyclerview.widget.RecyclerView$Adapter$StateRestorationPolicy: androidx.recyclerview.widget.RecyclerView$Adapter$StateRestorationPolicy valueOf(java.lang.String)
+okhttp3.TlsVersion: okhttp3.TlsVersion valueOf(java.lang.String)
+okhttp3.TlsVersion: okhttp3.TlsVersion[] values()
+androidx.recyclerview.widget.RecyclerView: void setScrollState(int)
+androidx.recyclerview.widget.RecyclerView: androidx.recyclerview.widget.RecyclerViewAccessibilityDelegate getCompatAccessibilityDelegate()
+androidx.core.app.RemoteActionCompatParcelizer: void write(androidx.core.app.RemoteActionCompat,androidx.versionedparcelable.VersionedParcel)
+androidx.versionedparcelable.CustomVersionedParcelable: CustomVersionedParcelable()
+androidx.core.graphics.drawable.IconCompatParcelizer: IconCompatParcelizer()
+androidx.recyclerview.widget.RecyclerView: void suppressLayout(boolean)
+me.ag2s.tts.services.WebSocketState: me.ag2s.tts.services.WebSocketState[] values()
+androidx.core.graphics.drawable.IconCompatParcelizer: androidx.core.graphics.drawable.IconCompat read(androidx.versionedparcelable.VersionedParcel)

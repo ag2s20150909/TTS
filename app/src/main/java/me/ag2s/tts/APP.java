@@ -62,7 +62,7 @@ public class APP extends Application {
                                     getByName("2400:3200:baba::1")
                             )
 
-                            .includeIPv6(false)
+                            .includeIPv6(true)
                             .build();
                 }
             }
