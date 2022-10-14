@@ -16,6 +16,10 @@ jobs:
       - name: Remove old apk
         run: |
           rm -rf ./release/*
+
+      - name: Set up Gradle
+        uses: gradle/gradle-build-action@v2
+
       - name: Build With Gradle
         run: |
           chmod +x gradlew
