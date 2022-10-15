@@ -6658,6 +6658,9 @@ me.ag2s.tts.services.TtsConfig$Builder:
 me.ag2s.tts.services.TtsDict:
     public org.json.JSONObject toJsonObject()
 me.ag2s.tts.services.TtsDictManger:
+    private static final java.lang.String NoteLabel
+    private static final java.lang.String ReEndLabel
+    private static final java.lang.String ReStartLabel
     public void add(me.ag2s.tts.services.TtsDict)
 me.ag2s.tts.services.TtsOutputFormat:
     public static final java.lang.String TAG
@@ -9796,9 +9799,10 @@ me.ag2s.tts.services.TtsConfig
 me.ag2s.tts.services.TtsDict:
     public static int compareTo()
     public static java.lang.String getWorld()
-    public static java.lang.String getXML()
+    public static boolean isRegex()
 me.ag2s.tts.services.TtsDictManger:
     public static void add()
+    public static void addRegex()
     public static java.util.List getDict()
     public static me.ag2s.tts.services.TtsDictManger getInstance()
     public static void updateDict()

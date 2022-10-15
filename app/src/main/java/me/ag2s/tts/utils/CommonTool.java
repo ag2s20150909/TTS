@@ -114,9 +114,6 @@ public class CommonTool {
     }
 
 
-
-
-
     public static void replace(StringBuilder builder, String from, String to) {
         int index = builder.indexOf(from);
         while (index != -1) {
@@ -126,15 +123,11 @@ public class CommonTool {
         }
     }
 
-//    public static void replaceAll(StringBuilder sb, String regex, String replacement) {
-//        Pattern pattern = Pattern.compile(regex);
-//        Matcher m = pattern.matcher(sb);
-//        int start = 0;
-//        while (m.find(start)) {
-//            sb.replace(m.start(), m.end(), replacement);
-//            start = m.start() + replacement.length();
-//        }
-//    }
+    public static void replaceAll(StringBuilder sb, String regex, String replacement) {
+        String s = Pattern.compile(regex).matcher(sb.toString()).replaceAll(replacement);
+        sb.delete(0, sb.length());
+        sb.append(s);
+    }
 
 //    public static void replaceAll(StringBuilder sb, Pattern pattern, String replacement) {
 //        Matcher m = pattern.matcher(sb);

@@ -3,8 +3,8 @@
 # min_api: 21
 # common_typos_disable
 # {"id":"com.android.tools.r8.mapping","version":"2.0"}
-# pg_map_id: e21bb12
-# pg_map_hash: SHA-256 e21bb128b1bf47413de05f5fe5acd6200994b3995ac89b6a85b88f1008878507
+# pg_map_id: 707bc6a
+# pg_map_hash: SHA-256 707bc6a06bec1b8011b9bf7ba05418f28a1711e21b336d272182c9d06e71ee25
 android.app.AppComponentFactory -> android.app.AppComponentFactory:
 # {"id":"com.android.tools.r8.synthesized"}
     void <clinit>() -> <clinit>
@@ -8689,11 +8689,10 @@ me.ag2s.tts.databinding.ActivityMainBinding -> d0.a:
     android.widget.TextView ttsStyleDegreeValue -> m
     android.widget.Button btnSetTts -> b
 me.ag2s.tts.services.SSML -> e0.a:
-    me.ag2s.tts.services.SSML instance -> p
     boolean useDict -> i
     boolean usePre -> j
+    me.ag2s.tts.services.SSML instance -> o
     java.lang.ref.WeakReference style -> e
-    java.util.regex.Pattern p4 -> o
     java.util.regex.Pattern p3 -> n
     java.util.regex.Pattern p0 -> k
     java.util.regex.Pattern p2 -> m
@@ -8711,27 +8710,25 @@ me.ag2s.tts.services.SSML -> e0.a:
     49:59:java.lang.String me.ag2s.tts.utils.CommonTool.getTime():0:0 -> a
     49:59:me.ag2s.tts.services.SSML getInstance(android.speech.tts.SynthesisRequest,java.lang.String,me.ag2s.tts.services.TtsStyle,boolean,boolean):0 -> a
     60:125:me.ag2s.tts.services.SSML getInstance(android.speech.tts.SynthesisRequest,java.lang.String,me.ag2s.tts.services.TtsStyle,boolean,boolean):0:0 -> a
-    155:179:me.ag2s.tts.services.TtsDictManger me.ag2s.tts.services.TtsDictManger.getInstance():0:0 -> b
-    155:179:void handleContent():0 -> b
-    180:181:java.util.List me.ag2s.tts.services.TtsDictManger.getDict():0:0 -> b
-    180:181:void handleContent():0 -> b
+    150:174:me.ag2s.tts.services.TtsDictManger me.ag2s.tts.services.TtsDictManger.getInstance():0:0 -> b
+    150:174:void handleContent():0 -> b
+    175:176:java.util.List me.ag2s.tts.services.TtsDictManger.getDict():0:0 -> b
+    175:176:void handleContent():0 -> b
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
-    182:199:void handleContent():0:0 -> b
-    200:203:java.lang.String me.ag2s.tts.services.TtsDict.getWorld():0:0 -> b
-    200:203:void handleContent():0 -> b
+    177:192:void handleContent():0:0 -> b
+    193:196:boolean me.ag2s.tts.services.TtsDict.isRegex():0:0 -> b
+    193:196:void handleContent():0 -> b
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
-    204:204:void handleContent():0:0 -> b
-      # {"id":"com.android.tools.r8.outlineCallsite","positions":{"1":237,"3":238,"6":239}}
-    237:237:java.lang.String me.ag2s.tts.services.TtsDict.getXML():0:0 -> b
-    237:237:void handleContent():0 -> b
-    238:238:java.lang.String me.ag2s.tts.services.TtsDict.getXML():0:0 -> b
-    238:238:void handleContent():0 -> b
-    239:239:java.lang.String me.ag2s.tts.services.TtsDict.getXML():0:0 -> b
-    239:239:void handleContent():0 -> b
-    205:207:void handleContent():0:0 -> b
-    208:231:java.lang.String me.ag2s.tts.services.TtsDict.getXML():0:0 -> b
-    208:231:void handleContent():0 -> b
-    232:236:void handleContent():0:0 -> b
+    197:198:void handleContent():0:0 -> b
+    199:200:java.lang.String me.ag2s.tts.services.TtsDict.getWorld():0:0 -> b
+    199:200:void handleContent():0 -> b
+    201:206:void handleContent():0:0 -> b
+    207:233:void me.ag2s.tts.utils.CommonTool.replaceAll(java.lang.StringBuilder,java.lang.String,java.lang.String):0:0 -> b
+    207:233:void handleContent():0 -> b
+    234:235:void handleContent():0:0 -> b
+    236:237:java.lang.String me.ag2s.tts.services.TtsDict.getWorld():0:0 -> b
+    236:237:void handleContent():0 -> b
+    238:248:void handleContent():0:0 -> b
     160:161:byte me.ag2s.tts.services.TtsStyle.getVolume():0:0 -> toString
     160:161:java.lang.String toString():0 -> toString
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
@@ -8925,15 +8922,29 @@ me.ag2s.tts.services.TtsConfig$Builder -> e0.e:
 me.ag2s.tts.services.TtsDict -> e0.f:
     java.lang.String world -> a
     java.lang.String ph -> b
-    0:65535:int me.ag2s.tts.services.TtsDict.compareTo(me.ag2s.tts.services.TtsDict):0:0 -> compareTo
-    0:65535:int compareTo(java.lang.Object):0 -> compareTo
+    boolean isRegex -> c
+    java.lang.String getXML(java.lang.String) -> a
+    3:4:boolean me.ag2s.tts.services.TtsDict.isRegex():0:0 -> compareTo
+    3:4:int me.ag2s.tts.services.TtsDict.compareTo(me.ag2s.tts.services.TtsDict):0 -> compareTo
+    3:4:int compareTo(java.lang.Object):0 -> compareTo
+    5:51:int me.ag2s.tts.services.TtsDict.compareTo(me.ag2s.tts.services.TtsDict):0:0 -> compareTo
+    5:51:int compareTo(java.lang.Object):0 -> compareTo
+    3:3:java.lang.String toString():0:0 -> toString
+      # {"id":"com.android.tools.r8.outlineCallsite","positions":{"1":50,"3":51,"6":52}}
+    50:50:java.lang.String toString():0:0 -> toString
+    51:51:java.lang.String toString():0:0 -> toString
+    52:52:java.lang.String toString():0:0 -> toString
+    4:49:java.lang.String toString():0:0 -> toString
 me.ag2s.tts.services.TtsDictManger -> e0.g:
     java.util.List dict -> b
     java.io.File file -> a
     me.ag2s.tts.services.TtsDictManger instance -> c
-    172:181:void me.ag2s.tts.services.TtsDictManger.add(java.lang.String,java.lang.String):0:0 -> a
-    172:181:void readDicFile():0 -> a
-    182:237:void readDicFile():0:0 -> a
+    189:198:void me.ag2s.tts.services.TtsDictManger.addRegex(java.lang.String,java.lang.String):0:0 -> a
+    189:198:void readDicFile():0 -> a
+    199:259:void readDicFile():0:0 -> a
+    260:269:void me.ag2s.tts.services.TtsDictManger.add(java.lang.String,java.lang.String):0:0 -> a
+    260:269:void readDicFile():0 -> a
+    270:324:void readDicFile():0:0 -> a
 me.ag2s.tts.services.TtsFormatManger -> e0.h:
     java.util.List formats -> a
     me.ag2s.tts.services.TtsFormatManger instance -> b

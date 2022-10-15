@@ -33,10 +33,10 @@ public class SSML {
     static final Pattern p3 = Pattern.compile("([。！？?][”’])([^，。！？?])");
 //
 //
-    /**
-     * 修复在小说中“重”作为量词时(读chong 2)的错误读音。这在修仙类小说中很常见.
-     */
-    static final Pattern p4 = Pattern.compile("重(?=[一二三四五六七八九十])|(?<=[一二三四五六七八九十])重");
+//    /**
+//     * 修复在小说中“重”作为量词时(读chong 2)的错误读音。这在修仙类小说中很常见.
+//     */
+    //static final Pattern p4 = Pattern.compile("重(?=[一二三四五六七八九十])|(?<=[一二三四五六七八九十])重");
 
 
     /**
@@ -137,8 +137,9 @@ public class SSML {
             temp = p1.matcher(temp).replaceAll("$1</p><p>$2");//单字符断句符,排除后面有引号的情况
             temp = p2.matcher(temp).replaceAll("<break strength='strong' />$2");//中英文省略号停顿处理
             temp = p3.matcher(temp).replaceAll("$1</p><p>$2");//多字符断句符，后面有引号的的情况
-            temp = p4.matcher(temp).replaceAll("<phoneme alphabet='sapi' ph='chong 2'>重</phoneme>");
-
+//            if (name.startsWith("zh-CN")) {
+//                //temp = p4.matcher(temp).replaceAll("<phoneme alphabet='sapi' ph='chong 2'>重</phoneme>");
+//            }
             content = new StringBuilder(temp);
             GcManger.getInstance().doGC();
         }
@@ -147,7 +148,12 @@ public class SSML {
         if (useDict) {
             List<TtsDict> dictList = TtsDictManger.getInstance().getDict();
             for (TtsDict dict : dictList) {
-                CommonTool.replace(content, dict.getWorld(), dict.getXML());
+                if (dict.isRegex()) {
+                    CommonTool.replaceAll(content, dict.getWorld(), dict.getXML(name));
+                } else {
+                    CommonTool.replace(content, dict.getWorld(), dict.getXML(name));
+                }
+
             }
         }
 
