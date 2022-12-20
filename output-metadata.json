@@ -1,0 +1,20 @@
+{
+  "version": 3,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "me.ag2s.tts",
+  "variantName": "release",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "attributes": [],
+      "versionCode": 1,
+      "versionName": "0.2_202212201955",
+      "outputFile": "TTS_release_v0.2_202212201955.apk"
+    }
+  ],
+  "elementType": "File"
+}
