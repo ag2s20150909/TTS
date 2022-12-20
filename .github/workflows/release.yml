@@ -35,7 +35,7 @@ jobs:
           name: TTS_${{ env.ver_name }}
           path: ${{ github.workspace }}/release/*
       - name: Release
-        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
+        uses: softprops/action-gh-release@d4e8205d7e959a9107da6396278b2f1f07af0f9b
         with:
           name: TTS_${{ env.ver_name }}
           tag_name: ${{ env.ver_name }}
