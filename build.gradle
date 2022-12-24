@@ -3,7 +3,7 @@ buildscript {
     ext{
         agp_version = '7.3.1'
         kotlin_version = '1.7.22'
-        okhttp_version = '5.0.0-alpha.10'
+        okhttp_version = '5.0.0-alpha.11'
         okio_version = "3.2.0"
     }
 }
