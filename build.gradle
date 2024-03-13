@@ -4,7 +4,7 @@ buildscript {
         agp_version = '7.3.1'
         kotlin_version = '1.7.22'
         okhttp_version = '5.0.0-alpha.10'
-        okio_version = "3.2.0"
+        okio_version = "3.9.0"
     }
 }
 plugins {
