@@ -9,6 +9,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.graphics.drawable.Icon;
 import android.media.AudioFormat;
 import android.media.MediaCodec;
@@ -36,7 +37,6 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -45,6 +45,8 @@ import java.util.Set;
 import me.ag2s.tts.APP;
 import me.ag2s.tts.BuildConfig;
 import me.ag2s.tts.R;
+import me.ag2s.tts.data.TtsActor;
+import me.ag2s.tts.data.TtsActorManger;
 import me.ag2s.tts.utils.ByteArrayMediaDataSource;
 import me.ag2s.tts.utils.CommonTool;
 import me.ag2s.tts.utils.GcManger;
@@ -241,7 +243,13 @@ public class TTSService extends TextToSpeechService {
 
         }
 
-        startForeground(NOTIFICATION_ID, getNotification());
+
+        //startForeground(NOTIFICATION_ID, getNotification());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(NOTIFICATION_ID, getNotification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+        } else {
+            startForeground(NOTIFICATION_ID, getNotification());
+        }
 
     }
 
@@ -259,7 +267,11 @@ public class TTSService extends TextToSpeechService {
     private Notification getNotification() {
         Intent stopSelf = new Intent(this, TTSService.class);
         stopSelf.setAction(ACTION_STOP_SERVICE);
-        PendingIntent pStopSelf = PendingIntent.getService(this, 0, stopSelf, Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE : PendingIntent.FLAG_UPDATE_CURRENT);
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
+        }
+        PendingIntent pStopSelf = PendingIntent.getService(this, 0, stopSelf, flags);
 
         notificationBuilder = new Notification.Builder(this)
                 .setSmallIcon(R.drawable.ic_audio)
@@ -754,11 +766,6 @@ public class TTSService extends TextToSpeechService {
         return voices;
     }
 
-    @Override
-    protected Set<String> onGetFeaturesForLanguage(String lang, String country, String variant) {
-        return new HashSet<>();
-    }
-
     public List<String> getVoiceNames(String lang, String country, String variant) {
         List<String> vos = new ArrayList<>();
         Locale locale = new Locale(lang, country, variant);
@@ -803,7 +810,7 @@ public class TTSService extends TextToSpeechService {
             variant = "Female";
         }
         List<String> names = getVoiceNames(lang, country, variant);
-        if (names.size() > 0) {
+        if (!names.isEmpty()) {
             name = names.get(0);
         }
 

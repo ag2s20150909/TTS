@@ -231,11 +231,28 @@ public class APP extends Application {
 
     }
 
+    private static void tryInstallGmsSsl(Context context) {
+        try {
+            Context gmsContext = context.createPackageContext("com.google.android.gms",
+                    CONTEXT_INCLUDE_CODE | CONTEXT_IGNORE_SECURITY);
+            gmsContext.getClassLoader()
+                    .loadClass("com.google.android.gms.common.security.ProviderInstallerImpl")
+                    .getDeclaredMethod("insertProvider", Context.class)
+                    .invoke(null, gmsContext);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
+    }
+
 
     @Override
     public void onCreate() {
         super.onCreate();
-        //Security.insertProviderAt(Conscrypt.newProvider(), 1);
+        new Thread(() -> {
+            tryInstallGmsSsl(APP.this);
+        }).start();
         mContext = this.getApplicationContext();
     }
 

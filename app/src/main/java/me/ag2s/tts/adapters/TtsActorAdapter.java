@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Locale;
 
 import me.ag2s.tts.R;
-import me.ag2s.tts.services.TtsActor;
+import me.ag2s.tts.data.TtsActor;
 import me.ag2s.tts.utils.CommonTool;
 
 public class TtsActorAdapter extends RecyclerView.Adapter<TtsActorAdapter.ViewHolder> {
@@ -80,7 +80,7 @@ public class TtsActorAdapter extends RecyclerView.Adapter<TtsActorAdapter.ViewHo
             holder.itemView.setBackground(holder.itemView.getContext().getDrawable(R.drawable.unselect));
         }
         TtsActor data = mData.get(position);
-        holder.tv_title.setText(data.getName());
+        holder.tv_title.setText(data.getShortName());
         Locale locale = data.getLocale();
         //locale.getDisplayCountry(Locale.getDefault());
         holder.tv_des.setText(String.format("%s%s\n%s", CommonTool.localeToEmoji(locale), locale.getDisplayLanguage(Locale.getDefault()), data.getNote()));

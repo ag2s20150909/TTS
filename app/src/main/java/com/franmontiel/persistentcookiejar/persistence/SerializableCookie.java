@@ -18,6 +18,8 @@ package com.franmontiel.persistentcookiejar.persistence;
 
 import android.util.Log;
 
+import androidx.annotation.Keep;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -27,6 +29,7 @@ import java.io.Serializable;
 
 import okhttp3.Cookie;
 
+@Keep
 public class SerializableCookie implements Serializable {
     private static final String TAG = SerializableCookie.class.getSimpleName();
 

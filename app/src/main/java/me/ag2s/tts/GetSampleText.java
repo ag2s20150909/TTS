@@ -22,10 +22,15 @@ public class GetSampleText extends Activity {
         Intent returnData = new Intent();
 
         Intent i = getIntent();
-        String language = i.getExtras().getString("language");
-        String country = i.getExtras().getString("country");
-        String variant = i.getExtras().getString("variant");
+        Bundle bundle = i.getExtras();
+        if (bundle == null) return;
+
+        String language = bundle.getString("language");
+        String country = bundle.getString("country");
+        String variant = bundle.getString("variant");
         Log.d(TAG, language + "_" + country + "_" + variant);
+
+        if (language == null || country == null) return;
         Locale locale = new Locale(language, country);
         returnData.putExtra(TextToSpeech.Engine.EXTRA_SAMPLE_TEXT, TtsVoiceSample.getByLocate(this, locale));
         setResult(result, returnData);

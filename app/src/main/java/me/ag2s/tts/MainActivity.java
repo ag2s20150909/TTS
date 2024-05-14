@@ -38,9 +38,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import me.ag2s.tts.adapters.TtsActorAdapter;
 import me.ag2s.tts.adapters.TtsStyleAdapter;
+import me.ag2s.tts.data.TtsActorManger;
 import me.ag2s.tts.databinding.ActivityMainBinding;
 import me.ag2s.tts.services.Constants;
-import me.ag2s.tts.services.TtsActorManger;
 import me.ag2s.tts.services.TtsDictManger;
 import me.ag2s.tts.services.TtsFormatManger;
 import me.ag2s.tts.services.TtsOutputFormat;
@@ -151,7 +151,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
                 if (textToSpeech == null) {
                     connectToText2Speech();
                 }
-                Toast.makeText(MainActivity.this, "" + item.getShortName(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, item.getShortName(), Toast.LENGTH_SHORT).show();
             }
 
         });
