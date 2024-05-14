@@ -30,7 +30,7 @@ jobs:
         run: |
           echo "ver_name=$(grep 'versionName' release/output-metadata.json | cut -d\" -f4)" >> $GITHUB_ENV
       - name: Upload App To Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: TTS_${{ env.ver_name }}
           path: ${{ github.workspace }}/release/*
