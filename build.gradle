@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     ext{
-        agp_version = '8.4.0'
+        agp_version = '8.7.1'
         kotlin_version = '1.9.20'
         okhttp_version = '5.0.0-alpha.14'
         okio_version = '3.9.0'
