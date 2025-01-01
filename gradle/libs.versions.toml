@@ -1,5 +1,5 @@
 [versions]
-kotlin="1.9.20"
+kotlin="1.9.25"
 androidGradlePlugin="8.7.3"
 [libraries]
 
