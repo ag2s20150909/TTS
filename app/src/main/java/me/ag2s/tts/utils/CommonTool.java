@@ -1,10 +1,13 @@
 package me.ag2s.tts.utils;
 
+import android.util.Log;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -12,6 +15,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
+import me.ag2s.tts.services.Constants;
 import okio.BufferedSink;
 import okio.BufferedSource;
 import okio.ByteString;
@@ -21,6 +25,36 @@ public class CommonTool {
 
     static final Pattern NoVoicePattern = Pattern.compile("[\\s\\p{C}\\p{P}\\p{Z}\\p{S}]");
     static final SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ss 'GMT'Z", Locale.ENGLISH);
+
+
+
+
+    public static String getSecMsGec(){
+        return sha256Encode(getTicks()+Constants.TOKEN).toUpperCase();
+    }
+
+    public static long getTicks(){
+        BigInteger seed = BigInteger.valueOf(System.currentTimeMillis());
+        seed=seed.multiply(BigInteger.valueOf(10000));
+        seed=seed.add(new BigInteger("116444736000000000"));
+        seed=seed.subtract(seed.mod(BigInteger.valueOf(3000000000L)));
+        return seed.longValue();
+    }
+
+    public static String sha256Encode(String s){
+        return ByteString.of(s.getBytes(StandardCharsets.UTF_8)).sha256().hex();
+    }
+
+
+    public static String getFinalUrl(){
+        long seed= (long) (System.currentTimeMillis() * 10000 + 116444736e9);
+        seed -= seed % 3000000000L;
+
+        Log.e("Token",seed+"");
+
+//
+        return "";
+    }
 
 
 //    /**

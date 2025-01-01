@@ -84,12 +84,10 @@ public class APP extends Application {
                                     new SharedPrefsCookiePersistor(getContext())))
                             .pingInterval(20, TimeUnit.SECONDS) // 设置 PING 帧发送间隔
                             .fastFallback(true)
-                            .dns(s -> {
-//                                if("speech.platform.bing.com".equals(s)){
-//                                    s="cn.bing.com";
-//                                }
-                                return getDns().lookup(s);
-                            })
+//                            .dns(s -> {
+//
+//                                return getDns().lookup(s);
+//                            })
                             .build();
                 }
             }

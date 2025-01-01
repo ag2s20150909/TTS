@@ -1,5 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base application theme. -->
+
     <style name="Theme.TTS" parent="android:Theme.Material.Light">
         <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
     </style>

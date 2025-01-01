@@ -1,5 +1,9 @@
 package me.ag2s.tts.services;
 
+import java.util.UUID;
+
+import me.ag2s.tts.utils.CommonTool;
+
 public final class Constants {
     /**
      * 是否使用自定义语音
@@ -56,8 +60,25 @@ public final class Constants {
     //public static final String[] SUPPORT_LOC={"zh-CN","zh-HK","zh-TW","ja-JP","ko-KR","ar-EG","ar-SA","bg-BG","ca-ES","cs-CZ","cy-GB","da-DK","de-AT","de-CH","de-DE","el-GR","en-AU","en-CA","en-GB","en-HK","en-IE","en-IN","en-NZ","en-PH","en-SG","en-US","en-ZA","es-AR","es-CO","es-ES","es-MX","es-US","et-EE","fi-FI","fr-BE","fr-CA","fr-CH","fr-FR","ga-IE","gu-IN","he-IL","hi-IN","hr-HR","hu-HU","id-ID","it-IT","lt-LT","lv-LV","mr-IN","ms-MY","mt-MT","nb-NO","nl-BE","nl-NL","pl-PL","pt-BR","pt-PT","ro-RO","ru-RU","sk-SK","sl-SI","sv-SE","sw-KE","ta-IN","te-IN","th-TH","tr-TR","uk-UA","ur-PK","vi-VN"};
 
 
+    public static String buildEdgeUrl(){
+        StringBuilder sb=new StringBuilder(EDGE_BASE_URL);
+        sb.append("?TrustedClientToken=").append(TOKEN);
+        sb.append("&Sec-MS-GEC=").append(CommonTool.getSecMsGec());
+        sb.append("&Sec-MS-GEC-Version=1-").append(EDGE_VERSION);
+        sb.append("&ConnectionId=").append( UUID.randomUUID().toString().toUpperCase());
+        return  sb.toString();
+
+    }
+
+
+
+
+
+    private static final String EDGE_VERSION ="131.0.0.0";
+
+    public static final String TOKEN="6A5AA1D4EAFF4E9FB37E23D68491D6F4";
     public static final String EDGE_ORIGIN = "chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold";
-    public static final String EDGE_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.0.0";
-    public static final String EDGE_URL = "https://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=6A5AA1D4EAFF4E9FB37E23D68491D6F4";
+    public static final String EDGE_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/"+EDGE_ORIGIN+" Safari/537.36 Edg/"+EDGE_ORIGIN;
+    private static final String EDGE_BASE_URL = "wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1";
 
 }

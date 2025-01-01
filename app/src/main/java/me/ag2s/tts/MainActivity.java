@@ -68,6 +68,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Seek
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+
         connectToText2Speech();
 
 

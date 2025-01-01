@@ -21,20 +21,20 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: 17
+          java-version: 21
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Build With Gradle
         run: |
           chmod +x gradlew
-          ./gradlew assemblerelease --build-cache --parallel --daemon --warning-mode all
+          ./gradlew assemblerelease --build-cache --parallel  --warning-mode all
       - name: Get VerName
         run: |
           echo "ver_name=$(grep 'versionName' release/output-metadata.json | cut -d\" -f4)" >> $GITHUB_ENV
       - name: Upload App To Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: TTS_${{ env.ver_name }}
           path: ${{ github.workspace }}/release/*

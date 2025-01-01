@@ -1,13 +1,13 @@
 plugins {
-    id 'com.android.application'
+    alias(libs.plugins.android.application)
 }
 static def releaseTime() {
     return new Date().format("yyyyMMddHHmm", TimeZone.getTimeZone("GMT+08:00"))
 }
 
 android {
-    compileSdk 34
-    buildToolsVersion = '34.0.0'
+    compileSdk  = 35
+    buildToolsVersion = '35.0.0'
     //签名设置
     signingConfigs {
         release {
@@ -15,8 +15,8 @@ android {
             keyPassword '1234567890'
             storeFile file('../public.jks')
             storePassword '1234567890'
-            v1SigningEnabled true
-            v2SigningEnabled true
+            v1SigningEnabled =true
+            v2SigningEnabled =true
             enableV3Signing = true
             enableV4Signing = true
         }
@@ -30,8 +30,8 @@ android {
 
     defaultConfig {
         applicationId "me.ag2s.tts"
-        minSdk 21
-        targetSdk 33
+        minSdk =21
+        targetSdk =35
         versionCode 1
         versionName "0.2_${releaseTime()}"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -42,25 +42,25 @@ android {
         release {
             minifyEnabled true
             // 启用资源缩减
-            shrinkResources true
+            shrinkResources =true
             // Zipalign优化
             zipAlignEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
+            signingConfig =signingConfigs.release
         }
         debug {
             minifyEnabled false
             // 启用资源缩减
-            shrinkResources false
+            shrinkResources =false
             // Zipalign优化
             zipAlignEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.debug
+            signingConfig =signingConfigs.debug
         }
     }
 
     buildFeatures {
-        viewBinding true
+        viewBinding = true
     }
 
 
@@ -72,12 +72,12 @@ android {
         targetCompatibility JavaVersion.VERSION_11
     }
     dependenciesInfo {
-        includeInApk true
-        includeInBundle false
+        includeInApk = true
+        includeInBundle = false
     }
-    namespace 'me.ag2s.tts'
+    namespace = 'me.ag2s.tts'
 
-    android.applicationVariants.all {
+    android.applicationVariants.configureEach {
         variant ->
 
             def name = ((project.name != "app") ? project.name : rootProject.name.replace(" ", "")) + "_" + variant.buildType.name + "_" + "v" + variant.versionName + ".apk"

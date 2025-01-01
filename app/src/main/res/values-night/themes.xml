@@ -1,4 +1,6 @@
 <resources>
     <!-- Base application theme. -->
-    <style name="Theme.TTS" parent="android:Theme.Material" />
+    <style name="Theme.TTS" parent="android:Theme.Material" >
+        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
+    </style>
 </resources>

@@ -1,0 +1,12 @@
+[versions]
+kotlin="1.9.20"
+androidGradlePlugin="8.7.3"
+[libraries]
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
+android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
+
+androidx-benchmark = {id="androidx.benchmark",version="1.3.3"}
+
+kotlin-android = {id="org.jetbrains.kotlin.android",version.ref="kotlin"}

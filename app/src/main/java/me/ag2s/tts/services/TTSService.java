@@ -25,6 +25,7 @@ import android.speech.tts.TextToSpeechService;
 import android.speech.tts.Voice;
 import android.text.TextUtils;
 import android.util.Log;
+import android.webkit.WebSettings;
 
 import androidx.annotation.NonNull;
 
@@ -213,8 +214,15 @@ public class TTSService extends TextToSpeechService {
         }
     };
 
+
     public TTSService() {
         client = getOkHttpClient();
+    }
+
+
+    private String getEdgeVersion(){
+        String ua=WebSettings.getDefaultUserAgent(this);
+        return ua.substring(0,ua.indexOf('.'))+".0.0.0";
     }
 
     private static final String ACTION_STOP_SERVICE = "action_stop_service";
@@ -441,39 +449,41 @@ public class TTSService extends TextToSpeechService {
                 //Log.d(TAG, ByteString.of(trackFormat.getByteBuffer("csd-0")).hex());
 
 
-                Buffer buf = new Buffer();
-                // Magic Signature：固定头，占8个字节，为字符串OpusHead
-                buf.write("OpusHead".getBytes(StandardCharsets.UTF_8));
-                // Version：版本号，占1字节，固定为0x01
-                buf.writeByte(1);
-                // Channel Count：通道数，占1字节，根据音频流通道自行设置，如0x02
-                buf.writeByte(1);
-                // Pre-skip：回放的时候从解码器中丢弃的samples数量，占2字节，为小端模式，默认设置0x00,
-                buf.writeShortLe(0);
-                // Input Sample Rate (Hz)：音频流的Sample Rate，占4字节，为小端模式，根据实际情况自行设置
-                buf.writeIntLe(currentFormat.HZ);
-                //Output Gain：输出增益，占2字节，为小端模式，没有用到默认设置0x00, 0x00就好
-                buf.writeShortLe(0);
-                // Channel Mapping Family：通道映射系列，占1字节，默认设置0x00就好
-                buf.writeByte(0);
-                //Channel Mapping Table：可选参数，上面的Family默认设置0x00的时候可忽略
+                try(Buffer buf = new Buffer();) {
+                    // Magic Signature：固定头，占8个字节，为字符串OpusHead
+                    buf.write("OpusHead".getBytes(StandardCharsets.UTF_8));
+                    // Version：版本号，占1字节，固定为0x01
+                    buf.writeByte(1);
+                    // Channel Count：通道数，占1字节，根据音频流通道自行设置，如0x02
+                    buf.writeByte(1);
+                    // Pre-skip：回放的时候从解码器中丢弃的samples数量，占2字节，为小端模式，默认设置0x00,
+                    buf.writeShortLe(0);
+                    // Input Sample Rate (Hz)：音频流的Sample Rate，占4字节，为小端模式，根据实际情况自行设置
+                    buf.writeIntLe(currentFormat.HZ);
+                    //Output Gain：输出增益，占2字节，为小端模式，没有用到默认设置0x00, 0x00就好
+                    buf.writeShortLe(0);
+                    // Channel Mapping Family：通道映射系列，占1字节，默认设置0x00就好
+                    buf.writeByte(0);
+                    //Channel Mapping Table：可选参数，上面的Family默认设置0x00的时候可忽略
 
 
-                if (BuildConfig.DEBUG) {
-                    Log.e(TAG, trackFormat.getByteBuffer("csd-1").order(ByteOrder.nativeOrder()).getLong() + "");
-                    Log.e(TAG, trackFormat.getByteBuffer("csd-2").order(ByteOrder.nativeOrder()).getLong() + "");
-                    Log.e(TAG, ByteString.of(trackFormat.getByteBuffer("csd-2").array()).hex());
+//                    if (BuildConfig.DEBUG) {
+//                        Log.e(TAG, trackFormat.getByteBuffer("csd-1").order(ByteOrder.nativeOrder()).getLong() + "");
+//                        Log.e(TAG, trackFormat.getByteBuffer("csd-2").order(ByteOrder.nativeOrder()).getLong() + "");
+//                        Log.e(TAG, ByteString.of(trackFormat.getByteBuffer("csd-2").array()).hex());
+//                    }
+
+                    byte[] csd1bytes = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+                    byte[] csd2bytes = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+                    ByteString hd = buf.readByteString();
+                    ByteBuffer csd0 = ByteBuffer.wrap(hd.toByteArray());
+                    trackFormat.setByteBuffer("csd-0", csd0);
+                    ByteBuffer csd1 = ByteBuffer.wrap(csd1bytes);
+                    trackFormat.setByteBuffer("csd-1", csd1);
+                    ByteBuffer csd2 = ByteBuffer.wrap(csd2bytes);
+                    trackFormat.setByteBuffer("csd-2", csd2);
                 }
 
-                byte[] csd1bytes = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-                byte[] csd2bytes = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-                ByteString hd = buf.readByteString();
-                ByteBuffer csd0 = ByteBuffer.wrap(hd.toByteArray());
-                trackFormat.setByteBuffer("csd-0", csd0);
-                ByteBuffer csd1 = ByteBuffer.wrap(csd1bytes);
-                trackFormat.setByteBuffer("csd-1", csd1);
-                ByteBuffer csd2 = ByteBuffer.wrap(csd2bytes);
-                trackFormat.setByteBuffer("csd-2", csd2);
 
             }
 
@@ -571,6 +581,9 @@ public class TTSService extends TextToSpeechService {
     }
 
 
+
+
+
     /**
      * 获取或者创建WS
      * WebSocket
@@ -596,10 +609,11 @@ public class TTSService extends TextToSpeechService {
                 origin = "https://azure.microsoft.com";
                 isPreview = true;
             } else {
-                url = Constants.EDGE_URL;
+                url = Constants.buildEdgeUrl();
                 isPreview = false;
                 origin = Constants.EDGE_ORIGIN;
             }
+            Log.e(TAG,url);
             Request request = new Request.Builder()
                     .url(url)
                     //.header("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6")
