@@ -73,6 +73,11 @@ public class TtsActorManger {
                 String locale = jo.getString("Locale");
                 String note = jo.getJSONObject("VoiceTag").toString();
 
+                if ( locale.toLowerCase().contains("latn") || locale.toLowerCase().contains("cans") ) {
+                    // 因纽特语，各2个，共4个
+                    continue;
+                }
+
                 copy.add(new TtsActor(
                         /*name*/ name,
                         /*shortName*/ shortName,
@@ -188,9 +193,14 @@ public class TtsActorManger {
         List<TtsActor> newActors = new ArrayList<>();
         for (TtsActor actor : actors) {
             //语言相同或者地区相同
-            if (actor.getLocale().getISO3Language().equals(locale.getISO3Language()) || actor.getLocale().getISO3Country().equals(locale.getISO3Country())) {
-                newActors.add(actor);
+            try {
+                if (actor.getLocale().getISO3Language().equals(locale.getISO3Language()) || actor.getLocale().getISO3Country().equals(locale.getISO3Country())) {
+                    newActors.add(actor);
+                }
+            } catch (Exception e) {
+                System.out.println("==================== 匹配失败 " + e.getMessage());
             }
+
         }
         //sortByLocale(newActors, locale);
         Collections.sort(newActors, new TtsActorComparator(locale));

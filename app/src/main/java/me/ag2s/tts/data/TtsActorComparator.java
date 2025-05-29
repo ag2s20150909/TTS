@@ -20,12 +20,23 @@ public class TtsActorComparator implements Comparator<TtsActor> {
     public int compare(TtsActor o1, TtsActor o2) {
         Locale loc1 = o1.getLocale();
         Locale loc2 = o2.getLocale();
-        boolean b11 = loc1.getISO3Language().equals(locale.getISO3Language());
-        boolean b12 = loc1.getISO3Country().equals(locale.getISO3Country());
-        boolean b13 = loc1.getDisplayVariant(Locale.US).equals(locale.getDisplayVariant(Locale.US));
-        boolean b21 = loc2.getISO3Language().equals(locale.getISO3Language());
-        boolean b22 = loc2.getISO3Country().equals(locale.getISO3Country());
-        boolean b23 = loc2.getDisplayVariant(Locale.US).equals(locale.getDisplayVariant(Locale.US));
+
+        boolean b11 = false;
+        boolean b12 = false;
+        boolean b13 = false;
+        boolean b21 = false;
+        boolean b22 = false;
+        boolean b23 = false;
+        try {
+            b11 = loc1.getISO3Language().equals(locale.getISO3Language());
+            b12 = loc1.getISO3Country().equals(locale.getISO3Country());
+            b13 = loc1.getDisplayVariant(Locale.US).equals(locale.getDisplayVariant(Locale.US));
+            b21 = loc2.getISO3Language().equals(locale.getISO3Language());
+            b22 = loc2.getISO3Country().equals(locale.getISO3Country());
+            b23 = loc2.getDisplayVariant(Locale.US).equals(locale.getDisplayVariant(Locale.US));
+        } catch (Exception e) {
+            System.out.println("==================== 无法比较 " + e.getMessage());
+        }
 
 
         if (b11 != b21) {
