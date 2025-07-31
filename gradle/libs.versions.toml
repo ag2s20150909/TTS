@@ -1,7 +1,7 @@
 [versions]
 espressoCore="3.6.1"
 junit="4.13.2"
-junitVersion="1.2.1"
+junitVersion="1.3.0"
 kotlin="2.1.0"
 androidGradlePlugin="8.7.3"
 okhttp="5.0.0-alpha.14"
