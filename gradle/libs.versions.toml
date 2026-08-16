@@ -4,7 +4,7 @@ junit="4.13.2"
 junitVersion="1.2.1"
 kotlin="2.1.0"
 androidGradlePlugin="8.7.3"
-okhttp="5.0.0-alpha.14"
+okhttp="5.5.0"
 okio="3.9.1"
 recyclerview="1.3.2"
 [libraries]
