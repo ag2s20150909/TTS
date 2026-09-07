@@ -2,7 +2,7 @@
 espressoCore="3.6.1"
 junit="4.13.2"
 junitVersion="1.2.1"
-kotlin="2.1.0"
+kotlin="2.4.20"
 androidGradlePlugin="8.7.3"
 okhttp="5.0.0-alpha.14"
 okio="3.9.1"
